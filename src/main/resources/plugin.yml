@@ -1,0 +1,22 @@
+name: InfiniteInfernal
+main: cat.nyaa.infiniteinfernal.InfPlugin
+description: "InfiniteInfernal"
+version: 1.0
+depend: [NyaaCore,LangUtils]
+softdepend: [WorldGuard,NyaaUtils]
+authors: [ReinWD]
+website: "https://github.com/NyaaCat/InfiniteInfernal"
+database: false
+api-version: 1.13
+
+commands:
+  infiniteinfernal:
+    description: "main command for infinite infernal plugin."
+    aliases: [ii,im,inf]
+    permission: "infiniteinfernal.admin"
+    permission-message: "You don't have required permission <permission>"
+
+permissions:
+  infiniteinfernal.admin:
+    description: "main permissions for infinite infernal plugin."
+    default: op
