@@ -14,7 +14,7 @@ public class AbilitySetConfig extends IdFileConfig {
     }
 
     @Serializable
-    Map<String, IAbility> abilities = new LinkedHashMap<>();
+    public Map<String, IAbility> abilities = new LinkedHashMap<>();
 
     @Override
     public String getPrefix() {

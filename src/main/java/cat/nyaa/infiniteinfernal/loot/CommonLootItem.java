@@ -6,6 +6,7 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import org.bukkit.inventory.ItemStack;
 
 public class CommonLootItem implements ILootItem, ISerializable {
+    private final InfPlugin plugin;
     private ItemStack item;
 
     @Serializable
@@ -13,8 +14,15 @@ public class CommonLootItem implements ILootItem, ISerializable {
 
     @Serializable
     String name = "";
+    private boolean dynamic;
 
-    public CommonLootItem(InfPlugin plugin, ItemStack item){
+    public CommonLootItem(){
+        plugin = InfPlugin.plugin;
+    }
+
+    public CommonLootItem(InfPlugin plugin, String name, ItemStack item){
+        this.plugin = plugin;
+        this.name = name;
         this.item = item;
     }
 
@@ -45,6 +53,11 @@ public class CommonLootItem implements ILootItem, ISerializable {
 
     @Override
     public boolean isDynamic() {
-        return false;
+        return dynamic;
+    }
+
+    @Override
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 }

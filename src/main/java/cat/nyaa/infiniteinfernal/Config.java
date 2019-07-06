@@ -1,15 +1,13 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
+import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Config extends PluginConfigure {
     InfPlugin plugin;
@@ -38,14 +36,27 @@ public class Config extends PluginConfigure {
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     //<STANDALONE CONFIGS>
-    public DirConfigs<AbilitySetConfig> dirConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "abilities/"));
+    public DirConfigs<AbilitySetConfig> abilityConfigs;
+    public DirConfigs<LevelConfig> levelConfigs;
+    public DirConfigs<MobConfig> mobConfigs;
+    public DirConfigs<RegionConfig> regionConfigs;
 
     private void saveStandaloneConfigs() {
-
+        abilityConfigs.saveToDir();
+        levelConfigs.saveToDir();
+        mobConfigs.saveToDir();
+        regionConfigs.saveToDir();
     }
 
     private void loadStandaloneConfigs() {
-
+        abilityConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "abilities/"), AbilitySetConfig.class);
+        levelConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "level/"), LevelConfig.class);
+        mobConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "mobs/"), MobConfig.class);
+        regionConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "regions/"), RegionConfig.class);
+        abilityConfigs.loadFromDir();
+        levelConfigs.loadFromDir();
+        mobConfigs.loadFromDir();
+        regionConfigs.loadFromDir();
     }
     //<STANDALONE CONFIGS/>
 
@@ -61,4 +72,9 @@ public class Config extends PluginConfigure {
         this.saveStandaloneConfigs();
     }
 
+    public List<RegionConfig> getRegionsForLocation(Location location) {
+        return regionConfigs.values().stream()
+                .filter(regionConfig1 -> regionConfig1.region.contains(location))
+                .collect(Collectors.toList());
+    }
 }

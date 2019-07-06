@@ -7,7 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class LevelConfig extends IdFileConfig {
     @Serializable
-    int level = 1;
+    public int level = 1;
 
     @Serializable
     public String prefix = "";

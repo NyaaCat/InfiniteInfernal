@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class EnchantmentBookLootItem implements ILootItem {
 
-    public EnchantmentBookLootItem(InfPlugin plugin, ItemStack enchantBook) throws IllegalArgumentException{
+    public EnchantmentBookLootItem(InfPlugin plugin, String name, ItemStack enchantBook) throws IllegalArgumentException{
 
     }
 

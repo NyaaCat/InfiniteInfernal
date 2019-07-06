@@ -1,6 +1,8 @@
 package cat.nyaa.infiniteinfernal.loot;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,6 +34,40 @@ public class LootManager {
 
     public static void disable() {
         instance = null;
+    }
+
+    public List<ILootItem> getLevelDrops(int level) {
+        return commonDrops.get(level);
+    }
+
+    public void addLoot(String name, boolean dynamic, ItemStack itemStack){
+        ILootItem lootItem;
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            lootItem = new EnchantmentBookLootItem(plugin, name, itemStack);
+        }else {
+            lootItem = new CommonLootItem(plugin, name, itemStack);
+        }
+        lootItem.setDynamic(dynamic);
+        lootItemMap.put(name, lootItem);
+    }
+
+    public ILootItem getLoot(String name){
+        return lootItemMap.get(name);
+    }
+
+    public void setDrop(String item, int level, int weight){
+        ILootItem lootItem = lootItemMap.get(item);
+        if (lootItem == null){
+            throw new RuntimeException();
+        }
+        List<ILootItem> iLootItems = commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
+        iLootItems.add(lootItem);
+        Map<Integer, Integer> weightMap = itemWeightMap.computeIfAbsent(lootItem, iLootItem -> new LinkedHashMap<>());
+        weightMap.put(level, weight);
+    }
+
+    public List<ILootItem> inspect(int level){
+        return commonDrops.get(level);
     }
 
     public static int getWeightForLevel(ILootItem lootItem, int level) {

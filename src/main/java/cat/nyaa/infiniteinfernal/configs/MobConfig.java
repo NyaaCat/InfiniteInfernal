@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.configs;
 
+import cat.nyaa.infiniteinfernal.utils.Weightable;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import org.bukkit.entity.EntityType;
 
@@ -7,9 +8,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MobConfig extends IdFileConfig {
+public class MobConfig extends IdFileConfig implements Weightable {
     @Serializable
     public String name = "A custom mob";
+    @Serializable
+    public String id = getPrefix() + getId();
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
     @Serializable
@@ -25,20 +28,57 @@ public class MobConfig extends IdFileConfig {
         super(id);
     }
 
-    public static class MobSpawnConfig implements ISerializable {
+    public static List<Integer> parseLevels(List<String> levels) {
+        List<Integer> result = new ArrayList<>();
+        if (!levels.isEmpty()) {
+            levels.forEach(s -> {
+                try {
+                    String replace = s.replaceAll(" ", "");
+                    if (replace.contains("-")) {
+                        String[] split = replace.split("-");
+                        if (split.length != 2) {
+                            throw new IllegalArgumentException();
+                        }
+                        int to = Integer.parseInt(split[1]);
+                        int from = Integer.parseInt(split[0]);
+                        for (int i = from; i <= to; i++) {
+                            result.add(i);
+                        }
+                    } else {
+                        result.add(Integer.parseInt(s));
+                    }
+                }catch (IllegalArgumentException ex){
+                    //todo: log
+                }
+            });
+        }
+        return result;
+    }
+
+    @Override
+    public int getWeight() {
+        return spawn.getWeight();
+    }
+
+    public static class MobSpawnConfig implements ISerializable, Weightable {
         @Serializable
         public boolean autoSpawn = true;
         @Serializable
         public int weight = 100;
         @Serializable
-        List<String> levels = new ArrayList<>();
+        public List<String> levels = new ArrayList<>();
         @Serializable
-        List<String> worlds = new ArrayList<>();
+        public List<String> worlds = new ArrayList<>();
         @Serializable
-        List<String> biomes = new ArrayList<>();
+        public List<String> biomes = new ArrayList<>();
+
+        @Override
+        public int getWeight() {
+            return weight;
+        }
     }
 
-    public static class MobLootConfig implements ISerializable{
+    public static class MobLootConfig implements ISerializable {
         @Serializable
         public boolean vanilla = false;
         @Serializable
@@ -46,7 +86,7 @@ public class MobConfig extends IdFileConfig {
         @Serializable
         public SpecialConfig special = new SpecialConfig();
 
-        public static class SpecialConfig implements ISerializable{
+        public static class SpecialConfig implements ISerializable {
             @Serializable
             public double chance = 20d;
             @Serializable

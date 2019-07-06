@@ -1,11 +1,9 @@
 package cat.nyaa.infiniteinfernal.configs;
 
-import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.nyaacore.configuration.FileConfigure;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +42,8 @@ public class RegionConfig extends IdFileConfig {
 
             int z1 = location1.getBlockZ();
             int z2 = location2.getBlockZ();
+            this.location1 = location1;
+            this.location2 = location2;
             setRegion(x1,x2,y1,y2,z1,z2);
         }
 
@@ -52,11 +52,13 @@ public class RegionConfig extends IdFileConfig {
             int x1 = xMax;
             int x2 = xMin;
 
-            int y1 = 1;
-            int y2 = 1;
+            int y1 = yMax;
+            int y2 = yMin;
 
-            int z1 = 1;
-            int z2 = 1;
+            int z1 = zMax;
+            int z2 = zMin;
+            location1 = new Location(world, x1,y1,z1);
+            location2 = new Location(world, x2,y2,z2);
             setRegion(x1,x2,y1,y2,z1,z2);
         }
 
@@ -86,6 +88,9 @@ public class RegionConfig extends IdFileConfig {
         @Serializable
         public int zMin;
 
+        private Location location1;
+        private Location location2;
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -103,6 +108,15 @@ public class RegionConfig extends IdFileConfig {
         @Override
         public int hashCode() {
             return Objects.hash(world, xMax, xMin, yMax, yMin, zMax, zMin);
+        }
+
+        public boolean contains(Location location) {
+            try{
+                return BoundingBox.of(location1, location2).contains(location.toVector());
+            }catch (IllegalArgumentException e){
+                //todo: log
+                return false;
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.mob.MobManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class InfPlugin extends JavaPlugin {
@@ -9,6 +11,8 @@ public class InfPlugin extends JavaPlugin {
     Config config;
     I18n i18n;
     AdminCommands commands;
+    LootManager lootManager;
+    MobManager mobManager;
 
     @Override
     public void onEnable() {
@@ -20,11 +24,18 @@ public class InfPlugin extends JavaPlugin {
         i18n = new I18n(this, config.language);
         i18n.load();
         commands = new AdminCommands(this, i18n);
+        lootManager = LootManager.instance();
+        mobManager = MobManager.instance();
     }
 
     public void onReload() {
         config.load();
         i18n = new I18n(this,config.language);
         i18n.load();
+        LootManager.disable();
+    }
+
+    public Config config() {
+        return config;
     }
 }

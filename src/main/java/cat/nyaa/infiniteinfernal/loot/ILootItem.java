@@ -9,4 +9,5 @@ public interface ILootItem extends ISerializable {
     String toNbt();
     int getWeight(int level);
     boolean isDynamic();
+    void setDynamic(boolean dynamic);
 }

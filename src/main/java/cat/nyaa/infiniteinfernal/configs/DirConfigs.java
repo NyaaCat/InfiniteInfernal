@@ -5,6 +5,8 @@ import cat.nyaa.nyaacore.configuration.ISerializable;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,6 +32,10 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
 
     public T remove(int id){
         return configures.remove(id);
+    }
+
+    public Collection<T> values(){
+        return configures.values();
     }
 
     public void loadFromDir(){
@@ -62,5 +68,18 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
         if (!configures.isEmpty()) {
             configures.forEach((integer, t) -> t.save());
         }
+    }
+
+    public T parseId(String s) throws IllegalArgumentException {
+        String[] split = s.split("-");
+        if (split.length<2){
+            throw new IllegalArgumentException();
+        }
+        int id = Integer.parseInt(split[1]);
+        return this.configures.get(id);
+    }
+
+    public T get(int id) {
+        return configures.get(id);
     }
 }
