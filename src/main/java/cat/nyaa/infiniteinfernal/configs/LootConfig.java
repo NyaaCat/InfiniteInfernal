@@ -20,7 +20,6 @@ public class LootConfig extends FileConfigure {
         this.plugin = plugin;
     }
 
-
     @Serializable
     Map<String, ILootItem> lootItemMap = new LinkedHashMap<>();
     @Serializable(name = "map")

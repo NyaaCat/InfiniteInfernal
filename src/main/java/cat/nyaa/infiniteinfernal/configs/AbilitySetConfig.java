@@ -1,25 +1,24 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.nyaacore.configuration.FileConfigure;
-import org.bukkit.plugin.java.JavaPlugin;
+import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
 
-public class AbilitySetConfig extends FileConfigure {
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class AbilitySetConfig extends IdFileConfig {
     private InfPlugin plugin;
-    private int id;
 
-    public AbilitySetConfig(InfPlugin plugin, int id){
-        this.plugin = plugin;
-        this.id = id;
+    public AbilitySetConfig(int id) {
+        super(id);
     }
 
-    @Override
-    protected String getFileName() {
-        return "abilities/set-"+id+".yml";
-    }
+    @Serializable
+    Map<String, IAbility> abilities = new LinkedHashMap<>();
 
     @Override
-    protected JavaPlugin getPlugin() {
-        return plugin;
+    public String getPrefix() {
+        return "set";
     }
+
 }

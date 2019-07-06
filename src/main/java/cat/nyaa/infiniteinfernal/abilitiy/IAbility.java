@@ -1,4 +1,7 @@
 package cat.nyaa.infiniteinfernal.abilitiy;
 
-public interface IAbility {
+import cat.nyaa.nyaacore.configuration.ISerializable;
+
+public interface IAbility extends ISerializable {
+    String getName();
 }

@@ -1,12 +1,11 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
-import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.configs.WorldConfig;
+import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,14 +29,16 @@ public class Config extends PluginConfigure {
     public String nameTag = "[INFERNAL] {level.prefix} {mob.name} Level {Level.level}";
 
     @Serializable
+    public BossbarConfig bossbar = new BossbarConfig();
+
+    @Serializable
     public List<String> tags = new ArrayList<>();
 
     @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     //<STANDALONE CONFIGS>
-    public List<LevelConfig> levelConfigs = new ArrayList<>();
-    public List<AbilitySetConfig> abilities = new ArrayList<>();
+    public DirConfigs<AbilitySetConfig> dirConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "abilities/"));
 
     private void saveStandaloneConfigs() {
 
@@ -59,6 +60,5 @@ public class Config extends PluginConfigure {
         super.save();
         this.saveStandaloneConfigs();
     }
-
 
 }

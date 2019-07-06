@@ -10,13 +10,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.List;
 import java.util.Objects;
 
-public class RegionConfig extends FileConfigure {
-    private final InfPlugin plugin;
-    private int id;
+public class RegionConfig extends IdFileConfig {
 
-    public RegionConfig(InfPlugin plugin, int id, Region region){
-        this.plugin = plugin;
-        this.id = id;
+    public RegionConfig(int id){
+        super(id);
+    }
+
+    public RegionConfig(int id, Region region){
+        super(id);
         this.region = region;
     }
 
@@ -27,13 +28,8 @@ public class RegionConfig extends FileConfigure {
     public List<String> mobs;
 
     @Override
-    protected String getFileName() {
-        return "regions/region-"+id+".yml";
-    }
-
-    @Override
-    protected JavaPlugin getPlugin() {
-        return plugin;
+    public String getPrefix() {
+        return "region";
     }
 
     public static class Region implements ISerializable {
