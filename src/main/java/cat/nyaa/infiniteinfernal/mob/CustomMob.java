@@ -4,10 +4,10 @@ import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class CustomMob implements IMob {
@@ -31,8 +30,12 @@ public class CustomMob implements IMob {
     private List<IAbility> abilities;
     private int level;
     private boolean autoSpawn;
+    private boolean dropVanilla;
+    private EntityType entityType;
     private LivingEntity entity;
     private KeyedBossBar bossBar;
+    private String name;
+    private String taggedName;
 
     public CustomMob(MobConfig config, int level){
         this.config = config;
@@ -75,6 +78,10 @@ public class CustomMob implements IMob {
         //level
         this.level = level;
         this.autoSpawn = config.spawn.autoSpawn;
+        this.dropVanilla = config.loot.vanilla;
+        this.entityType = config.type;
+        this.name = config.name;
+        this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, name, level);
     }
 
     @Override
@@ -99,7 +106,7 @@ public class CustomMob implements IMob {
 
     @Override
     public EntityType getEntityType() {
-        return null;
+        return entityType;
     }
 
     @Override
@@ -138,16 +145,16 @@ public class CustomMob implements IMob {
 
     @Override
     public boolean dropVanilla() {
-        return false;
+        return dropVanilla;
     }
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
 
     @Override
     public String getTaggedName() {
-        return null;
+        return taggedName;
     }
 }
