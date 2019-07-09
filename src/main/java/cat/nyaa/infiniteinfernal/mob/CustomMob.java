@@ -174,4 +174,9 @@ public class CustomMob implements IMob {
     public void showParticleEffect() {
         //todo show effect
     }
+
+    @Override
+    public void autoRetarget() {
+        //todo auto retarget
+    }
 }

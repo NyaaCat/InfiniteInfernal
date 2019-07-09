@@ -26,4 +26,6 @@ public interface IMob {
     String getTaggedName();
 
     void showParticleEffect();
+
+    void autoRetarget();
 }

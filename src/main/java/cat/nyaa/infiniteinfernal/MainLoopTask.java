@@ -10,7 +10,21 @@ import java.util.Collection;
 import java.util.List;
 
 public class MainLoopTask {
-    int interval = 60;//todo config this
+    private static int interval = 60;//todo config this
+
+    private static MainLoopRunnable runnable;
+
+    public static void start(){
+        stop();
+        runnable = new MainLoopRunnable();
+        runnable.runTaskTimer(InfPlugin.plugin, 0, interval);
+    }
+
+    public static void stop(){
+        if (runnable != null) {
+            runnable.cancel();
+        }
+    }
 
     static class MainLoopRunnable extends BukkitRunnable {
 
@@ -20,6 +34,7 @@ public class MainLoopTask {
             if (!mobs.isEmpty()) {
                 mobs.forEach(iMob -> {
                     iMob.showParticleEffect();
+                    iMob.autoRetarget();
                     List<IAbility> abilities = iMob.getAbilities();
                     abilities.stream()
                             .filter(iAbility -> iAbility instanceof AbilityTick)
@@ -27,7 +42,6 @@ public class MainLoopTask {
                             .forEach(abilityTick -> abilityTick.tick(iMob));
                 });
             }
-
         }
     }
 }
