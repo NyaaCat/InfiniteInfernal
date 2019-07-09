@@ -169,4 +169,9 @@ public class CustomMob implements IMob {
     public String getTaggedName() {
         return taggedName;
     }
+
+    @Override
+    public void showParticleEffect() {
+        //todo show effect
+    }
 }

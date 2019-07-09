@@ -24,4 +24,6 @@ public interface IMob {
     boolean dropVanilla();
     String getName();
     String getTaggedName();
+
+    void showParticleEffect();
 }
