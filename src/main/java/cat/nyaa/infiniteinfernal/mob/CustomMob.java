@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob;
 
 import cat.nyaa.infiniteinfernal.Config;
+import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
@@ -16,10 +17,8 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class CustomMob implements IMob {
@@ -29,6 +28,7 @@ public class CustomMob implements IMob {
     private List<ILootItem> specialLoots;
     private List<IAbility> abilities;
     private int level;
+    private double specialChance;
     private boolean autoSpawn;
     private boolean dropVanilla;
     private EntityType entityType;
@@ -56,7 +56,7 @@ public class CustomMob implements IMob {
                     if (loot != null){
                         return loot;
                     }else {
-                        //todo: log error
+                        Bukkit.getLogger().log(Level.WARNING, I18n.format("error.custom_mob.no_loot", s));
                     }
                     return null;
                 })
@@ -71,7 +71,7 @@ public class CustomMob implements IMob {
                     Map<String, IAbility> abilities = abilitySetConfig.abilities;
                     this.abilities.addAll(abilities.values());
                 }catch (IllegalArgumentException e){
-                    //todo: log
+                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.abilities.bad_config", s));
                 }
             });
         }
@@ -81,17 +81,22 @@ public class CustomMob implements IMob {
         this.dropVanilla = config.loot.vanilla;
         this.entityType = config.type;
         this.name = config.name;
+        this.specialChance = config.loot.special.chance;
         this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, name, level);
     }
 
     @Override
-    public List<ILootItem> getLoots() {
-        return commonLoots;
+    public Map<ILootItem, Integer> getLoots() {
+        Map<ILootItem, Integer> result = new LinkedHashMap<>(commonLoots.size());
+        commonLoots.forEach(iLootItem -> result.put(iLootItem, iLootItem.getWeight(this.level)));
+        return result;
     }
 
     @Override
-    public List<ILootItem> getSpecialLoots() {
-        return specialLoots;
+    public Map<ILootItem, Integer> getSpecialLoots() {
+        Map<ILootItem, Integer> result = new LinkedHashMap<>(commonLoots.size());
+        specialLoots.forEach(iLootItem -> result.put(iLootItem, iLootItem.getWeight(this.level)));
+        return result;
     }
 
     @Override
@@ -125,8 +130,15 @@ public class CustomMob implements IMob {
     }
 
     @Override
+    public double getSpecialChance() {
+        return specialChance;
+    }
+
+    @Override
     public void makeInfernal(LivingEntity entity) {
         this.entity = entity;
+        entity.setCustomName(getTaggedName());
+        entity.setCustomNameVisible(true);
         createBossbar(entity);
     }
 

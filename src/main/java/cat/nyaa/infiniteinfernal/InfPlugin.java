@@ -33,6 +33,7 @@ public class InfPlugin extends JavaPlugin {
         i18n = new I18n(this,config.language);
         i18n.load();
         LootManager.disable();
+        MobManager.disable();
     }
 
     public Config config() {

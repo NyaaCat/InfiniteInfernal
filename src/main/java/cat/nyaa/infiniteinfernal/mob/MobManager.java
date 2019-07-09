@@ -1,13 +1,14 @@
 package cat.nyaa.infiniteinfernal.mob;
 
 import cat.nyaa.infiniteinfernal.Config;
+import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
-import javafx.util.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -15,14 +16,16 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class MobManager {
     private static MobManager instance;
 
     Map<UUID, IMob> uuidMap = new LinkedHashMap<>();
-    Map<String, MobConfig> nameMap = new LinkedHashMap<>();
-    Map<String, MobConfig> idMap = new LinkedHashMap<>();
+
+    Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
+    Map<String, MobConfig> idCfgMap = new LinkedHashMap<>();
     Map<Integer, List<MobConfig>> natualSpawnList = new LinkedHashMap<>();
 
     private MobManager() {
@@ -44,19 +47,6 @@ public class MobManager {
         instance = null;
     }
 
-    public LivingEntity spawnMobByName(String name, Location location, Integer level) {
-        MobConfig mobConfig = nameMap.get(name);
-        return spawnMobByConfig(mobConfig, location, level);
-    }
-
-    public LivingEntity spawnMobById(String mobId, Location location, Integer level) {
-        MobConfig iMob = nameMap.get(mobId);
-        if (iMob == null) {
-            throw new IllegalArgumentException();
-        }
-        return spawnMobByConfig(iMob, location, level);
-    }
-
     private LivingEntity spawnMobByConfig(MobConfig config, Location location, Integer level) {
         EntityType entityType = config.type;
         World world = location.getWorld();
@@ -71,10 +61,28 @@ public class MobManager {
                 CustomMob customMob = new CustomMob(config, level);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
                 customMob.makeInfernal(spawn);
+                uuidMap.put(spawn.getUniqueId(), customMob);
                 return spawn;
             }
         }
         return null;
+    }
+
+    public Collection<IMob> getMobs(){
+        return uuidMap.values();
+    }
+
+    public LivingEntity spawnMobByName(String name, Location location, Integer level) {
+        MobConfig mobConfig = nameCfgMap.get(name);
+        return spawnMobByConfig(mobConfig, location, level);
+    }
+
+    public LivingEntity spawnMobById(String mobId, Location location, Integer level) {
+        MobConfig iMob = idCfgMap.get(mobId);
+        if (iMob == null) {
+            throw new IllegalArgumentException();
+        }
+        return spawnMobByConfig(iMob, location, level);
     }
 
     public Entity natualSpawn(EntityType type, Location location) {
@@ -93,14 +101,16 @@ public class MobManager {
                     String[] split = mobs.split(":");
                     String mobId = split[0];
                     int mobWeight = Integer.parseInt(split[1]);
-                    MobConfig iMob = idMap.get(mobId);
+                    MobConfig iMob = idCfgMap.get(mobId);
                     if (iMob == null) {
-                        //todo: log
+                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
                         return;
                     }
                     spawnConfs.add(new WeightedPair<>(iMob, 0, mobWeight));
-                } catch (Exception e) {
-                    //todo: log
+                } catch (NumberFormatException e) {
+                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
+                } catch (Exception e){
+                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.bad_config", mobs));
                 }
             });
         });

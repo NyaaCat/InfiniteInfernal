@@ -64,15 +64,15 @@ public class WorldConfig implements ISerializable {
 
         public static class LootingModifiers implements ISerializable{
             @Serializable
-            LootingModifier inc = new LootingModifier();
+            public LootingModifier inc = new LootingModifier();
             @Serializable
-            LootingModifier dec = new LootingModifier();
+            public LootingModifier dec = new LootingModifier();
 
             public static class LootingModifier{
                 @Serializable
-                List<String> enchant = new ArrayList<>();
+                public List<String> enchant = new ArrayList<>();
                 @Serializable
-                List<String> effect = new ArrayList<>();
+                public List<String> effect = new ArrayList<>();
             }
         }
     }

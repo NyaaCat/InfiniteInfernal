@@ -7,16 +7,18 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IMob {
-    List<ILootItem> getLoots();
-    List<ILootItem> getSpecialLoots();
+    Map<ILootItem, Integer> getLoots();
+    Map<ILootItem, Integer> getSpecialLoots();
     List<IAbility> getAbilities();
     LivingEntity getEntity();
     EntityType getEntityType();
     KeyedBossBar getBossBar();
     int getLevel();
     double getDamage();
+    double getSpecialChance();
     void makeInfernal(LivingEntity entity);
     boolean isAutoSpawn();
     boolean dropVanilla();
