@@ -18,6 +18,7 @@ public interface IMob {
     KeyedBossBar getBossBar();
     int getLevel();
     double getDamage();
+    double getMaxHealth();
     double getSpecialChance();
     void makeInfernal(LivingEntity entity);
     boolean isAutoSpawn();
@@ -28,4 +29,7 @@ public interface IMob {
     void showParticleEffect();
 
     void autoRetarget();
+
+    LivingEntity getTarget();
+    boolean isTarget(LivingEntity target);
 }

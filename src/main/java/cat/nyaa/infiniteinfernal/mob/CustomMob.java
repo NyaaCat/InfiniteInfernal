@@ -11,11 +11,14 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -130,6 +133,11 @@ public class CustomMob implements IMob {
     }
 
     @Override
+    public double getMaxHealth() {
+        return InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
+    }
+
+    @Override
     public double getSpecialChance() {
         return specialChance;
     }
@@ -139,6 +147,12 @@ public class CustomMob implements IMob {
         this.entity = entity;
         entity.setCustomName(getTaggedName());
         entity.setCustomNameVisible(true);
+        AttributeInstance damageAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        AttributeInstance maxHealthAttr = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        Objects.requireNonNull(damageAttr);
+        Objects.requireNonNull(maxHealthAttr);
+        damageAttr.setBaseValue(getDamage());
+        maxHealthAttr.setBaseValue(getMaxHealth());
         createBossbar(entity);
     }
 
@@ -178,5 +192,17 @@ public class CustomMob implements IMob {
     @Override
     public void autoRetarget() {
         //todo auto retarget
+    }
+
+    @Override
+    public LivingEntity getTarget() {
+        return entity instanceof Mob ? ((Mob) entity).getTarget() : null;
+    }
+
+    @Override
+    public boolean isTarget(LivingEntity target) {
+        LivingEntity mobTarget = getTarget();
+        if (mobTarget == null)return false;
+        return target.equals(mobTarget);
     }
 }

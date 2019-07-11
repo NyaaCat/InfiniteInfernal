@@ -26,6 +26,7 @@ public class InfPlugin extends JavaPlugin {
         commands = new AdminCommands(this, i18n);
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
+        MainLoopTask.start();
     }
 
     public void onReload() {
@@ -34,6 +35,7 @@ public class InfPlugin extends JavaPlugin {
         i18n.load();
         LootManager.disable();
         MobManager.disable();
+        MainLoopTask.stop();
     }
 
     public Config config() {

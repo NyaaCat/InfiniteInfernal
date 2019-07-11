@@ -1,7 +1,6 @@
 package cat.nyaa.infiniteinfernal.loot;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.nyaacore.configuration.ISerializable;
 import org.bukkit.inventory.ItemStack;
 
 public class EnchantmentBookLootItem implements ILootItem {
@@ -40,5 +39,10 @@ public class EnchantmentBookLootItem implements ILootItem {
     public boolean isDynamic() {
         //todo
         return false;
+    }
+
+    @Override
+    public void setDynamic(boolean dynamic) {
+        //todo
     }
 }

@@ -23,6 +23,7 @@ public class MobManager {
     private static MobManager instance;
 
     Map<UUID, IMob> uuidMap = new LinkedHashMap<>();
+    Map<World, List<IMob>> worldMobMap = new LinkedHashMap<>();
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
     Map<String, MobConfig> idCfgMap = new LinkedHashMap<>();
@@ -47,7 +48,7 @@ public class MobManager {
         instance = null;
     }
 
-    private LivingEntity spawnMobByConfig(MobConfig config, Location location, Integer level) {
+    private IMob spawnMobByConfig(MobConfig config, Location location, Integer level) {
         EntityType entityType = config.type;
         World world = location.getWorld();
         if (world != null) {
@@ -61,8 +62,8 @@ public class MobManager {
                 CustomMob customMob = new CustomMob(config, level);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
                 customMob.makeInfernal(spawn);
-                uuidMap.put(spawn.getUniqueId(), customMob);
-                return spawn;
+                registerMob(customMob);
+                return customMob;
             }
         }
         return null;
@@ -72,12 +73,12 @@ public class MobManager {
         return uuidMap.values();
     }
 
-    public LivingEntity spawnMobByName(String name, Location location, Integer level) {
+    public IMob spawnMobByName(String name, Location location, Integer level) {
         MobConfig mobConfig = nameCfgMap.get(name);
         return spawnMobByConfig(mobConfig, location, level);
     }
 
-    public LivingEntity spawnMobById(String mobId, Location location, Integer level) {
+    public IMob spawnMobById(String mobId, Location location, Integer level) {
         MobConfig iMob = idCfgMap.get(mobId);
         if (iMob == null) {
             throw new IllegalArgumentException();
@@ -85,7 +86,7 @@ public class MobManager {
         return spawnMobByConfig(iMob, location, level);
     }
 
-    public Entity natualSpawn(EntityType type, Location location) {
+    public IMob natualSpawn(EntityType type, Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
@@ -153,5 +154,23 @@ public class MobManager {
                 return null;
             }
         }
+    }
+
+    public void registerMob( IMob mob){
+        uuidMap.put(mob.getEntity().getUniqueId(), mob);
+        World world = mob.getEntity().getWorld();
+        List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
+        iMobs.add(mob);
+    }
+
+    public void removeMob(IMob mob){
+        World world = mob.getEntity().getWorld();
+        uuidMap.remove(mob.getEntity().getUniqueId());
+        List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
+        iMobs.remove(mob);
+    }
+
+    public List<IMob> getMobsInWorld(World world) {
+        return worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
     }
 }
