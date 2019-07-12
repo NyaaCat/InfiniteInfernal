@@ -1,13 +1,14 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilitySpawn;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
-public class AbilityArmor extends BaseAbility implements AbilitySpawn {
+public class AbilityArmor extends AbilityPassive implements AbilitySpawn {
     @Serializable
     public String head = "";
     @Serializable

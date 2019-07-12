@@ -1,8 +1,8 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class AbilityStuck extends BaseAbility implements AbilityTick {
-    @Serializable
-    public double chance = 0.5;
+public class AbilityStuck extends ActiveAbility {
     @Serializable
     public int duration = 60;
 
@@ -32,11 +30,10 @@ public class AbilityStuck extends BaseAbility implements AbilityTick {
     private boolean inited = false;
 
     @Override
-    public void tick(IMob iMob) {
-        if (!Utils.possibility(chance))return;
+    public void active(IMob iMob) {
         if(!inited)init();
 
-        List<LivingEntity> candidates = Utils.getValidTarget(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
+        List<LivingEntity> candidates = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidates);
         victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10));

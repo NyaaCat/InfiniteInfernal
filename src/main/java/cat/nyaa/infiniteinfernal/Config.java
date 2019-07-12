@@ -24,7 +24,7 @@ public class Config extends PluginConfigure {
     public String language = "en_US";
 
     @Serializable
-    public String nameTag = "[INFERNAL] {level.prefix} {mob.name} Level {Level.level}";
+    public String nameTag = "[INFERNAL] {level.prefix} {mob.type} Level {Level.level}";
 
     @Serializable
     public BossbarConfig bossbar = new BossbarConfig();

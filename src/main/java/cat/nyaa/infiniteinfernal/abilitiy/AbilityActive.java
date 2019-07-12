@@ -2,6 +2,6 @@ package cat.nyaa.infiniteinfernal.abilitiy;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
 
-public interface AbilityTick {
-    void tick(IMob iMob);
+public interface AbilityActive {
+    void active(IMob iMob);
 }

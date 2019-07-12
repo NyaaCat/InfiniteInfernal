@@ -205,4 +205,9 @@ public class CustomMob implements IMob {
         if (mobTarget == null)return false;
         return target.equals(mobTarget);
     }
+
+    @Override
+    public MobConfig getConfig() {
+        return this.config;
+    }
 }

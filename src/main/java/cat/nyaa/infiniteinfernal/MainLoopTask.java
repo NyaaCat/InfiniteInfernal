@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityActive;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
@@ -41,9 +41,9 @@ public class MainLoopTask {
         iMob.autoRetarget();
         List<IAbility> abilities = iMob.getAbilities();
         abilities.stream()
-                .filter(iAbility -> iAbility instanceof AbilityTick)
-                .map(iAbility -> ((AbilityTick) iAbility))
-                .forEach(abilityTick -> abilityTick.tick(iMob));
+                .filter(iAbility -> iAbility instanceof AbilityActive)
+                .map(iAbility -> ((AbilityActive) iAbility))
+                .forEach(abilityTick -> abilityTick.active(iMob));
     }
 
     static class MainLoopRunnable extends BukkitRunnable {
@@ -87,7 +87,7 @@ public class MainLoopTask {
         void tick() {
             if (mobEffectQueue.isEmpty()) return;
 //            if (!previousTaskFinished && !overload){
-//                getLogger().log(Level.WARNING, "previous server tick didn't finished, maybe there's too much task to do.");
+//                getLogger().log(Level.WARNING, "previous server active didn't finished, maybe there's too much task to do.");
 //                overload = true;
 //            }else if (overload){
 //

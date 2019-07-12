@@ -1,6 +1,6 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
@@ -12,9 +12,7 @@ import org.bukkit.entity.LivingEntity;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AbilitySummonOnPlayer extends BaseAbility implements AbilityTick {
-    @Serializable
-    public double chance = 0.1;
+public class AbilitySummonOnPlayer extends ActiveAbility {
     @Serializable
     public String nbt = "";
     @Serializable
@@ -25,9 +23,8 @@ public class AbilitySummonOnPlayer extends BaseAbility implements AbilityTick {
     public EntityType type = EntityType.ZOMBIE;
 
     @Override
-    public void tick(IMob iMob) {
-        if (!Utils.possibility(chance))return;
-        List<LivingEntity> candidate = Utils.getValidTarget(iMob, iMob.getEntity().getNearbyEntities(radius, radius, radius))
+    public void active(IMob iMob) {
+        List<LivingEntity> candidate = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(radius, radius, radius))
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidate);
 
@@ -42,6 +39,6 @@ public class AbilitySummonOnPlayer extends BaseAbility implements AbilityTick {
 
     @Override
     public String getName() {
-        return "Summon";
+        return "SummonOnPlayer";
     }
 }

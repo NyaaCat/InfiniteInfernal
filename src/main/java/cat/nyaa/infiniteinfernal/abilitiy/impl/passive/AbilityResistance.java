@@ -1,10 +1,11 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityHurt;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-public class AbilityResistance extends BaseAbility implements AbilityHurt {
+public class AbilityResistance extends AbilityPassive implements AbilityHurt {
 
     @Serializable
     public double percentile = 0;

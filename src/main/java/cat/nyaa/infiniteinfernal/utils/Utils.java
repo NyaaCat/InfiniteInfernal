@@ -1,21 +1,23 @@
 package cat.nyaa.infiniteinfernal.utils;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
@@ -103,7 +105,12 @@ public class Utils {
         return random.nextDouble();
     }
 
-    public static Stream<LivingEntity> getValidTarget(IMob iMob, List<Entity> nearbyEntities) {
+    public static LivingEntity randomSelectTarget(IMob iMob, double range){
+        return Utils.randomPick(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range)).collect(Collectors.toList()));
+    }
+
+    //todo: implement another to Aggro system
+    public static Stream<LivingEntity> getValidTargets(IMob iMob, Collection<Entity> nearbyEntities) {
         return nearbyEntities.stream()
                 .filter(entity -> (entity instanceof Player && validGamemode((Player) entity)) || (entity instanceof LivingEntity && iMob.isTarget((LivingEntity) entity)))
                 .map(entity -> ((LivingEntity) entity));
@@ -141,5 +148,67 @@ public class Utils {
         Block lowerBlock = block.getRelative(BlockFace.DOWN);
         Block upperBlock = block.getRelative(BlockFace.UP);
         return !block.getType().isSolid() && !upperBlock.getType().isSolid() && lowerBlock.getType().isSolid() && block.getType().isBlock();
+    }
+
+    public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {
+        PotionEffectType eff = PotionEffectType.getByName(effect);
+        if (eff!=null) {
+            target.addPotionEffect(eff.createEffect(duration, amplifier));
+        }else{
+            throw new IllegalConfigException("effect " + effect+ " in ability "+ ability +" don't exists");
+        }
+    }
+
+    public static PotionEffectType parseEffect(String effect, String ability) {
+        PotionEffectType eff = PotionEffectType.getByName(effect);
+        if (eff!=null) {
+            return eff;
+        }else{
+            throw new IllegalConfigException("effect " + effect+ " in ability "+ ability +" don't exists");
+        }
+    }
+
+    public static Double random(double lower, double upper) {
+        return random.nextDouble() * (upper-lower) + lower;
+    }
+
+
+    private static final Vector x_axis = new Vector(1, 0, 0);
+    private static final Vector y_axis = new Vector(0, 1, 0);
+    private static final Vector z_axis = new Vector(0, 0, 1);
+
+    public static Vector cone(Vector direction, double cone) {
+        double phi = Utils.random() * 360;
+        double theta = Utils.random() * cone;
+        Vector clone = direction.clone();
+        Vector crossP;
+
+        if (clone.length() == 0) return direction;
+
+        if (clone.getX() != 0 && clone.getZ() != 0) {
+            crossP = clone.getCrossProduct(y_axis);
+        } else if (clone.getX() != 0 && clone.getY() != 0) {
+            crossP = clone.getCrossProduct(z_axis);
+        } else {
+            crossP = clone.getCrossProduct(x_axis);
+        }
+        crossP.normalize();
+
+        clone.add(crossP.multiply(Math.tan(Math.toRadians(theta))));
+        clone.rotateAroundNonUnitAxis(direction, Math.toRadians(phi));
+        return clone;
+    }
+
+    public static Object parseExtraData(String extraData) {
+        try {
+            String[] split = extraData.split(",", 4);
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            float size = Float.parseFloat(split[3]);
+            return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
+        }catch (Exception e){
+            return null;
+        }
     }
 }

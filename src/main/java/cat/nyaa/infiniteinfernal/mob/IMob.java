@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob;
 
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
@@ -32,4 +33,6 @@ public interface IMob {
 
     LivingEntity getTarget();
     boolean isTarget(LivingEntity target);
+
+    MobConfig getConfig();
 }

@@ -1,17 +1,16 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityHurt;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-public class AbilityThorns extends BaseAbility implements AbilityHurt {
+public class AbilityThorns extends AbilityPassive implements AbilityHurt {
     @Serializable
     public double percentile = 10;
-    @Serializable
-    public double chance = 0.5;
 
     @Override
     public void onHurtByPlayer(IMob mob, EntityDamageByEntityEvent event) {

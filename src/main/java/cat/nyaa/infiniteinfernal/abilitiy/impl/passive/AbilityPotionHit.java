@@ -1,13 +1,14 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityAttack;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.potion.PotionEffectType;
 
-public class AbilityPotionHit extends BaseAbility implements AbilityAttack {
+public class AbilityPotionHit extends AbilityPassive implements AbilityAttack {
     @Serializable
-    public PotionEffectType effect = PotionEffectType.HARM;
+    public String effect = "HARM";
     @Serializable
     public int duration = 1;
     @Serializable
@@ -20,6 +21,6 @@ public class AbilityPotionHit extends BaseAbility implements AbilityAttack {
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        target.addPotionEffect(effect.createEffect(duration,amplifier));
+        Utils.doEffect(effect, target, duration, amplifier, getName());
     }
 }

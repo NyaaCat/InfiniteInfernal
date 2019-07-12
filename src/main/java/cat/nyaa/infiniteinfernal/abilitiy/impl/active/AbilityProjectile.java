@@ -1,8 +1,8 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityAttack;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.Entity;
@@ -14,10 +14,7 @@ import org.bukkit.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AbilityProjectile extends BaseAbility implements AbilityTick, AbilityAttack {
-    private static final Vector x_axis = new Vector(1, 0, 0);
-    private static final Vector y_axis = new Vector(0, 1, 0);
-    private static final Vector z_axis = new Vector(0, 0, 1);
+public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
 
     @Serializable
     public int range = 30;
@@ -39,7 +36,7 @@ public class AbilityProjectile extends BaseAbility implements AbilityTick, Abili
     public int burstInterval = 10;
 
     private Projectile launch(LivingEntity mobEntity, Entity target, Vector vector, boolean isExtra) {
-        vector = addCone(vector);
+        vector = Utils.cone(vector, cone);
         Projectile projectile = mobEntity.launchProjectile(this.projectile.getClass(), vector);
         projectile.setGravity(gravity);
         Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
@@ -48,10 +45,10 @@ public class AbilityProjectile extends BaseAbility implements AbilityTick, Abili
 
 
     @Override
-    public void tick(IMob iMob) {
+    public void active(IMob iMob) {
         if (!Utils.possibility(perCycleChance)) return;
         LivingEntity mobEntity = iMob.getEntity();
-        Stream<LivingEntity> validTarget = Utils.getValidTarget(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
+        Stream<LivingEntity> validTarget = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
         LivingEntity target = Utils.randomPick(validTarget.collect(Collectors.toList()));
         if (target == null) return;
         if (!mobEntity.hasLineOfSight(target)) return;
@@ -61,28 +58,6 @@ public class AbilityProjectile extends BaseAbility implements AbilityTick, Abili
         do {
             launch(mobEntity, target, vector, false);
         } while (++i < burstInterval);
-    }
-
-    private Vector addCone(Vector vector) {
-        double phi = Utils.random() * 360;
-        double theta = Utils.random() * cone;
-        Vector clone = vector.clone();
-        Vector crossP;
-
-        if (clone.length() == 0) return vector;
-
-        if (clone.getX() != 0 && clone.getZ() != 0) {
-            crossP = clone.getCrossProduct(y_axis);
-        } else if (clone.getX() != 0 && clone.getY() != 0) {
-            crossP = clone.getCrossProduct(z_axis);
-        } else {
-            crossP = clone.getCrossProduct(x_axis);
-        }
-        crossP.normalize();
-
-        clone.add(crossP.multiply(Math.tan(Math.toRadians(theta))));
-        clone.rotateAroundNonUnitAxis(vector, Math.toRadians(phi));
-        return clone;
     }
 
     @Override

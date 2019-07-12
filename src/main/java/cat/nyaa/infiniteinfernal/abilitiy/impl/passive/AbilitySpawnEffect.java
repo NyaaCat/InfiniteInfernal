@@ -1,30 +1,19 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 
+import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilitySpawn;
+import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 
-public class AbilitySpawnEffect extends BaseAbility implements AbilitySpawn {
+public class AbilitySpawnEffect extends AbilityPassive implements AbilitySpawn {
     @Serializable
-    public Particle particle = Particle.LAVA;
-    @Serializable
-    public double offsetX = 0;
-    @Serializable
-    public double offsetY = 0;
-    @Serializable
-    public double offsetZ = 0;
-    @Serializable
-    public double speed = 1;
-    @Serializable
-    public int amount;
-    @Serializable
-    public boolean force = false;
-    @Serializable
-    public String extraData = "";
+    public ParticleConfig particle = new ParticleConfig();
+
     @Serializable
     public boolean particleEnabled = true;
 
@@ -42,13 +31,12 @@ public class AbilitySpawnEffect extends BaseAbility implements AbilitySpawn {
         LivingEntity entity = iMob.getEntity();
         Location location = entity.getLocation();
         World world = entity.getWorld();
-        world.spawnParticle(particle, location, amount, offsetX, offsetY, offsetZ, speed, parseExtraData(), force);
-        world.playSound(location, sound, (float) volume, (float) pitch);
-    }
-
-    private Object parseExtraData() {
-        //todo
-        return null;
+        if (particleEnabled){
+            world.spawnParticle(particle.type, location, particle.amount, particle.getOffsetX(), particle.getOffsetY(), particle.getOffsetZ(), particle.speed, Utils.parseExtraData(particle.extraData), particle.forced);
+        }
+        if (soundEnabled){
+            world.playSound(location, sound, (float) volume, (float) pitch);
+        }
     }
 
     @Override

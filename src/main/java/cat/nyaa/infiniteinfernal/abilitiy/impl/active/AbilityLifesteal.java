@@ -1,7 +1,7 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityAttack;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.attribute.Attribute;
@@ -10,9 +10,7 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.List;
 
-public class AbilityLifesteal extends BaseAbility implements AbilityAttack, AbilityTick {
-    @Serializable
-    public double chance = 0.5;
+public class AbilityLifesteal extends ActiveAbility implements AbilityAttack {
     @Serializable
     public double suck = 10;
     @Serializable
@@ -20,14 +18,13 @@ public class AbilityLifesteal extends BaseAbility implements AbilityAttack, Abil
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (!Utils.possibility(chance)) return;
         fire(mob, target);
     }
 
     @Override
-    public void tick(IMob iMob) {
+    public void active(IMob iMob) {
         List<Entity> nearbyEntities = iMob.getEntity().getNearbyEntities(10, 10, 10);
-        Utils.getValidTarget(iMob, nearbyEntities)
+        Utils.getValidTargets(iMob, nearbyEntities)
                 .forEach(livingEntity -> fire(iMob, livingEntity));
     }
 

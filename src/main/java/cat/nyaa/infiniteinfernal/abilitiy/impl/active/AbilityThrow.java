@@ -1,22 +1,22 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Projectile;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class AbilityThrow extends BaseAbility implements AbilityTick {
-    @Serializable
-    public double chance = 0.1;
+public class AbilityThrow extends ActiveAbility {
 
     @Serializable
     public String entityData = "";
@@ -26,8 +26,7 @@ public class AbilityThrow extends BaseAbility implements AbilityTick {
     public double speed = 3;
 
     @Override
-    public void tick(IMob iMob) {
-        if (!Utils.possibility(chance))return;
+    public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
         if (mobEntity instanceof Mob){
             LivingEntity target = ((Mob) mobEntity).getTarget();

@@ -1,8 +1,8 @@
-package cat.nyaa.infiniteinfernal.abilitiy.impl;
+package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityAttack;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityTick;
+import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
@@ -14,7 +14,7 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 
-public class AbilityThrowPlayer extends BaseAbility implements AbilityAttack, AbilityTick {
+public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
     @Serializable
     public double tickChance = 0.1;
     @Serializable
@@ -31,12 +31,12 @@ public class AbilityThrowPlayer extends BaseAbility implements AbilityAttack, Ab
     }
 
     @Override
-    public void tick(IMob iMob) {
+    public void active(IMob iMob) {
         if (!Utils.possibility(tickChance))return;
 
         LivingEntity mobEntity = iMob.getEntity();
         List<Entity> nearbyEntities = mobEntity.getNearbyEntities(20, 20, 20);
-        Utils.getValidTarget(iMob, nearbyEntities)
+        Utils.getValidTargets(iMob, nearbyEntities)
                 .forEach(this::launch);
     }
 

@@ -48,7 +48,7 @@ public class MobManager {
         instance = null;
     }
 
-    private IMob spawnMobByConfig(MobConfig config, Location location, Integer level) {
+    public IMob spawnMobByConfig(MobConfig config, Location location, Integer level) {
         EntityType entityType = config.type;
         World world = location.getWorld();
         if (world != null) {
