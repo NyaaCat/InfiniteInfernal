@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+String minecraftVersion = "1.13.2"
+
+group 'NyaaCat'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'Spigot'
+        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+    maven {
+        name 'NyaaCentral'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
+    implementation 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
+
+    implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
+
+}
