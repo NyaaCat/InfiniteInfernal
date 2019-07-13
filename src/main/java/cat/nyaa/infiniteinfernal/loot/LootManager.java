@@ -2,25 +2,28 @@ package cat.nyaa.infiniteinfernal.loot;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
+import cat.nyaa.infiniteinfernal.configs.LootConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig.LootingConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig.LootingConfig.LootingModifiers;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import com.google.common.util.concurrent.AtomicDouble;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class LootManager {
     private static LootManager instance;
+    private LootConfig lootConfig;
     private final InfPlugin plugin;
     private Map<Integer, List<ILootItem>> commonDrops = new LinkedHashMap<>();
     private Map<String, ILootItem> lootItemMap = new LinkedHashMap<>();
@@ -28,6 +31,8 @@ public class LootManager {
 
     private LootManager(InfPlugin plugin) {
         this.plugin = plugin;
+        lootConfig = new LootConfig(plugin);
+        this.load();
     }
 
     public static LootManager instance() {
@@ -42,6 +47,7 @@ public class LootManager {
     }
 
     public static void disable() {
+        instance.save();
         instance = null;
     }
 
@@ -82,7 +88,7 @@ public class LootManager {
     public static ILootItem makeDrop(Player killer, IMob iMob) {
         World world = killer.getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
-        int overallShift = getShift(killer, lootCfg.overall);
+        double overallShift = getShift(killer, lootCfg.overall);
         double global = lootCfg.global + overallShift;
         if (!Utils.possibility(global / 100d)) {
             return null;
@@ -91,7 +97,7 @@ public class LootManager {
         if (loots.isEmpty()) {
             return null;
         }
-        int dynamicShift = getShift(killer, lootCfg.dynamic);
+        double dynamicShift = getShift(killer, lootCfg.dynamic);
         Map<ILootItem, Integer> balanced = balance(loots, overallShift, dynamicShift);
         return Utils.weightedRandomPick(balanced);
     }
@@ -104,89 +110,75 @@ public class LootManager {
         World world = killer.getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         Map<ILootItem, Integer> specialLoots = iMob.getSpecialLoots();
-        int dynamicShift = getShift(killer, lootCfg.dynamic);
+        double dynamicShift = getShift(killer, lootCfg.dynamic);
         Map<ILootItem, Integer> balanced = balance(specialLoots, 0, dynamicShift);
         return Utils.weightedRandomPick(balanced);
     }
 
-    private static Map<ILootItem, Integer> balance(Map<ILootItem, Integer> loots, int overallShift, int dynamicShift) {
+    private static Map<ILootItem, Integer> balance(Map<ILootItem, Integer> loots, double overallShift, double dynamicShift) {
         Map<ILootItem, Integer> result = new LinkedHashMap<>(loots.size());
         if (loots.size() <= 0) {
             return result;
         }
         loots.forEach((item, value) -> {
-            int weight = value + overallShift;
+            double weight = value + overallShift;
             if (item.isDynamic()) {
                 double temp = weight;
                 temp *= ((dynamicShift / 100d) + 1);
                 weight = (int) Math.ceil(temp);
             }
-            result.put(item, weight);
+            result.put(item, (int) weight);
         });
         return result;
     }
 
-    private static int getShift(Player killer, LootingModifiers overall) {
-        List<String> incEffectStrs = overall.inc.effect;
-        List<String> incEnchantStrs = overall.inc.enchant;
-        List<String> decEffectStrs = overall.dec.effect;
-        List<String> decEnchantStrs = overall.dec.enchant;
-        try {
-            Map<PotionEffectType, Integer> incEffects = parseEffect(incEffectStrs);
-            Map<PotionEffectType, Integer> decEffects = parseEffect(decEffectStrs);
-            Map<Enchantment, Integer> incEnchants = parseEnchant(incEnchantStrs);
-            Map<Enchantment, Integer> decEnchants = parseEnchant(decEnchantStrs);
+    private static List<ICorrector> incs;
+    private static List<ICorrector> decs;
 
-            Collection<PotionEffect> activePotionEffects = killer.getActivePotionEffects();
-            Map<Enchantment, Integer> enchantments = killer.getInventory().getItemInMainHand().getEnchantments();
-            AtomicInteger weightShift = new AtomicInteger();
-            activePotionEffects.stream().parallel()
-                    .forEach(potionEffect -> {
-                        PotionEffectType type = potionEffect.getType();
-                        if (incEffects.containsKey(type)) {
-                            weightShift.addAndGet(incEffects.get(type) * potionEffect.getAmplifier());
-                        }
-                        if (decEffects.containsKey(type)) {
-                            weightShift.addAndGet(-(decEffects.get(type) * potionEffect.getAmplifier()));
-                        }
-                    });
-            enchantments.forEach((enchantment, level) -> {
-                if (incEnchants.containsKey(enchantment)) {
-                    weightShift.addAndGet(incEnchants.get(enchantment) * level);
-                }
-                if (decEnchants.containsKey(enchantment)) {
-                    weightShift.addAndGet(-(decEnchants.get(enchantment) * level));
-                }
-            });
+    private static double getShift(Player killer, LootingModifiers overall) {
+        try {
+            if (incs == null || decs == null) {
+                incs = CorrectionParser.parseStrs(overall.inc);
+                decs = CorrectionParser.parseStrs(overall.dec);
+            }
+            AtomicDouble weightShift = new AtomicDouble(0);
+            if (!incs.isEmpty()) {
+                incs.forEach(iCorrection -> {
+                    weightShift.getAndAdd(iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand()));
+                });
+            }
+            if (!decs.isEmpty()) {
+                decs.forEach(iCorrection -> {
+                    weightShift.getAndAdd(iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand()));
+                });
+            }
+//            Collection<PotionEffect> activePotionEffects = killer.getActivePotionEffects();
+//            Map<Enchantment, Integer> enchantments = killer.getInventory().getItemInMainHand().getEnchantments();
+//            activePotionEffects.stream().parallel()
+//                    .forEach(potionEffect -> {
+//                        PotionEffectType type = potionEffect.getType();
+//                        if (incEffects.containsKey(type)) {
+//                            weightShift.addAndGet(incEffects.get(type) * potionEffect.getAmplifier());
+//                        }
+//                        if (decEffects.containsKey(type)) {
+//                            weightShift.addAndGet(-(decEffects.get(type) * potionEffect.getAmplifier()));
+//                        }
+//                    });
+//            enchantments.forEach((enchantment, level) -> {
+//                if (incEnchants.containsKey(enchantment)) {
+//                    weightShift.addAndGet(incEnchants.get(enchantment) * level);
+//                }
+//                if (decEnchants.containsKey(enchantment)) {
+//                    weightShift.addAndGet(-(decEnchants.get(enchantment) * level));
+//                }
+//            });
             return weightShift.get();
         } catch (Exception ex) {
             throw new IllegalConfigException();
         }
     }
 
-    private static Map<PotionEffectType, Integer> parseEffect(List<String> effect) {
-        Map<PotionEffectType, Integer> effects = new LinkedHashMap<>(effect.size());
-        if (!effect.isEmpty()) {
-            effect.forEach(s -> {
-                String[] split = s.split(":");
-                PotionEffectType effectType = PotionEffectType.getByName(split[0]);
-                effects.put(effectType, Integer.valueOf(split[1]));
-            });
-        }
-        return effects;
-    }
 
-    private static Map<Enchantment, Integer> parseEnchant(List<String> enchant) {
-        Map<Enchantment, Integer> enchants = new LinkedHashMap<>(enchant.size());
-        if (!enchant.isEmpty()) {
-            enchant.forEach(s -> {
-                String[] split = s.split(":");
-                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(split[0]));
-                enchants.put(enchantment, Integer.valueOf(split[1]));
-            });
-        }
-        return enchants;
-    }
 
     public static int getWeightForLevel(ILootItem lootItem, int level) {
         Map<ILootItem, Map<Integer, Integer>> itemWeightMap = instance.itemWeightMap;
@@ -196,6 +188,16 @@ public class LootManager {
         } else {
             return -1;
         }
+    }
+
+    public void load() {
+        lootConfig.load();
+        incs = null;
+        decs = null;
+    }
+
+    public void save(){
+        lootConfig.save();
     }
 
     public static void serializeDrops(Map<String, ILootItem> lootItemMap, Map<String, Map<String, Integer>> lootMap) {
