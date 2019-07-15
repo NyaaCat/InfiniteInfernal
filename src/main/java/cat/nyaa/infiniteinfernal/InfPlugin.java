@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +14,7 @@ public class InfPlugin extends JavaPlugin {
     AdminCommands commands;
     LootManager lootManager;
     MobManager mobManager;
+    public ISpawnControler spawnControler;
 
     @Override
     public void onEnable() {
@@ -46,5 +48,9 @@ public class InfPlugin extends JavaPlugin {
 
     public Config config() {
         return config;
+    }
+
+    public ISpawnControler getSpawnControler() {
+        return spawnControler;
     }
 }

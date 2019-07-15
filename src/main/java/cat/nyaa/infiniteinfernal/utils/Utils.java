@@ -151,7 +151,7 @@ public class Utils {
     public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {
         PotionEffectType eff = PotionEffectType.getByName(effect);
         if (eff != null) {
-            target.addPotionEffect(eff.createEffect(duration, amplifier));
+            target.addPotionEffect(eff.createEffect(duration, amplifier), true);
         } else {
             throw new IllegalConfigException("effect " + effect + " in ability " + ability + " don't exists");
         }

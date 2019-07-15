@@ -1,11 +1,12 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityActive;
-import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -39,8 +40,8 @@ public class MainLoopTask {
     private static void mobEffect(IMob iMob) {
         iMob.showParticleEffect();
         iMob.autoRetarget();
-        List<IAbility> abilities = iMob.getAbilities();
-        abilities.stream()
+        List<IAbilitySet> abilities = iMob.getAbilities();
+        Utils.weightedRandomPick(abilities).getAbilitiesInSet().stream()
                 .filter(iAbility -> iAbility instanceof AbilityActive)
                 .map(iAbility -> ((AbilityActive) iAbility))
                 .forEach(abilityTick -> abilityTick.active(iMob));

@@ -36,7 +36,7 @@ public class AbilityStuck extends ActiveAbility {
         List<LivingEntity> candidates = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidates);
-        victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10));
+        victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
         stucked.add(victim.getUniqueId());
         new BukkitRunnable(){
             @Override

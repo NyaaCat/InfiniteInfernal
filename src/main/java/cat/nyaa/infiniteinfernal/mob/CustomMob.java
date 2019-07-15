@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.abilitiy.AbilitySet;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
@@ -77,10 +77,9 @@ public class CustomMob implements IMob {
             config.abilities.forEach(s -> {
                 try {
                     AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseId(s);
-                    Map<String, IAbility> abilities = abilitySetConfig.abilities;
-                    this.abilities.add();
+                    this.abilities.add(new AbilitySet(abilitySetConfig));
                 }catch (IllegalArgumentException e){
-                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.abilities.bad_config", s));
+                    Bukkit.getLogger().log(Level.WARNING, I18n.format("error.abilities.bad_config", s));
                 }
             });
         }
@@ -109,7 +108,7 @@ public class CustomMob implements IMob {
     }
 
     @Override
-    public List<IAbility> getAbilities() {
+    public List<IAbilitySet> getAbilities() {
         return abilities;
     }
 

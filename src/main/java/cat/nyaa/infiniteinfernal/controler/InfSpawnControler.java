@@ -141,7 +141,7 @@ public class InfSpawnControler implements ISpawnControler {
                 .forEach(player -> {
                     List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, player1 -> new ArrayList<>());
                     iMobs.add(iMob);
-                    mobPlayerMap.put(iMob, null);
+                    mobPlayerMap.put(iMob, player);
                 });
     }
 
@@ -168,7 +168,7 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     @Override
-    public void HandleSpawnEvent(CreatureSpawnEvent event) {
+    public void handleSpawnEvent(CreatureSpawnEvent event) {
         World world = event.getLocation().getWorld();
         if (world == null) return;
         boolean isIMob = Context.instance().getBoolean(MobManager.MOB_SPAWN_CONTEXT, MobManager.IS_IMOB);
@@ -178,15 +178,23 @@ public class InfSpawnControler implements ISpawnControler {
                 return;
             }
         }
-        if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.NATURAL)) {
-            if (!canVanillaAutoSpawn(world)) return;
-            event.setCancelled(true);
-            return;
-        }
     }
 
     @Override
-    public void HandleMobDeath(EntityDeathEvent event) {
-
+    public void handleMobDeath(EntityDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        World world = entity.getWorld();
+        IMob iMob = MobManager.instance().toIMob(event.getEntity());
+        if (iMob == null)return;
+        MobManager.instance().removeMob(iMob);
+        mobPlayerMap.remove(iMob);
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+        Utils.getValidTargets(iMob, world.getNearbyEntities(iMob.getEntity().getLocation(), maxSpawnDistance, maxSpawnDistance, maxSpawnDistance))
+                .filter(livingEntity -> livingEntity instanceof Player)
+                .map(livingEntity -> ((Player) livingEntity))
+                .forEach(player -> {
+                    List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, player1 -> new ArrayList<>());
+                    iMobs.remove(iMob);
+                });
     }
 }

@@ -25,6 +25,6 @@ public interface ISpawnControler {
     IMob spawnIMob(Location location, boolean force);
     LivingEntity spawnVanilla(Player player, boolean force);
 
-    void HandleSpawnEvent(CreatureSpawnEvent event);
-    void HandleMobDeath(EntityDeathEvent event);
+    void handleSpawnEvent(CreatureSpawnEvent event);
+    void handleMobDeath(EntityDeathEvent event);
 }

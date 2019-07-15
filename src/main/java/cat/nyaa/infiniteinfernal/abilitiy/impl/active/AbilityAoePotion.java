@@ -23,7 +23,7 @@ public class AbilityAoePotion extends ActiveAbility {
     public void active(IMob iMob) {
         Stream<LivingEntity> entityStream = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(radius,radius,radius));
         PotionEffect effect = this.effect.createEffect(duration,amplifier);
-        entityStream.forEach(livingEntity -> livingEntity.addPotionEffect(effect));
+        entityStream.forEach(livingEntity -> livingEntity.addPotionEffect(effect, true));
     }
 
     @Override
