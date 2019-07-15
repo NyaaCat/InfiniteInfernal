@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.abilitiy.impl.passive;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityNearDeath;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilityPassive;
-import cat.nyaa.infiniteinfernal.abilitiy.event.IMobNearDeathEvent;
+import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.Location;
 import org.bukkit.Particle;

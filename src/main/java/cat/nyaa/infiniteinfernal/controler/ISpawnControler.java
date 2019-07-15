@@ -1,10 +1,12 @@
-package cat.nyaa.infiniteinfernal.spawner;
+package cat.nyaa.infiniteinfernal.controler;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public interface ISpawnControler {
     boolean canSpawn(World world, Location location);
@@ -17,11 +19,12 @@ public interface ISpawnControler {
     int getMaxSpawnDistance(World world);
     int getMinSpawnDistance(World world);
 
-    void setIMobAutoSpawn(World world);
-    void setVanillaAutoSpawn(World world);
+    void setVanillaAutoSpawn(World world, boolean flag);
 
-    IMob spawnIMob(Player player);
-    IMob spawnVanilla(Player player);
+    IMob spawnIMob(Player player, boolean force);
+    IMob spawnIMob(Location location, boolean force);
+    LivingEntity spawnVanilla(Player player, boolean force);
 
     void HandleSpawnEvent(CreatureSpawnEvent event);
+    void HandleMobDeath(EntityDeathEvent event);
 }

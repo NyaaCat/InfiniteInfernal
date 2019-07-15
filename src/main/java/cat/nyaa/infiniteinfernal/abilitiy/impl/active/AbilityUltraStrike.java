@@ -2,7 +2,6 @@ package cat.nyaa.infiniteinfernal.abilitiy.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.ActiveAbility;
-import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
@@ -20,9 +19,6 @@ public class AbilityUltraStrike extends ActiveAbility {
 
     @Serializable
     public int amount = 5;
-
-    @Serializable
-    public ParticleConfig particle = new ParticleConfig();
 
     @Serializable
     public int explodeRange = 3;
@@ -67,10 +63,8 @@ public class AbilityUltraStrike extends ActiveAbility {
     }
 
     private void showEffect(Location location, IMob mobEntity) {
-        double x = particle.delta.get(0);
-        double y = particle.delta.get(1);
-        double z = particle.delta.get(2);
-        location.getWorld().spawnParticle(particle.type, location, particle.amount, x, y, z, particle.speed,Utils.parseExtraData(particle.extraData), particle.forced);
+        location.getWorld().spawnParticle(Particle.END_ROD, location, 5, 0, 0, 0, 0.01, null, true);
+        location.getWorld().spawnParticle(Particle.PORTAL, location, 30, 0, 0, 0, 2, null, true);
         for (int i = 0; i < delay / 20; i++) {
             Bukkit.getScheduler().runTaskLater(InfPlugin.plugin, () -> {
                 location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
@@ -79,8 +73,9 @@ public class AbilityUltraStrike extends ActiveAbility {
     }
 
     private void boom(Location location, IMob iMob) {
-        location.getWorld().playSound(location, Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 1, 1);
-        location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location, 1);
+        location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1, 1.5f);
+        location.getWorld().spawnParticle(Particle.FLAME, location, 100, 1);
+        location.getWorld().spawnParticle(Particle.DRAGON_BREATH, location, 100, 1);
         Utils.getValidTargets(iMob, location.getWorld().getNearbyEntities(location, explodeRange, explodeRange, explodeRange))
                 .forEach(entity -> {
                     if (!entity.equals(iMob)) {

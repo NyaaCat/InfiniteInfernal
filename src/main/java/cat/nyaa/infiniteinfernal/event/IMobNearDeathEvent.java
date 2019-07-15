@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.abilitiy.event;
+package cat.nyaa.infiniteinfernal.event;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.entity.LivingEntity;

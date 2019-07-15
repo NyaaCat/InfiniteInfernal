@@ -39,6 +39,25 @@ public class CorrectionParser {
         return corrections;
     }
 
+    public static ICorrector parseStr(String str) {
+        String[] split = str.split(":", 2);
+        try {
+            switch (split[0]) {
+                case "effect":
+                    return parseEffect(split[1]);
+                case "attribute":
+                    return parseAttribute(split[1]);
+                case "enchant":
+                    return parseEnchant(split[1]);
+                default:
+                    Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + split[0] + "."));
+            }
+        }catch (Exception e){
+            Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + split[0] + "."));
+        }
+        return null;
+    }
+
     static CorrectorEffect parseEffect(String effect) {
         String[] split = effect.split(":");
         PotionEffectType effectType = PotionEffectType.getByName(split[0]);

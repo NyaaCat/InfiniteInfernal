@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
+import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import org.bukkit.Bukkit;
@@ -17,10 +18,11 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class MobManager {
     private static MobManager instance;
+    public static final UUID MOB_SPAWN_CONTEXT = UUID.randomUUID();
+    public static final String IS_IMOB = "isIMob";
 
     Map<UUID, IMob> uuidMap = new LinkedHashMap<>();
     Map<World, List<IMob>> worldMobMap = new LinkedHashMap<>();
@@ -60,7 +62,9 @@ public class MobManager {
                     level = Utils.randomPick(levels);
                 }
                 CustomMob customMob = new CustomMob(config, level);
+                Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
+                Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
                 customMob.makeInfernal(spawn);
                 registerMob(customMob);
                 return customMob;
@@ -86,7 +90,7 @@ public class MobManager {
         return spawnMobByConfig(iMob, location, level);
     }
 
-    public IMob natualSpawn(EntityType type, Location location) {
+    public IMob natualSpawn(Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
@@ -137,9 +141,7 @@ public class MobManager {
                 if (distance < from || distance >= to) {
                     return;
                 }
-                List<MobConfig> collect = natualSpawnList.get(level).stream().parallel()
-                        .filter(mobConfig -> mobConfig.type.equals(type))
-                        .collect(Collectors.toList());
+                List<MobConfig> collect = natualSpawnList.get(level);
                 if (!collect.isEmpty()) {
                     levelCandidates.add(new WeightedPair<>(collect, level, weight));
                 }
@@ -156,7 +158,7 @@ public class MobManager {
         }
     }
 
-    public void registerMob( IMob mob){
+    public void registerMob(IMob mob){
         uuidMap.put(mob.getEntity().getUniqueId(), mob);
         World world = mob.getEntity().getWorld();
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
@@ -172,5 +174,13 @@ public class MobManager {
 
     public List<IMob> getMobsInWorld(World world) {
         return worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
+    }
+
+    public boolean isIMob(Entity entity) {
+        return uuidMap.containsKey(entity.getUniqueId());
+    }
+
+    public IMob toIMob(Entity entity) {
+        return uuidMap.get(entity);
     }
 }

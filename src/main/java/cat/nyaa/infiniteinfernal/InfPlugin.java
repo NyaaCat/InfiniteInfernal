@@ -33,9 +33,15 @@ public class InfPlugin extends JavaPlugin {
         config.load();
         i18n = new I18n(this,config.language);
         i18n.load();
+        LootManager.instance().load();
+        MainLoopTask.start();
+    }
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
         LootManager.disable();
         MobManager.disable();
-        MainLoopTask.stop();
     }
 
     public Config config() {

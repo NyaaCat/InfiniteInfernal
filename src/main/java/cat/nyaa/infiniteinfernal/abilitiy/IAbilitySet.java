@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface IAbilitySet {
     List<IAbility> getAbilitiesInSet();
-
+    int getWeight();
 }

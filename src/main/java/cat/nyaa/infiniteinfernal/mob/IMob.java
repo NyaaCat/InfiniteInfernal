@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob;
 
-import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import org.bukkit.boss.KeyedBossBar;
@@ -13,7 +13,7 @@ import java.util.Map;
 public interface IMob {
     Map<ILootItem, Integer> getLoots();
     Map<ILootItem, Integer> getSpecialLoots();
-    List<IAbility> getAbilities();
+    List<IAbilitySet> getAbilities();
     LivingEntity getEntity();
     EntityType getEntityType();
     KeyedBossBar getBossBar();
@@ -30,9 +30,12 @@ public interface IMob {
     void showParticleEffect();
 
     void autoRetarget();
+    void retarget(LivingEntity entity);
 
     LivingEntity getTarget();
+    List<LivingEntity> getNonPlayerTargets();
     boolean isTarget(LivingEntity target);
 
     MobConfig getConfig();
+    void onDeath();
 }

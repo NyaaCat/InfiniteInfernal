@@ -1,6 +1,8 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ public class WorldConfig implements ISerializable {
     }
 
     @Serializable(name = "disable-natural-spawning")
-    public boolean disablenaturalSpawning = true;
+    public boolean disableNaturalSpawning = true;
 
     @Serializable(name = "max-mob-per-player")
     public int maxMobPerPlayer = 10;
@@ -45,13 +47,31 @@ public class WorldConfig implements ISerializable {
 
     public static class AggroConfig implements ISerializable{
         @Serializable
-        public int min =20;
+        public RangeConfig range = new RangeConfig();
         @Serializable
-        public int max = 128;
+        public int base = 10;
         @Serializable
-        public String dec = "INVISIBILITY:2";
+        String dec = "INVISIBILITY:2";
         @Serializable
-        public String inc = "UNLUCK:2";
+        String inc = "UNLUCK:2";
+
+        ICorrector incCorrector = CorrectionParser.parseStr(inc);
+        ICorrector decCorrector = CorrectionParser.parseStr(dec);
+
+        public ICorrector getInc() {
+            return incCorrector;
+        }
+
+        public ICorrector getDec() {
+            return decCorrector;
+        }
+
+        public static class RangeConfig implements ISerializable{
+            @Serializable
+            public int min = 20;
+            @Serializable
+            public int max = 128;
+        }
     }
 
     public static class LootingConfig implements ISerializable{
@@ -63,17 +83,10 @@ public class WorldConfig implements ISerializable {
         public LootingModifiers dynamic = new LootingModifiers();
 
         public static class LootingModifiers implements ISerializable{
+           @Serializable
+            public List<String> inc = new ArrayList<>();
             @Serializable
-            public LootingModifier inc = new LootingModifier();
-            @Serializable
-            public LootingModifier dec = new LootingModifier();
-
-            public static class LootingModifier{
-                @Serializable
-                public List<String> enchant = new ArrayList<>();
-                @Serializable
-                public List<String> effect = new ArrayList<>();
-            }
+            public List<String> dec = new ArrayList<>();
         }
     }
 

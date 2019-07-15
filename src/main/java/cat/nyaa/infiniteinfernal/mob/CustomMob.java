@@ -4,13 +4,16 @@ import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.controler.Aggro;
+import cat.nyaa.infiniteinfernal.controler.InfAggroControler;
+import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.boss.BarColor;
@@ -19,6 +22,8 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -29,7 +34,8 @@ public class CustomMob implements IMob {
     private final MobConfig config;
     private List<ILootItem> commonLoots;
     private List<ILootItem> specialLoots;
-    private List<IAbility> abilities;
+    private List<IAbilitySet> abilities;
+    private Map<LivingEntity, Aggro> nonPlayerTargets = new LinkedHashMap<>();
     private int level;
     private double specialChance;
     private boolean autoSpawn;
@@ -72,7 +78,7 @@ public class CustomMob implements IMob {
                 try {
                     AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseId(s);
                     Map<String, IAbility> abilities = abilitySetConfig.abilities;
-                    this.abilities.addAll(abilities.values());
+                    this.abilities.add();
                 }catch (IllegalArgumentException e){
                     Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.abilities.bad_config", s));
                 }
@@ -145,6 +151,10 @@ public class CustomMob implements IMob {
     @Override
     public void makeInfernal(LivingEntity entity) {
         this.entity = entity;
+        if (entity.isDead()){
+            MobManager.instance().removeMob(this);
+            return;
+        }
         entity.setCustomName(getTaggedName());
         entity.setCustomNameVisible(true);
         AttributeInstance damageAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
@@ -154,6 +164,12 @@ public class CustomMob implements IMob {
         damageAttr.setBaseValue(getDamage());
         maxHealthAttr.setBaseValue(getMaxHealth());
         createBossbar(entity);
+        InfernalSpawnEvent event = new InfernalSpawnEvent(this);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            MobManager.instance().removeMob(this);
+            entity.remove();
+        }
     }
 
     private void createBossbar(LivingEntity entity) {
@@ -186,17 +202,56 @@ public class CustomMob implements IMob {
 
     @Override
     public void showParticleEffect() {
-        //todo show effect
+        LivingEntity entity = getEntity();
+        World world = entity.getWorld();
+        Location location = entity.getLocation();
+        world.spawnParticle(Particle.LAVA, location, 10, 1);
+        if (!(entity instanceof Player)){
+            nonPlayerTargets.put(entity, new Aggro(entity));
+        }
     }
 
     @Override
     public void autoRetarget() {
-        //todo auto retarget
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                LivingEntity aggroTarget = new InfAggroControler().findAggroTarget(CustomMob.this);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        retarget(aggroTarget);
+                    }
+                }.runTask(InfPlugin.plugin);
+            }
+        }.runTaskAsynchronously(InfPlugin.plugin);
+    }
+
+    @Override
+    public void retarget(LivingEntity entity) {
+        LivingEntity mobEntity = getEntity();
+        if (mobEntity instanceof Mob) {
+            LivingEntity target = ((Mob) mobEntity).getTarget();
+            if (target == null){
+                if (entity==null)return;
+                ((Mob) mobEntity).setTarget(entity);
+                return;
+            }
+            if (target.equals(entity)){
+                return;
+            }
+            ((Mob) mobEntity).setTarget(entity);
+        }
     }
 
     @Override
     public LivingEntity getTarget() {
         return entity instanceof Mob ? ((Mob) entity).getTarget() : null;
+    }
+
+    @Override
+    public List<LivingEntity> getNonPlayerTargets() {
+        return null;
     }
 
     @Override
@@ -209,5 +264,10 @@ public class CustomMob implements IMob {
     @Override
     public MobConfig getConfig() {
         return this.config;
+    }
+
+    @Override
+    public void onDeath() {
+        MobManager.instance().removeMob(this);
     }
 }
