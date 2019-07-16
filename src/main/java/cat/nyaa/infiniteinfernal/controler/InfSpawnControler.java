@@ -48,7 +48,8 @@ public class InfSpawnControler implements ISpawnControler {
                 .map(entity -> ((Player) entity))
                 .forEach(player -> {
                     boolean tempB = canSpawn.get();
-                    canSpawn.set(tempB && canSpawnNearPlayer(player) && !isTooClose(player, location));
+                    if (!tempB)return;
+                    canSpawn.set(canSpawnNearPlayer(player) && !isTooClose(player, location));
                 });
         return canSpawn.get();
     }

@@ -1,7 +1,6 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.configuration.FileConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,15 +15,15 @@ public class MessageConfig extends FileConfigure {
     }
 
     @Serializable
-    List<String> playerKill = new ArrayList<>();
+    public List<String> playerKill = new ArrayList<>();
     @Serializable
-    List<String> mobKill = new ArrayList<>();
+    public List<String> mobKill = new ArrayList<>();
     @Serializable
-    List<String> drop = new ArrayList<>();
+    public List<String> drop = new ArrayList<>();
     @Serializable
-    List<String> specialDrop = new ArrayList<>();
+    public List<String> specialDrop = new ArrayList<>();
     @Serializable
-    List<String> noDrop = new ArrayList<>();
+    public List<String> noDrop = new ArrayList<>();
 
     @Override
     protected String getFileName() {

@@ -5,12 +5,14 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public class LootDropEvent extends Event {
     private final Player killer;
     private final IMob iMob;
     private ILootItem loot;
     private ILootItem specialLoot;
+    private EntityDeathEvent ev;
     private HandlerList handlerList = new HandlerList();
 
     public ILootItem getLoot() {
@@ -37,15 +39,20 @@ public class LootDropEvent extends Event {
         return iMob;
     }
 
-    public LootDropEvent(Player killer, IMob iMob, ILootItem loot, ILootItem specialLoot) {
+    public LootDropEvent(Player killer, IMob iMob, ILootItem loot, ILootItem specialLoot, EntityDeathEvent ev) {
         this.killer = killer;
         this.iMob = iMob;
         this.loot = loot;
         this.specialLoot = specialLoot;
+        this.ev = ev;
     }
 
     @Override
     public HandlerList getHandlers() {
         return handlerList;
+    }
+
+    public EntityDeathEvent getEntityDeathEvent() {
+        return ev;
     }
 }

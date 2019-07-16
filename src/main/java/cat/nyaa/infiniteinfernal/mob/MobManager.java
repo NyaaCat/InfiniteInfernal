@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.configs.DirConfigs;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
@@ -12,12 +13,14 @@ import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class MobManager {
     private static MobManager instance;
@@ -29,10 +32,38 @@ public class MobManager {
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
     Map<String, MobConfig> idCfgMap = new LinkedHashMap<>();
-    Map<Integer, List<MobConfig>> natualSpawnList = new LinkedHashMap<>();
+    Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
 
     private MobManager() {
+        this.load();
+    }
 
+    private void load() {
+        DirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+        buildNatualSpawnList(mobConfigs);
+        buildCfgMaps(mobConfigs);
+    }
+
+    private void buildCfgMaps(DirConfigs<MobConfig> mobConfigs) {
+        mobConfigs.values().stream().parallel()
+                .forEach(config -> {
+                    nameCfgMap.put(config.name, config);
+                    idCfgMap.put(config.id, config);
+                });
+    }
+
+    private void buildNatualSpawnList(DirConfigs<MobConfig> mobConfigs) {
+        mobConfigs.values().stream().parallel()
+                .filter(config -> config.spawn.autoSpawn)
+                .forEach(config -> {
+                    List<Integer> validLevels = MobConfig.parseLevels(config.spawn.levels);
+                    if ((!validLevels.isEmpty())) {
+                        validLevels.forEach(level -> {
+                            List<MobConfig> natualSpawnList = this.natualSpawnLists.computeIfAbsent(level, integer -> new ArrayList<>());
+                            natualSpawnList.add(config);
+                        });
+                    }
+                });
     }
 
     public static MobManager instance() {
@@ -51,6 +82,7 @@ public class MobManager {
     }
 
     public IMob spawnMobByConfig(MobConfig config, Location location, Integer level) {
+        if (config == null)return null;
         EntityType entityType = config.type;
         World world = location.getWorld();
         if (world != null) {
@@ -106,12 +138,16 @@ public class MobManager {
                     String[] split = mobs.split(":");
                     String mobId = split[0];
                     int mobWeight = Integer.parseInt(split[1]);
-                    MobConfig iMob = idCfgMap.get(mobId);
-                    if (iMob == null) {
+                    MobConfig mobConfig = idCfgMap.get(mobId);
+                    if (mobConfig == null) {
                         Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
                         return;
                     }
-                    spawnConfs.add(new WeightedPair<>(iMob, 0, mobWeight));
+                    Biome biome = location.getBlock().getBiome();
+                    World world = location.getWorld();
+                    if (mobConfig.spawn.biomes.contains(biome)&& world != null && mobConfig.spawn.worlds.contains(world.getName())){
+                        spawnConfs.add(new WeightedPair<>(mobConfig, 0, mobWeight));
+                    }
                 } catch (NumberFormatException e) {
                     Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
                 } catch (Exception e){
@@ -141,7 +177,11 @@ public class MobManager {
                 if (distance < from || distance >= to) {
                     return;
                 }
-                List<MobConfig> collect = natualSpawnList.get(level);
+                List<MobConfig> collect = natualSpawnLists.get(level);
+                Biome biome = location.getBlock().getBiome();
+                collect = collect.stream().parallel()
+                        .filter(config1 -> config1.spawn.worlds.contains(world.getName()) && config1.spawn.biomes.contains(biome))
+                        .collect(Collectors.toList());
                 if (!collect.isEmpty()) {
                     levelCandidates.add(new WeightedPair<>(collect, level, weight));
                 }

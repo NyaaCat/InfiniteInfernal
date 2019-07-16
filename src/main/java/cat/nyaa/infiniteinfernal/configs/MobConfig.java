@@ -2,11 +2,14 @@ package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.utils.Weightable;
 import cat.nyaa.nyaacore.configuration.ISerializable;
+import org.bukkit.Bukkit;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class MobConfig extends IdFileConfig implements Weightable {
     @Serializable
@@ -48,7 +51,7 @@ public class MobConfig extends IdFileConfig implements Weightable {
                         result.add(Integer.parseInt(s));
                     }
                 }catch (IllegalArgumentException ex){
-                    //todo: log
+                    Bukkit.getLogger().log(Level.WARNING, "invalid level config "+s);
                 }
             });
         }
@@ -70,7 +73,7 @@ public class MobConfig extends IdFileConfig implements Weightable {
         @Serializable
         public List<String> worlds = new ArrayList<>();
         @Serializable
-        public List<String> biomes = new ArrayList<>();
+        public List<Biome> biomes = new ArrayList<>();
 
         @Override
         public int getWeight() {
