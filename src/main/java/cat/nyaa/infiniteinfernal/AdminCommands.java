@@ -14,6 +14,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
+
 public class AdminCommands extends CommandReceiver {
     private InfPlugin plugin;
 
@@ -28,28 +30,28 @@ public class AdminCommands extends CommandReceiver {
     }
 
     @SubCommand(value = "reload", permission = "im.admin")
-    public void onReload(CommandSender sender, Arguments arguments){
+    public void onReload(CommandSender sender, Arguments arguments) {
         plugin.onReload();
     }
 
     @SubCommand(value = "spawn", permission = "im.spawnmob")
-    public void onSpawn(CommandSender sender, Arguments arguments){
+    public void onSpawn(CommandSender sender, Arguments arguments) {
         String mobId = arguments.nextString();
         String worldName = arguments.nextString();
         double x = arguments.nextDouble();
         double y = arguments.nextDouble();
         double z = arguments.nextDouble();
         String top = arguments.top();
-        Integer level = top ==null ? null : Integer.valueOf(top);
+        Integer level = top == null ? null : Integer.valueOf(top);
         World world = Bukkit.getWorld(worldName);
         MobManager.instance().spawnMobById(mobId, new Location(world, x, y, z), level);
     }
 
     @SubCommand(value = "addloot", permission = "im.addloot")
-    public void onAddLoot(CommandSender sender, Arguments arguments){
+    public void onAddLoot(CommandSender sender, Arguments arguments) {
         LootManager lootManager = plugin.getLootManager();
         String itemName = arguments.nextString();
-        boolean isDynamic = arguments.top()!=null && arguments.nextBoolean();
+        boolean isDynamic = arguments.top() != null && arguments.nextBoolean();
         if (sender instanceof Player) {
             ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
             if (itemInMainHand.getType().equals(Material.AIR)) {
@@ -62,20 +64,69 @@ public class AdminCommands extends CommandReceiver {
             append.append(I18n.format("loot.add.success", isDynamic), itemInMainHand)
                     .send(sender);
 
-        }else {
+        } else {
             new Message(I18n.format("error.not_player")).send(sender);
         }
     }
 
     @SubCommand(value = "getloot", permission = "im.getloot")
-    public void onGetLoot(CommandSender sender, Arguments arguments){
+    public void onGetLoot(CommandSender sender, Arguments arguments) {
         String lootName = arguments.nextString();
         ILootItem loot = plugin.getLootManager().getLoot(lootName);
-        if (loot!=null){
+        if (loot != null) {
             new Message("").append(I18n.format("loot.get.success"), loot.getItemStack());
 
-        }else {
+        } else {
             new Message("").append(I18n.format("loot.get.no_item", lootName));
+        }
+    }
+
+    @SubCommand(value = "setdrop", permission = "im.setdrop")
+    public void onSetDrop(CommandSender sender, Arguments arguments) {
+        String itemName = arguments.nextString();
+        int level = arguments.nextInt();
+        int weight = arguments.nextInt();
+        ILootItem lootItem = LootManager.instance().getLoot(itemName);
+        if (lootItem == null) {
+            new Message(I18n.format("loot.set.no_item", itemName))
+                    .send(sender);
+            return;
+        }
+        LootManager.instance().addCommonLoot(lootItem, level, weight);
+        new Message(I18n.format("loot.set.success", itemName, level, weight))
+                .send(sender);
+    }
+
+    @SubCommand(value = "inspect", permission = "im.inspect")
+    public void onInspect(CommandSender sender, Arguments arguments) {
+        String target = arguments.nextString();
+        String id = arguments.nextString();
+        switch (target) {
+            case "item":
+                ILootItem loot = LootManager.instance().getLoot(id);
+                if (loot == null) {
+                    new Message("").append(I18n.format("inspect.item.no_item"))
+                            .send(sender);
+                } else {
+                    new Message("").append(I18n.format("inspect.item.success", id), loot.getItemStack())
+                            .send(sender);
+                }
+                break;
+            case "level":
+                int level = Integer.parseInt(id);
+                List<ILootItem> loots = LootManager.instance().getLoots(level);
+                if (!loots.isEmpty()) {
+                    loots.forEach(lootItem -> {
+                        int weight = lootItem.getWeight(level);
+                        new Message("").append(I18n.format("inspect.level.success", id, weight))
+                                .send(sender);
+                    });
+                }
+                break;
+            default:
+                new Message("").append(I18n.format("inspect.error.invalid_action"))
+                        .send(sender);
+                break;
         }
     }
 }

@@ -1,0 +1,89 @@
+package cat.nyaa.infiniteinfernal;
+
+import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
+import cat.nyaa.infiniteinfernal.configs.WorldConfig;
+import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.configuration.FileConfigure;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class BroadcastManager extends FileConfigure {
+    @Serializable
+    Map<String, BroadcastMode> broadcastSettings = new LinkedHashMap<>();
+
+    public void setReceivetype(String uuid, BroadcastMode receiveType){
+        broadcastSettings.put(uuid, receiveType);
+        this.save();
+    }
+
+    public BroadcastMode getReceiveType(World world, String uuid){
+        return broadcastSettings.computeIfAbsent(uuid, s -> {
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world);
+            if (worldConfig!=null){
+                return worldConfig.broadcastConfig.defaultMode;
+            }
+            return BroadcastMode.NEARBY;
+        });
+    }
+
+    @Override
+    protected String getFileName() {
+        return "broadcast.yml";
+    }
+
+    @Override
+    protected JavaPlugin getPlugin() {
+        return InfPlugin.plugin;
+    }
+
+    public int getNearbyRange(World world) {
+        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world);
+        if (worldConfig!=null){
+            return worldConfig.broadcastConfig.range;
+        }
+        return 160;
+    }
+
+    public void toggle(Player sender) {
+        BroadcastMode receiveType = getReceiveType(sender.getWorld(), sender.getUniqueId().toString());
+        switch (receiveType){
+            case ALL:
+                receiveType = BroadcastMode.NEARBY;
+                break;
+            case NEARBY:
+                receiveType = BroadcastMode.SELF_ONLY;
+                break;
+            case SELF_ONLY:
+                receiveType = BroadcastMode.OFF;
+                break;
+            case OFF:
+                receiveType = BroadcastMode.ALL;
+                break;
+        }
+        setReceivetype(sender.getUniqueId().toString(), receiveType);
+        sendHint(sender,receiveType);
+    }
+
+    public void sendHint(Player sender, BroadcastMode type) {
+        Message message = new Message("");
+        switch (type){
+            case ALL:
+                message.append(I18n.format("imi.state_all"));
+                break;
+            case NEARBY:
+                message.append(I18n.format("imi.state_near"));
+                break;
+            case SELF_ONLY:
+                message.append(I18n.format("imi.state_self"));
+                break;
+            case OFF:
+                message.append(I18n.format("imi.state_off"));
+                break;
+        }
+        message.send(sender);
+    }
+}

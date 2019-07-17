@@ -99,7 +99,7 @@ public class WorldConfig implements ISerializable {
 
     public static class BroadcastConfig implements ISerializable{
         @Serializable(name = "default")
-        public BroadcastMode defaultMode = BroadcastMode.NEAR;
+        public BroadcastMode defaultMode = BroadcastMode.NEARBY;
         @Serializable
         public int range = 160;
     }

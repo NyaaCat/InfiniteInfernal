@@ -15,10 +15,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 public class LootManager {
@@ -49,6 +46,13 @@ public class LootManager {
     public static void disable() {
         instance.save();
         instance = null;
+    }
+
+    public void addCommonLoot(ILootItem lootItem, int level, int weight) {
+        List<ILootItem> lootItems = commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
+        Map<Integer, Integer> levelWeightMap = itemWeightMap.computeIfAbsent(lootItem, integer -> new HashMap<>());
+        lootItems.add(lootItem);
+        levelWeightMap.put(level, weight);
     }
 
     public List<ILootItem> getLevelDrops(int level) {
@@ -184,9 +188,9 @@ public class LootManager {
         Map<ILootItem, Map<Integer, Integer>> itemWeightMap = instance.itemWeightMap;
         if (itemWeightMap.containsKey(lootItem)) {
             Map<Integer, Integer> levelWeightMap = itemWeightMap.get(lootItem);
-            return levelWeightMap.getOrDefault(level, -1);
+            return levelWeightMap.getOrDefault(level, 0);
         } else {
-            return -1;
+            return 0;
         }
     }
 
@@ -250,5 +254,9 @@ public class LootManager {
 
             });
         }
+    }
+
+    public List<ILootItem> getLoots(int id) {
+        return commonDrops.computeIfAbsent(id, integer -> new ArrayList<>());
     }
 }

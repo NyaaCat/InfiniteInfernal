@@ -1,5 +1,8 @@
 package cat.nyaa.infiniteinfernal.loot;
 
+import cat.nyaa.infiniteinfernal.BroadcastManager;
+import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -31,9 +34,23 @@ public class InfMessager implements IMessager {
     public void broadcastToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
         String s = Utils.randomPick(playerKill);
         new Message("").append(buildString(s, deadMob, killer, item), killer.getEquipment().getItemInMainHand())
-                .send(killer);
+                .broadcast(Message.MessageType.CHAT, player ->{
+                    BroadcastManager broadcastManager = InfPlugin.plugin.getBroadcastManager();
+                    BroadcastMode receiveType = broadcastManager.getReceiveType(player.getWorld(), player.getUniqueId().toString());
+                    switch (receiveType){
+                        case ALL:
+                            return true;
+                        case NEARBY:
+                            return player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld());
+                        case SELF_ONLY:
+                            return killer.equals(player);
+                        case OFF:
+                            return false;
+                    }
+                    return true;
+                });
         if (item !=null){
-
+            //todo
         }
     }
 
@@ -45,7 +62,7 @@ public class InfMessager implements IMessager {
 
     @Override
     public void broadcastExtraToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
-
+        //todo
     }
 
 }

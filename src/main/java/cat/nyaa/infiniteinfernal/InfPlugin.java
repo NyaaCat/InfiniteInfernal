@@ -14,6 +14,7 @@ public class InfPlugin extends JavaPlugin {
     AdminCommands commands;
     LootManager lootManager;
     MobManager mobManager;
+    BroadcastManager broadcastManager;
     ISpawnControler spawnControler;
 
 
@@ -29,6 +30,8 @@ public class InfPlugin extends JavaPlugin {
         commands = new AdminCommands(this, i18n);
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
+        broadcastManager = new BroadcastManager();
+        broadcastManager.load();
         MainLoopTask.start();
     }
 
@@ -57,5 +60,9 @@ public class InfPlugin extends JavaPlugin {
 
     public LootManager getLootManager() {
         return lootManager;
+    }
+
+    public BroadcastManager getBroadcastManager() {
+        return broadcastManager;
     }
 }
