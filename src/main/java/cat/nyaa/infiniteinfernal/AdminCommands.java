@@ -1,12 +1,18 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.loot.ILootItem;
+import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
+import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class AdminCommands extends CommandReceiver {
     private InfPlugin plugin;
@@ -41,6 +47,35 @@ public class AdminCommands extends CommandReceiver {
 
     @SubCommand(value = "addloot", permission = "im.addloot")
     public void onAddLoot(CommandSender sender, Arguments arguments){
+        LootManager lootManager = plugin.getLootManager();
+        String itemName = arguments.nextString();
+        boolean isDynamic = arguments.top()!=null && arguments.nextBoolean();
+        if (sender instanceof Player) {
+            ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
+            if (itemInMainHand.getType().equals(Material.AIR)) {
+                new Message("").append(I18n.format("loot.add.error_no_item"))
+                        .send(sender);
+                return;
+            }
+            lootManager.addLoot(itemName, isDynamic, itemInMainHand);
+            Message append = new Message("");
+            append.append(I18n.format("loot.add.success", isDynamic), itemInMainHand)
+                    .send(sender);
 
+        }else {
+            new Message(I18n.format("error.not_player")).send(sender);
+        }
+    }
+
+    @SubCommand(value = "getloot", permission = "im.getloot")
+    public void onGetLoot(CommandSender sender, Arguments arguments){
+        String lootName = arguments.nextString();
+        ILootItem loot = plugin.getLootManager().getLoot(lootName);
+        if (loot!=null){
+            new Message("").append(I18n.format("loot.get.success"), loot.getItemStack());
+
+        }else {
+            new Message("").append(I18n.format("loot.get.no_item", lootName));
+        }
     }
 }

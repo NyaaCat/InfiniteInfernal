@@ -14,7 +14,8 @@ public class InfPlugin extends JavaPlugin {
     AdminCommands commands;
     LootManager lootManager;
     MobManager mobManager;
-    public ISpawnControler spawnControler;
+    ISpawnControler spawnControler;
+
 
     @Override
     public void onEnable() {
@@ -52,5 +53,9 @@ public class InfPlugin extends JavaPlugin {
 
     public ISpawnControler getSpawnControler() {
         return spawnControler;
+    }
+
+    public LootManager getLootManager() {
+        return lootManager;
     }
 }
