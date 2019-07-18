@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.abilitiy.AbilityActive;
-import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
+import cat.nyaa.infiniteinfernal.ability.AbilityActive;
+import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -66,6 +66,11 @@ public class MainLoopTask {
                 infernalTicker.submitInfernalTickMobs(mobs);
                 infernalTicker.tick();
             }
+            world.getPlayers().forEach(player -> {
+                for (int i = 0; i < 5; i++) {
+                    InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+                }
+            });
         }
     }
 

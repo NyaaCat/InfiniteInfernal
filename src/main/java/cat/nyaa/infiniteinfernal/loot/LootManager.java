@@ -29,7 +29,6 @@ public class LootManager {
     private LootManager(InfPlugin plugin) {
         this.plugin = plugin;
         lootConfig = new LootConfig(plugin);
-        this.load();
     }
 
     public static LootManager instance() {
@@ -37,6 +36,7 @@ public class LootManager {
             synchronized (LootManager.class) {
                 if (instance == null) {
                     instance = new LootManager(InfPlugin.plugin);
+                    instance.load();
                 }
             }
         }
@@ -44,7 +44,9 @@ public class LootManager {
     }
 
     public static void disable() {
-        instance.save();
+        if (instance != null) {
+            instance.save();
+        }
         instance = null;
     }
 
@@ -68,6 +70,7 @@ public class LootManager {
         }
         lootItem.setDynamic(dynamic);
         lootItemMap.put(name, lootItem);
+        save();
     }
 
     public ILootItem getLoot(String name) {
@@ -183,7 +186,6 @@ public class LootManager {
     }
 
 
-
     public static int getWeightForLevel(ILootItem lootItem, int level) {
         Map<ILootItem, Map<Integer, Integer>> itemWeightMap = instance.itemWeightMap;
         if (itemWeightMap.containsKey(lootItem)) {
@@ -200,11 +202,12 @@ public class LootManager {
         decs = null;
     }
 
-    public void save(){
+    public void save() {
         lootConfig.save();
     }
 
-    public static void serializeDrops(Map<String, ILootItem> lootItemMap, Map<String, Map<String, Integer>> lootMap) {
+    public static void serializeDrops(Map<String, ILootItem> lootItemMap, Map<String, LootConfig.LootWeight> lootMap) {
+        if (instance == null)return;
         if (!instance.lootItemMap.isEmpty()) {
             lootItemMap.clear();
             lootItemMap.putAll(instance.lootItemMap);
@@ -213,19 +216,23 @@ public class LootManager {
             lootMap.clear();
             instance.commonDrops.forEach((level, lootItems) -> {
                 String levelStr = "level-" + level;
-                Map<String, Integer> levelLootMap = new LinkedHashMap<>(lootItems.size());
-                lootItems.forEach(iLootItem -> {
-                    levelLootMap.put(iLootItem.getName(), getWeightForLevel(iLootItem, level));
+//                Map<String, Integer> levelLootMap = new LinkedHashMap<>(lootItems.size());
+//                lootItems.forEach(iLootItem -> {
+//                    levelLootMap.put(iLootItem.getName(), getWeightForLevel(iLootItem, level));
+//                });
+                lootItems.forEach(lootItem -> {
+                    LootConfig.LootWeight lootWeight = new LootConfig.LootWeight();
+                    lootWeight.weightMap.put(lootItem.getName(), getWeightForLevel(lootItem, level));
+                    lootMap.put(levelStr, lootWeight);
                 });
-                lootMap.put(levelStr, levelLootMap);
             });
         }
     }
 
-    public static void loadFromLootMap(Map<String, ILootItem> lootItemMap, Map<String, Map<String, Integer>> levels) {
-        instance.lootItemMap = lootItemMap;
+    public static void loadFromLootMap(Map<String, ILootItem> lootItemMap, Map<String, LootConfig.LootWeight> levels) {
+        instance.lootItemMap = new LinkedHashMap<>(lootItemMap);
         if (!levels.isEmpty()) {
-            levels.forEach((levelStr, iLootItems) -> {
+            levels.forEach((levelStr, lootWeight) -> {
                 if (!levelStr.startsWith("level-")) {
                     return;
                 }
@@ -236,8 +243,8 @@ public class LootManager {
                 }
                 try {
                     Integer level = Integer.valueOf(split[1]);
-                    List<ILootItem> items = new ArrayList<>(iLootItems.size());
-                    iLootItems.forEach((s, weight) -> {
+                    List<ILootItem> items = new ArrayList<>(lootWeight.weightMap.size());
+                    lootWeight.weightMap.forEach((s, weight) -> {
                         ILootItem iLootItem = instance.lootItemMap.get(s);
                         if (iLootItem == null) {
                             instance.plugin.getLogger().log(Level.WARNING, "no item \"" + s + "\" found, skipping");

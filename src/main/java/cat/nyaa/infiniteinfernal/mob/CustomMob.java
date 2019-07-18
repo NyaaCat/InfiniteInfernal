@@ -3,8 +3,8 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.abilitiy.AbilitySet;
-import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
+import cat.nyaa.infiniteinfernal.ability.AbilitySet;
+import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
@@ -205,7 +205,7 @@ public class CustomMob implements IMob {
         LivingEntity entity = getEntity();
         World world = entity.getWorld();
         Location location = entity.getLocation();
-        world.spawnParticle(Particle.LAVA, location, 10, 1);
+        world.spawnParticle(Particle.LAVA, location, 10, 0,0,0,1,null,false);
         if (!(entity instanceof Player)){
             nonPlayerTargets.put(entity, new Aggro(entity));
         }
@@ -250,8 +250,8 @@ public class CustomMob implements IMob {
     }
 
     @Override
-    public List<LivingEntity> getNonPlayerTargets() {
-        return null;
+    public Map<LivingEntity, Aggro> getNonPlayerTargets() {
+        return nonPlayerTargets;
     }
 
     @Override

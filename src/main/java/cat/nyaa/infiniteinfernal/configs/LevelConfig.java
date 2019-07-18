@@ -1,9 +1,6 @@
 package cat.nyaa.infiniteinfernal.configs;
 
-import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.nyaacore.configuration.FileConfigure;
 import cat.nyaa.nyaacore.configuration.ISerializable;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class LevelConfig extends IdFileConfig {
     @Serializable
@@ -47,6 +44,11 @@ public class LevelConfig extends IdFileConfig {
     @Override
     public String getPrefix() {
         return "level";
+    }
+
+    @Override
+    public String getDir() {
+        return "levels";
     }
 
 }

@@ -20,10 +20,11 @@ public abstract class IdFileConfig extends FileConfigure {
     }
 
     public abstract String getPrefix();
+    public abstract String getDir();
 
     @Override
     protected String getFileName() {
-        return getPrefix()+"-"+id+".yml";
+        return getDir()+"/"+getPrefix()+"-"+id+".yml";
     }
 
     @Override

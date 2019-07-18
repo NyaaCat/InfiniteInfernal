@@ -8,7 +8,7 @@ import org.bukkit.event.HandlerList;
 public class IMobNearDeathEvent extends Event {
     private final IMob iMob;
     private final LivingEntity damager;
-    private static final HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
     private boolean canceled = false;
 
     public IMobNearDeathEvent(IMob iMob, LivingEntity damager){
@@ -36,4 +36,9 @@ public class IMobNearDeathEvent extends Event {
     public HandlerList getHandlers() {
         return handlerList;
     }
+
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
 }

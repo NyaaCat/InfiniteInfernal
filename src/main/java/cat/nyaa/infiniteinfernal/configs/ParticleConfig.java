@@ -18,7 +18,7 @@ public class ParticleConfig implements ISerializable {
     @Serializable
     public String extraData = "";
     @Serializable
-    public boolean forced = true;
+    public boolean forced = false;
 
     public double getOffsetX() {
         return delta.get(0);

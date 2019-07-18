@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.abilitiy.IAbility;
+import cat.nyaa.infiniteinfernal.ability.IAbility;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,4 +23,12 @@ public class AbilitySetConfig extends IdFileConfig {
         return "set";
     }
 
+    @Override
+    public String getDir() {
+        return "abilities";
+    }
+
+    public int getWeight() {
+        return weight;
+    }
 }

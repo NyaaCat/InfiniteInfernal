@@ -1,7 +1,8 @@
 package cat.nyaa.infiniteinfernal.mob;
 
-import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
+import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
@@ -33,7 +34,7 @@ public interface IMob {
     void retarget(LivingEntity entity);
 
     LivingEntity getTarget();
-    List<LivingEntity> getNonPlayerTargets();
+    Map<LivingEntity, Aggro> getNonPlayerTargets();
     boolean isTarget(LivingEntity target);
 
     MobConfig getConfig();

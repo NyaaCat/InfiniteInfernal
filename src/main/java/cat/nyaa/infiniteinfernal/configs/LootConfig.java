@@ -3,7 +3,6 @@ package cat.nyaa.infiniteinfernal.configs;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
-import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.configuration.FileConfigure;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,10 +19,15 @@ public class LootConfig extends FileConfigure {
         this.plugin = plugin;
     }
 
-    @Serializable
+    @Serializable(name = "items")
     Map<String, ILootItem> lootItemMap = new LinkedHashMap<>();
     @Serializable(name = "map")
-    Map<String, Map<String, Integer>> lootMap = new LinkedHashMap<>();
+    Map<String, LootWeight> lootMap = new LinkedHashMap<>();
+
+    public static class LootWeight implements ISerializable{
+        @Serializable
+        public Map<String, Integer> weightMap = new LinkedHashMap<>();
+    }
 
     @Override
     public void load() {

@@ -8,7 +8,7 @@ import org.bukkit.event.HandlerList;
 public class InfernalSpawnEvent extends Event implements Cancellable {
     private final IMob iMob;
     private boolean canceled = false;
-    private HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
 
     public InfernalSpawnEvent(IMob iMob) {
         this.iMob = iMob;
@@ -20,6 +20,10 @@ public class InfernalSpawnEvent extends Event implements Cancellable {
 
     @Override
     public HandlerList getHandlers() {
+        return handlerList;
+    }
+
+    public static HandlerList getHandlerList() {
         return handlerList;
     }
 

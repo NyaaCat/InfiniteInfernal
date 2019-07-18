@@ -1,0 +1,8 @@
+language: en_US
+nameTag: '[INFERNAL] {level.prefix} {mob.type} Level {Level.level}'
+bossbar:
+  __class__: cat.nyaa.infiniteinfernal.configs.BossbarConfig
+  enabled: true
+  killsuffix: '[KILLED]'
+tags: []
+worlds: {}

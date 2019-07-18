@@ -87,7 +87,7 @@ public class MobManager {
         World world = location.getWorld();
         if (world != null) {
             Class<? extends Entity> entityClass = entityType.getEntityClass();
-            if (entityClass != null && entityClass.isAssignableFrom(LivingEntity.class)) {
+            if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
                 if (level == null) {
                     List<String> levelStrs = config.spawn.levels;
                     List<Integer> levels = MobConfig.parseLevels(levelStrs);
@@ -126,36 +126,34 @@ public class MobManager {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
-        if (regions.isEmpty()) {
-            return null;
-        }
-        regions.forEach(regionConfig -> {
-            if (regionConfig.mobs.isEmpty()) {
-                return;
-            }
-            regionConfig.mobs.forEach(mobs -> {
-                try {
-                    String[] split = mobs.split(":");
-                    String mobId = split[0];
-                    int mobWeight = Integer.parseInt(split[1]);
-                    MobConfig mobConfig = idCfgMap.get(mobId);
-                    if (mobConfig == null) {
-                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
-                        return;
-                    }
-                    Biome biome = location.getBlock().getBiome();
-                    World world = location.getWorld();
-                    if (mobConfig.spawn.biomes.contains(biome)&& world != null && mobConfig.spawn.worlds.contains(world.getName())){
-                        spawnConfs.add(new WeightedPair<>(mobConfig, 0, mobWeight));
-                    }
-                } catch (NumberFormatException e) {
-                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
-                } catch (Exception e){
-                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.bad_config", mobs));
+        if (!regions.isEmpty()) {
+            regions.forEach(regionConfig -> {
+                if (regionConfig.mobs.isEmpty()) {
+                    return;
                 }
+                regionConfig.mobs.forEach(mobs -> {
+                    try {
+                        String[] split = mobs.split(":");
+                        String mobId = split[0];
+                        int mobWeight = Integer.parseInt(split[1]);
+                        MobConfig mobConfig = idCfgMap.get(mobId);
+                        if (mobConfig == null) {
+                            Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
+                            return;
+                        }
+                        Biome biome = location.getBlock().getBiome();
+                        World world = location.getWorld();
+                        if (mobConfig.spawn.biomes.contains(biome.name()) && world != null && mobConfig.spawn.worlds.contains(world.getName())) {
+                            spawnConfs.add(new WeightedPair<>(mobConfig, 0, mobWeight));
+                        }
+                    } catch (NumberFormatException e) {
+                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
+                    } catch (Exception e) {
+                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.bad_config", mobs));
+                    }
+                });
             });
-        });
-
+        }
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
             MobConfig mobConfig = selected.getKey();
@@ -178,9 +176,10 @@ public class MobManager {
                     return;
                 }
                 List<MobConfig> collect = natualSpawnLists.get(level);
+                if (collect == null)return;
                 Biome biome = location.getBlock().getBiome();
                 collect = collect.stream().parallel()
-                        .filter(config1 -> config1.spawn.worlds.contains(world.getName()) && config1.spawn.biomes.contains(biome))
+                        .filter(config1 -> config1.spawn.worlds.contains(world.getName()) && config1.spawn.biomes.contains(biome.name()))
                         .collect(Collectors.toList());
                 if (!collect.isEmpty()) {
                     levelCandidates.add(new WeightedPair<>(collect, level, weight));
@@ -221,6 +220,6 @@ public class MobManager {
     }
 
     public IMob toIMob(Entity entity) {
-        return uuidMap.get(entity);
+        return uuidMap.get(entity.getUniqueId());
     }
 }

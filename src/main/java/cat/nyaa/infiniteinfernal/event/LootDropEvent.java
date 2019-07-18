@@ -13,7 +13,7 @@ public class LootDropEvent extends Event {
     private ILootItem loot;
     private ILootItem specialLoot;
     private EntityDeathEvent ev;
-    private HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
 
     public ILootItem getLoot() {
         return loot;
@@ -49,6 +49,10 @@ public class LootDropEvent extends Event {
 
     @Override
     public HandlerList getHandlers() {
+        return handlerList;
+    }
+
+    public static HandlerList getHandlerList() {
         return handlerList;
     }
 

@@ -1,12 +1,14 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.nyaacore.configuration.ISerializable;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class RegionConfig extends IdFileConfig {
 
@@ -30,7 +32,13 @@ public class RegionConfig extends IdFileConfig {
         return "region";
     }
 
+    @Override
+    public String getDir() {
+        return "regions";
+    }
+
     public static class Region implements ISerializable {
+        public Region(){}
 
         public Region(Location location1, Location location2){
             this.world = location1.getWorld() == null ? "" :location1.getWorld().getName();
@@ -42,9 +50,7 @@ public class RegionConfig extends IdFileConfig {
 
             int z1 = location1.getBlockZ();
             int z2 = location2.getBlockZ();
-            this.location1 = location1;
-            this.location2 = location2;
-            setRegion(x1,x2,y1,y2,z1,z2);
+            setRegion(location1.getWorld(), x1,x2,y1,y2,z1,z2);
         }
 
         public Region(World world, int xMin, int xMax, int yMin, int yMax, int zMin, int zMax){
@@ -57,12 +63,11 @@ public class RegionConfig extends IdFileConfig {
 
             int z1 = zMax;
             int z2 = zMin;
-            location1 = new Location(world, x1,y1,z1);
-            location2 = new Location(world, x2,y2,z2);
-            setRegion(x1,x2,y1,y2,z1,z2);
+
+            setRegion(world, x1,x2,y1,y2,z1,z2);
         }
 
-        private void setRegion(int x1, int x2, int y1, int y2, int z1, int z2){
+        private void setRegion(World world, int x1, int x2, int y1, int y2, int z1, int z2){
             xMax = Math.max(x1,x2);
             xMin = Math.min(x1,x2);
 
@@ -71,6 +76,8 @@ public class RegionConfig extends IdFileConfig {
 
             zMax = Math.max(z1,z2);
             zMin = Math.min(z1,z2);
+            location1 = new Location(world, x1,y1,z1);
+            location2 = new Location(world, x2,y2,z2);
         }
 
         @Serializable
@@ -111,10 +118,13 @@ public class RegionConfig extends IdFileConfig {
         }
 
         public boolean contains(Location location) {
+            if (location1 == null || location2 == null){
+                setRegion(Bukkit.getWorld(world), xMin,xMax,yMin,yMax,zMin,zMax);
+            }
             try{
                 return BoundingBox.of(location1, location2).contains(location.toVector());
             }catch (IllegalArgumentException e){
-                //todo: log
+                Bukkit.getLogger().log(Level.SEVERE, "invalid location", e);
                 return false;
             }
         }

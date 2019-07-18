@@ -48,7 +48,7 @@ public class InfSpawnControler implements ISpawnControler {
                 .map(entity -> ((Player) entity))
                 .forEach(player -> {
                     boolean tempB = canSpawn.get();
-                    if (!tempB)return;
+                    if (!tempB) return;
                     canSpawn.set(canSpawnNearPlayer(player) && !isTooClose(player, location));
                 });
         return canSpawn.get();
@@ -134,6 +134,7 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     private void registerMob(IMob iMob) {
+        if (iMob == null)return;
         World world = iMob.getEntity().getWorld();
         int maxSpawnDistance = getMaxSpawnDistance(world);
         Utils.getValidTargets(iMob, world.getNearbyEntities(iMob.getEntity().getLocation(), maxSpawnDistance, maxSpawnDistance, maxSpawnDistance))
@@ -172,8 +173,8 @@ public class InfSpawnControler implements ISpawnControler {
     public void handleSpawnEvent(CreatureSpawnEvent event) {
         World world = event.getLocation().getWorld();
         if (world == null) return;
-        boolean isIMob = Context.instance().getBoolean(MobManager.MOB_SPAWN_CONTEXT, MobManager.IS_IMOB);
-        if (isIMob) {
+        Boolean isIMob = Context.instance().getBoolean(MobManager.MOB_SPAWN_CONTEXT, MobManager.IS_IMOB);
+        if (isIMob != null && isIMob) {
             if (!canSpawn(world, event.getLocation())) {
                 event.setCancelled(true);
                 return;
@@ -186,7 +187,7 @@ public class InfSpawnControler implements ISpawnControler {
         LivingEntity entity = event.getEntity();
         World world = entity.getWorld();
         IMob iMob = MobManager.instance().toIMob(event.getEntity());
-        if (iMob == null)return;
+        if (iMob == null) return;
         MobManager.instance().removeMob(iMob);
         mobPlayerMap.remove(iMob);
         int maxSpawnDistance = getMaxSpawnDistance(world);

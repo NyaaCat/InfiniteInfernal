@@ -15,6 +15,10 @@ commands:
     aliases: [ii,im,inf]
     permission: "im.admin"
     permission-message: "You don't have required permission <permission>"
+  imi:
+    description: "controls message for infinite infernal plugin"
+    permission: "imi.command"
+    permission-message: "You don't have required permission <permission>"
 
 permissions:
   im.admin:

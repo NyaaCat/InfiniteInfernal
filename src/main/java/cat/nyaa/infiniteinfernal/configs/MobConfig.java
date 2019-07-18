@@ -3,7 +3,6 @@ package cat.nyaa.infiniteinfernal.configs;
 import cat.nyaa.infiniteinfernal.utils.Weightable;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Biome;
 import org.bukkit.entity.EntityType;
 
 import java.util.ArrayList;
@@ -73,7 +72,7 @@ public class MobConfig extends IdFileConfig implements Weightable {
         @Serializable
         public List<String> worlds = new ArrayList<>();
         @Serializable
-        public List<Biome> biomes = new ArrayList<>();
+        public List<String> biomes = new ArrayList<>();
 
         @Override
         public int getWeight() {
@@ -102,5 +101,10 @@ public class MobConfig extends IdFileConfig implements Weightable {
     @Override
     public String getPrefix() {
         return "mob";
+    }
+
+    @Override
+    public String getDir() {
+        return "mobs";
     }
 }

@@ -2,10 +2,12 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
+import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class InfPlugin extends JavaPlugin {
@@ -21,6 +23,7 @@ public class InfPlugin extends JavaPlugin {
     BroadcastManager broadcastManager;
     InfMessager infMessager;
     ISpawnControler spawnControler;
+    ImiCommands imiCommand;
 
 
     @Override
@@ -33,6 +36,7 @@ public class InfPlugin extends JavaPlugin {
         i18n = new I18n(this, config.language);
         i18n.load();
         commands = new AdminCommands(this, i18n);
+        imiCommand = new ImiCommands(this, i18n);
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
         broadcastManager = new BroadcastManager();
@@ -40,6 +44,10 @@ public class InfPlugin extends JavaPlugin {
         messageConfig = new MessageConfig();
         messageConfig.load();
         infMessager = new InfMessager(messageConfig);
+        spawnControler = new InfSpawnControler(this);
+        Bukkit.getPluginManager().registerEvents(events, this);
+        Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
+        Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
         MainLoopTask.start();
     }
 

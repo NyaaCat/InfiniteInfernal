@@ -22,7 +22,7 @@ public class Utils {
     private static Random random = new Random();
 
     public static <T> T randomPick(List<T> list) {
-        return list.get(random.nextInt(list.size()));
+        return list.isEmpty()? null : list.get(random.nextInt(list.size()));
     }
 
     public static <T extends Weightable> T weightedRandomPick(List<T> list) {

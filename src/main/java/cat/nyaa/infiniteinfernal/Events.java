@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.abilitiy.*;
+import cat.nyaa.infiniteinfernal.ability.*;
 import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.LootDropEvent;
@@ -49,6 +49,7 @@ public class Events implements Listener {
                     });
             InfPlugin.plugin.getSpawnControler().handleMobDeath(ev);
             Player killer = ev.getEntity().getKiller();
+            if (killer == null)return;
             ILootItem loot = LootManager.makeDrop(killer, iMob);
             ILootItem specialLoot = LootManager.makeSpecialDrop(killer, iMob);
             ev.setDroppedExp(iMob.getExp());

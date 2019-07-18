@@ -47,7 +47,7 @@ public class InfAggroControler implements IAggroControler {
                             }
                             return b;
                         }).map(player -> player);
-                LivingEntity livingEntity = Stream.concat(livingEntityStream, iMob.getNonPlayerTargets().stream()).max(comparator).orElse(null);
+                LivingEntity livingEntity = Stream.concat(livingEntityStream, iMob.getNonPlayerTargets().keySet().stream()).max(comparator).orElse(null);
                 return livingEntity;
             }
         }

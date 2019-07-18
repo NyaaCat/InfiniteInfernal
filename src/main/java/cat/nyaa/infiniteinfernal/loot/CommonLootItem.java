@@ -24,6 +24,7 @@ public class CommonLootItem implements ILootItem, ISerializable {
         this.plugin = plugin;
         this.name = name;
         this.item = item;
+        updateNbt();
     }
 
     @Override

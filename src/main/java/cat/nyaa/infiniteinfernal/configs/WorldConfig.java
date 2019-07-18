@@ -11,6 +11,8 @@ import java.util.List;
 public class WorldConfig implements ISerializable {
     private InfPlugin plugin;
 
+    public WorldConfig(){}
+
     public WorldConfig(InfPlugin plugin){
         this.plugin = plugin;
     }
@@ -51,9 +53,9 @@ public class WorldConfig implements ISerializable {
         @Serializable
         public int base = 10;
         @Serializable
-        String dec = "INVISIBILITY:2";
+        String dec = "effect:INVISIBILITY:2";
         @Serializable
-        String inc = "UNLUCK:2";
+        String inc = "attribute:GENERIC_LUCK:-2";
 
         ICorrector incCorrector = CorrectionParser.parseStr(inc);
         ICorrector decCorrector = CorrectionParser.parseStr(dec);
