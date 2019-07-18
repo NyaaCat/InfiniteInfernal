@@ -51,6 +51,7 @@ public class Events implements Listener {
             Player killer = ev.getEntity().getKiller();
             ILootItem loot = LootManager.makeDrop(killer, iMob);
             ILootItem specialLoot = LootManager.makeSpecialDrop(killer, iMob);
+            ev.setDroppedExp(iMob.getExp());
             LootDropEvent lootDropEvent = new LootDropEvent(killer, iMob, loot, specialLoot, ev);
             Bukkit.getPluginManager().callEvent(lootDropEvent);
         }
@@ -180,8 +181,7 @@ public class Events implements Listener {
     public void onLootEvent(LootDropEvent ev) {
         List<ItemStack> drops = ev.getEntityDeathEvent().getDrops();
         drops.clear();
-        //todo
-        IMessager iMessager = null;
+        IMessager iMessager = InfPlugin.plugin.getMessager();
         ILootItem normalLoot = ev.getLoot();
         ILootItem specialLoot = ev.getSpecialLoot();
         if (normalLoot != null) {
@@ -191,12 +191,9 @@ public class Events implements Listener {
             iMessager.broadcastToWorld(ev.getiMob(), ev.getKiller(), null);
         }
 
-        if (specialLoot != null){
+        if (specialLoot != null) {
             iMessager.broadcastExtraToWorld(ev.getiMob(), ev.getKiller(), specialLoot);
             drops.add(specialLoot.getItemStack());
-        }else {
-            iMessager.broadcastExtraToWorld(ev.getiMob(), ev.getKiller(), null);
         }
     }
-
 }

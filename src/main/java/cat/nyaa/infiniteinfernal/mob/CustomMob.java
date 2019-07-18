@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.abilitiy.AbilitySet;
 import cat.nyaa.infiniteinfernal.abilitiy.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.controler.InfAggroControler;
@@ -268,5 +269,20 @@ public class CustomMob implements IMob {
     @Override
     public void onDeath() {
         MobManager.instance().removeMob(this);
+    }
+
+    @Override
+    public int getExp() {
+        int exp = config.loot.expOverride;
+        if (exp==-1){
+            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
+            if (levelConfig == null){
+                Bukkit.getLogger().log(Level.WARNING, "no level config for \""+getLevel()   +"\"");
+                exp = 0;
+            }else {
+                exp = levelConfig.attr.exp;
+            }
+        }
+        return exp;
     }
 }

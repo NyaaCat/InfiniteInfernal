@@ -1,6 +1,9 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
+import cat.nyaa.infiniteinfernal.loot.IMessager;
+import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -10,11 +13,13 @@ public class InfPlugin extends JavaPlugin {
 
     Events events;
     Config config;
+    MessageConfig messageConfig;
     I18n i18n;
     AdminCommands commands;
     LootManager lootManager;
     MobManager mobManager;
     BroadcastManager broadcastManager;
+    InfMessager infMessager;
     ISpawnControler spawnControler;
 
 
@@ -32,6 +37,9 @@ public class InfPlugin extends JavaPlugin {
         mobManager = MobManager.instance();
         broadcastManager = new BroadcastManager();
         broadcastManager.load();
+        messageConfig = new MessageConfig();
+        messageConfig.load();
+        infMessager = new InfMessager(messageConfig);
         MainLoopTask.start();
     }
 
@@ -41,6 +49,12 @@ public class InfPlugin extends JavaPlugin {
         i18n.load();
         LootManager.instance().load();
         MainLoopTask.start();
+
+        mobManager.load();
+        broadcastManager.load();
+        messageConfig = new MessageConfig();
+        messageConfig.load();
+        infMessager = new InfMessager(messageConfig);
     }
 
     @Override
@@ -64,5 +78,9 @@ public class InfPlugin extends JavaPlugin {
 
     public BroadcastManager getBroadcastManager() {
         return broadcastManager;
+    }
+
+    public IMessager getMessager() {
+        return infMessager;
     }
 }

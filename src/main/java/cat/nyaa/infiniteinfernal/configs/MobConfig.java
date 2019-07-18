@@ -88,6 +88,8 @@ public class MobConfig extends IdFileConfig implements Weightable {
         public boolean imLoot = true;
         @Serializable
         public SpecialConfig special = new SpecialConfig();
+        @Serializable
+        public int expOverride = -1;
 
         public static class SpecialConfig implements ISerializable {
             @Serializable

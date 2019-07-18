@@ -38,4 +38,6 @@ public interface IMob {
 
     MobConfig getConfig();
     void onDeath();
+
+    int getExp();
 }

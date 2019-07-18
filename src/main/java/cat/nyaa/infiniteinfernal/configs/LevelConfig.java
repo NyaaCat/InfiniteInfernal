@@ -30,7 +30,7 @@ public class LevelConfig extends IdFileConfig {
         @Serializable
         public double damageResist = 0;
         @Serializable
-        public double exp = 5;
+        public int exp = 5;
         @Serializable
         public double aggro = 48;
     }

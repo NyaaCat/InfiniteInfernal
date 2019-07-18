@@ -38,7 +38,7 @@ public class MobManager {
         this.load();
     }
 
-    private void load() {
+    public void load() {
         DirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
         buildNatualSpawnList(mobConfigs);
         buildCfgMaps(mobConfigs);
