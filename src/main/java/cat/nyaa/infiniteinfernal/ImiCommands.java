@@ -79,7 +79,7 @@ public class ImiCommands extends CommandReceiver {
 
     private void setState(Player sender, BroadcastMode type) {
         BroadcastManager broadcastConfig = InfPlugin.plugin.getBroadcastManager();
-        broadcastConfig.setReceivetype(sender.getUniqueId().toString(), type);
+        broadcastConfig.setReceivetype(sender.getUniqueId().toString(), type.name());
         broadcastConfig.sendHint(sender, type);
     }
 

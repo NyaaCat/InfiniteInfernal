@@ -58,7 +58,7 @@ public class LootManager {
     }
 
     public List<ILootItem> getLevelDrops(int level) {
-        return commonDrops.get(level);
+        return commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
     }
 
     public void addLoot(String name, boolean dynamic, ItemStack itemStack) {
@@ -86,6 +86,7 @@ public class LootManager {
         iLootItems.add(lootItem);
         Map<Integer, Integer> weightMap = itemWeightMap.computeIfAbsent(lootItem, iLootItem -> new LinkedHashMap<>());
         weightMap.put(level, weight);
+        save();
     }
 
     public List<ILootItem> inspect(int level) {
@@ -111,7 +112,7 @@ public class LootManager {
 
     public static ILootItem makeSpecialDrop(Player killer, IMob iMob) {
         double specialChance = iMob.getSpecialChance();
-        if (!Utils.possibility(specialChance)) {
+        if (!Utils.possibility(specialChance/100d)) {
             return null;
         }
         World world = killer.getWorld();
@@ -220,8 +221,8 @@ public class LootManager {
 //                lootItems.forEach(iLootItem -> {
 //                    levelLootMap.put(iLootItem.getName(), getWeightForLevel(iLootItem, level));
 //                });
+                LootConfig.LootWeight lootWeight = new LootConfig.LootWeight();
                 lootItems.forEach(lootItem -> {
-                    LootConfig.LootWeight lootWeight = new LootConfig.LootWeight();
                     lootWeight.weightMap.put(lootItem.getName(), getWeightForLevel(lootItem, level));
                     lootMap.put(levelStr, lootWeight);
                 });

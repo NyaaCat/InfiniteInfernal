@@ -40,6 +40,9 @@ public class MainLoopTask {
     private static void mobEffect(IMob iMob) {
         iMob.showParticleEffect();
         iMob.autoRetarget();
+        if (iMob.getEntity().isDead()){
+            MobManager.instance().removeMob(iMob);
+        }
         List<IAbilitySet> abilities = iMob.getAbilities();
         Utils.weightedRandomPick(abilities).getAbilitiesInSet().stream()
                 .filter(iAbility -> iAbility instanceof AbilityActive)

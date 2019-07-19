@@ -1,5 +1,5 @@
 language: en_US
-nameTag: '[INFERNAL] {level.prefix} {mob.type} Level {Level.level}'
+nameTag: '[INFERNAL] {level.prefix} {mob.type} Level {level.level}'
 bossbar:
   __class__: cat.nyaa.infiniteinfernal.configs.BossbarConfig
   enabled: true

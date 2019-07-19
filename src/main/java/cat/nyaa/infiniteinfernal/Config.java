@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -82,20 +83,23 @@ public class Config extends PluginConfigure {
 
     @Override
     public void load() {
-        super.load();
+        getPlugin().saveDefaultConfig();
+        getPlugin().reloadConfig();
+        deserialize(getPlugin().getConfig());
         if (worlds.size() == 0) {
             Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
             initConfigs();
         }
         generateConfigForWorlds();
         this.loadStandaloneConfigs();
+        save();
     }
 
     private void generateConfigForWorlds() {
         List<World> worlds = Bukkit.getWorlds();
         if (!worlds.isEmpty()) {
-            String inc = "attribute:LUCK:10";
-            String dec = "attribute:UNLUCK:5";
+            String inc = "attribute:GENERIC_LUCK:10";
+            String dec = "effect:UNLUCK:5";
             worlds.forEach(world -> {
                 if (this.worlds.get(world.getName()) == null) {
                     WorldConfig value = new WorldConfig(InfPlugin.plugin);
@@ -106,7 +110,6 @@ public class Config extends PluginConfigure {
                     this.worlds.put(world.getName(), value);
                 }
             });
-            save();
         } else {
             Bukkit.getLogger().log(Level.SEVERE, "No world detected!");
         }
@@ -139,7 +142,7 @@ public class Config extends PluginConfigure {
         abilityConfigs.add(actives);
         abilityConfigs.add(passives);
         abilityConfigs.add(dummies);
-        ItemStack sampleItem = new ItemStack(Material.ACACIA_BOAT);
+        ItemStack sampleItem = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta = sampleItem.getItemMeta();
         if (itemMeta!=null){
             itemMeta.setDisplayName("inf-sample");
@@ -150,7 +153,7 @@ public class Config extends PluginConfigure {
             itemMeta.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             sampleItem.setItemMeta(itemMeta);
         }
-        ItemStack extraSampleItem = new ItemStack(Material.ACACIA_BOAT);
+        ItemStack extraSampleItem = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta1 = sampleItem.getItemMeta();
         if (itemMeta1!=null){
             itemMeta1.setDisplayName("inf-extra-sample");
@@ -161,26 +164,71 @@ public class Config extends PluginConfigure {
             itemMeta1.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             extraSampleItem.setItemMeta(itemMeta1);
         }
-        LootManager.instance().addLoot("inf-sample", true, sampleItem);
-        LootManager.instance().setDrop("inf-sample", 1, 10);
+        ItemStack sampleItem5 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta2 = sampleItem.getItemMeta();
+        if (itemMeta2!=null){
+            itemMeta2.setDisplayName("inf-sample-5");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-5");
+            itemMeta2.setLore(lore);
+            itemMeta2.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta2.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem5.setItemMeta(itemMeta2);
+        }
+        ItemStack sampleItem10 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta3 = sampleItem.getItemMeta();
+        if (itemMeta3!=null){
+            itemMeta3.setDisplayName("inf-sample-10");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-10");
+            itemMeta3.setLore(lore);
+            itemMeta3.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta3.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem10.setItemMeta(itemMeta3);
+        }
+        ItemStack sampleItem20 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta4 = sampleItem.getItemMeta();
+        if (itemMeta4!=null){
+            itemMeta4.setDisplayName("inf-sample-20");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-20");
+            itemMeta4.setLore(lore);
+            itemMeta4.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta4.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem20.setItemMeta(itemMeta4);
+        }
+        LootManager.instance().addLoot("inf-sample-10", true, sampleItem10);
+        LootManager.instance().addLoot("inf-sample-20", true, sampleItem20);
+        LootManager.instance().addLoot("inf-sample-5", true, sampleItem5);
+        LootManager.instance().setDrop("inf-sample-10", 1, 10);
+        LootManager.instance().setDrop("inf-sample-20", 1, 20);
+        LootManager.instance().setDrop("inf-sample-5", 1, 5);
+        LootManager.instance().setDrop("inf-sample-10", 2, 10);
+        LootManager.instance().setDrop("inf-sample-20", 2, 20);
+        LootManager.instance().setDrop("inf-sample-5", 2, 5);
+        LootManager.instance().setDrop("inf-sample-10", 3, 10);
+        LootManager.instance().setDrop("inf-sample-20", 3, 20);
+        LootManager.instance().setDrop("inf-sample-5", 3, 5);
         LootManager.instance().addLoot("inf-extra-sample", true, extraSampleItem);
-        LootManager.instance().setDrop("inf-extra-sample", 1, 10);
         MobConfig mobConfig = new MobConfig(0);
         mobConfig.type = EntityType.ZOMBIE;
         mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getId());
-        mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getId());
+        mobConfig.abilities.add(passives.getPrefix()+"-"+passives.getId());
         mobConfig.abilities.add("set-2");
         mobConfig.name = "Zombie-King";
-        mobConfig.spawn.biomes.add("PLAINS");
+        for (Biome value : Biome.values()) {
+            mobConfig.spawn.biomes.add(value.name());
+        }
         mobConfig.spawn.worlds.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
         mobConfig.spawn.levels.add("1-3");
         mobConfig.spawn.levels.add("5");
-        mobConfig.loot.special.list.add("inf-sample:10");
         mobConfig.loot.vanilla = false;
         mobConfig.loot.special.list.add("inf-extra-sample:10");
         mobConfigs.add(mobConfig);
         Bukkit.getWorlds().stream().forEach(world -> {
-            regionConfigs.add(new RegionConfig(0, new RegionConfig.Region(new Location(world, 0,0,0), new Location(world, 100,100,100))));
+            RegionConfig config = new RegionConfig(0, new RegionConfig.Region(new Location(world, 0, 0, 0), new Location(world, 100, 100, 100)));
+            config.mobs.add("mob-0:10");
+            regionConfigs.add(config);
         });
         save();
     }

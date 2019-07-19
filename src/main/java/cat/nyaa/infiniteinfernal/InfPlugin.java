@@ -4,7 +4,7 @@ import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
-import cat.nyaa.infiniteinfernal.loot.InfMessager;
+import cat.nyaa.infiniteinfernal.loot.infMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import org.bukkit.Bukkit;
@@ -21,7 +21,7 @@ public class InfPlugin extends JavaPlugin {
     LootManager lootManager;
     MobManager mobManager;
     BroadcastManager broadcastManager;
-    InfMessager infMessager;
+    cat.nyaa.infiniteinfernal.loot.infMessager infMessager;
     ISpawnControler spawnControler;
     ImiCommands imiCommand;
 
@@ -43,7 +43,7 @@ public class InfPlugin extends JavaPlugin {
         broadcastManager.load();
         messageConfig = new MessageConfig();
         messageConfig.load();
-        infMessager = new InfMessager(messageConfig);
+        infMessager = new infMessager(messageConfig);
         spawnControler = new InfSpawnControler(this);
         Bukkit.getPluginManager().registerEvents(events, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
@@ -60,14 +60,15 @@ public class InfPlugin extends JavaPlugin {
 
         mobManager.load();
         broadcastManager.load();
-        messageConfig = new MessageConfig();
+//        messageConfig = new MessageConfig();
         messageConfig.load();
-        infMessager = new InfMessager(messageConfig);
+        infMessager = new infMessager(messageConfig);
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
+        config.save();
         LootManager.disable();
         MobManager.disable();
     }

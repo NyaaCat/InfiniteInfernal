@@ -39,9 +39,28 @@ public class MobManager {
     }
 
     public void load() {
+        initialize();
         DirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
         buildNatualSpawnList(mobConfigs);
         buildCfgMaps(mobConfigs);
+    }
+
+    private void initialize() {
+        if ((!worldMobMap.values().isEmpty())) {
+            worldMobMap.values().forEach(list ->{
+                if (!list.isEmpty()){
+                    LinkedList<IMob> iMobs = new LinkedList<>(list);
+                    IMob poll;
+                    while ((poll = iMobs.poll()) !=null){
+                        removeMob(poll);
+                    }
+                }
+            });
+        }
+        worldMobMap.clear();
+        nameCfgMap.clear();
+        idCfgMap.clear();
+        natualSpawnLists.clear();
     }
 
     private void buildCfgMaps(DirConfigs<MobConfig> mobConfigs) {

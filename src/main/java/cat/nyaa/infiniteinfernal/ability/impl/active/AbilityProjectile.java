@@ -5,12 +5,14 @@ import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +27,7 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
     @Serializable
     public double speed = 1;
     @Serializable
-    public Projectile projectile;
+    public String projectile = "Arrow";
     @Serializable
     public double cone = 0;
     @Serializable
@@ -37,10 +39,20 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
 
     private Projectile launch(LivingEntity mobEntity, Entity target, Vector vector, boolean isExtra) {
         vector = Utils.cone(vector, cone);
-        Projectile projectile = mobEntity.launchProjectile(this.projectile.getClass(), vector);
-        projectile.setGravity(gravity);
-        Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
-        return projectile;
+        Class<?> aClass = null;
+        try {
+            aClass = Class.forName("org.bukkit.entity." + this.projectile);
+            if (Projectile.class.isAssignableFrom(aClass)){
+                Projectile projectile = mobEntity.launchProjectile(((Class<? extends Projectile>) aClass), vector);
+                projectile.setGravity(gravity);
+                Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
+                return projectile;
+            }
+            Bukkit.getLogger().log(Level.WARNING, "no projectile name "+projectile);
+        } catch (ClassNotFoundException e) {
+            Bukkit.getLogger().log(Level.WARNING, "no projectile name "+projectile);
+        }
+        return null;
     }
 
 

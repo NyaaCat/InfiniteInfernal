@@ -11,6 +11,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -195,6 +196,9 @@ public class Events implements Listener {
         if (specialLoot != null) {
             iMessager.broadcastExtraToWorld(ev.getiMob(), ev.getKiller(), specialLoot);
             drops.add(specialLoot.getItemStack());
+        }
+        if (drops.isEmpty()){
+            drops.add(new ItemStack(Material.AIR));
         }
     }
 }

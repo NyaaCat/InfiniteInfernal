@@ -6,26 +6,27 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
 public class RegionConfig extends IdFileConfig {
 
-    public RegionConfig(int id){
+    public RegionConfig(int id) {
         super(id);
     }
 
-    public RegionConfig(int id, Region region){
+    public RegionConfig(int id, Region region) {
         super(id);
         this.region = region;
     }
 
     @Serializable
-    public Region region;
+    public Region region = new Region();
 
     @Serializable
-    public List<String> mobs;
+    public List<String> mobs = new ArrayList<>();
 
     @Override
     public String getPrefix() {
@@ -38,10 +39,11 @@ public class RegionConfig extends IdFileConfig {
     }
 
     public static class Region implements ISerializable {
-        public Region(){}
+        public Region() {
+        }
 
-        public Region(Location location1, Location location2){
-            this.world = location1.getWorld() == null ? "" :location1.getWorld().getName();
+        public Region(Location location1, Location location2) {
+            this.world = location1.getWorld() == null ? "" : location1.getWorld().getName();
             int x1 = location1.getBlockX();
             int x2 = location2.getBlockX();
 
@@ -50,10 +52,10 @@ public class RegionConfig extends IdFileConfig {
 
             int z1 = location1.getBlockZ();
             int z2 = location2.getBlockZ();
-            setRegion(location1.getWorld(), x1,x2,y1,y2,z1,z2);
+            setRegion(location1.getWorld(), x1, x2, y1, y2, z1, z2);
         }
 
-        public Region(World world, int xMin, int xMax, int yMin, int yMax, int zMin, int zMax){
+        public Region(World world, int xMin, int xMax, int yMin, int yMax, int zMin, int zMax) {
             this.world = world == null ? "" : world.getName();
             int x1 = xMax;
             int x2 = xMin;
@@ -64,36 +66,36 @@ public class RegionConfig extends IdFileConfig {
             int z1 = zMax;
             int z2 = zMin;
 
-            setRegion(world, x1,x2,y1,y2,z1,z2);
+            setRegion(world, x1, x2, y1, y2, z1, z2);
         }
 
-        private void setRegion(World world, int x1, int x2, int y1, int y2, int z1, int z2){
-            xMax = Math.max(x1,x2);
-            xMin = Math.min(x1,x2);
+        private void setRegion(World world, int x1, int x2, int y1, int y2, int z1, int z2) {
+            xMax = Math.max(x1, x2);
+            xMin = Math.min(x1, x2);
 
-            yMax = Math.max(y1,y2);
-            yMin = Math.min(y1,y2);
+            yMax = Math.max(y1, y2);
+            yMin = Math.min(y1, y2);
 
-            zMax = Math.max(z1,z2);
-            zMin = Math.min(z1,z2);
-            location1 = new Location(world, x1,y1,z1);
-            location2 = new Location(world, x2,y2,z2);
+            zMax = Math.max(z1, z2);
+            zMin = Math.min(z1, z2);
+            location1 = new Location(world, x1, y1, z1);
+            location2 = new Location(world, x2, y2, z2);
         }
 
         @Serializable
-        public String world;
+        public String world = "world";
         @Serializable
-        public int xMax;
+        public int xMax = 0;
         @Serializable
-        public int xMin;
+        public int xMin = 0;
         @Serializable
-        public int yMax;
+        public int yMax = 0;
         @Serializable
-        public int yMin;
+        public int yMin = 0;
         @Serializable
-        public int zMax;
+        public int zMax = 0;
         @Serializable
-        public int zMin;
+        public int zMin = 0;
 
         private Location location1;
         private Location location2;
@@ -118,12 +120,16 @@ public class RegionConfig extends IdFileConfig {
         }
 
         public boolean contains(Location location) {
-            if (location1 == null || location2 == null){
-                setRegion(Bukkit.getWorld(world), xMin,xMax,yMin,yMax,zMin,zMax);
+            if (location1 == null || location2 == null) {
+                World world = Bukkit.getWorld(this.world);
+                if (world == null) {
+                    return false;
+                }
+                setRegion(world, xMin, xMax, yMin, yMax, zMin, zMax);
             }
-            try{
+            try {
                 return BoundingBox.of(location1, location2).contains(location.toVector());
-            }catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
                 Bukkit.getLogger().log(Level.SEVERE, "invalid location", e);
                 return false;
             }

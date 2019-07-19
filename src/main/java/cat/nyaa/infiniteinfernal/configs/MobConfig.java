@@ -14,7 +14,7 @@ public class MobConfig extends IdFileConfig implements Weightable {
     @Serializable
     public String name = "A custom mob";
     @Serializable
-    public String id = getPrefix() + getId();
+    public String id = getPrefix() +"-"+ getId();
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
     @Serializable

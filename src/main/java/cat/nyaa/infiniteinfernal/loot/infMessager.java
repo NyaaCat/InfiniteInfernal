@@ -18,14 +18,14 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.logging.Level;
 
-public class InfMessager implements IMessager {
+public class infMessager implements IMessager {
     private List<String> drop;
     private List<String> mobKill;
     private List<String> noDrop;
     private List<String> playerKill;
     private List<String> specialDrop;
 
-    public InfMessager(MessageConfig config){
+    public infMessager(MessageConfig config){
         setupFromConfig(config);
     }
 
@@ -79,7 +79,7 @@ public class InfMessager implements IMessager {
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
-                        .replaceAll("\\{player\\.item}", "{itemName}");
+                        .replaceAll("\\{drop\\.item}", "{itemName}");
                 message.append(str, lootItem.getItemStack());
                 break;
             case SPETIAL_DROP:
@@ -90,7 +90,7 @@ public class InfMessager implements IMessager {
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
-                        .replaceAll("\\{player\\.item}", "{itemName}");
+                        .replaceAll("\\{drop\\.special}", "{itemName}");
                 message.append(str, lootItem.getItemStack());
                 break;
             case NO_DROP:

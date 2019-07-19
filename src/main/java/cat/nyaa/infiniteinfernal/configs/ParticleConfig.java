@@ -10,7 +10,7 @@ public class ParticleConfig implements ISerializable {
     @Serializable
     public Particle type = Particle.FIREWORKS_SPARK;
     @Serializable
-    public List<Double> delta = Arrays.asList(0d, 15d, 0d);
+    public List<Double> delta = Arrays.asList(0d, 0d, 0d);
     @Serializable
     public double speed = 0;
     @Serializable

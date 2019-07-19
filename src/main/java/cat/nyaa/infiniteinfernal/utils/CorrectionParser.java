@@ -29,10 +29,10 @@ public class CorrectionParser {
                             corrections.add(parseEnchant(split[1]));
                             break;
                         default:
-                            Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + split[0] + "."));
+                            Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + s + "."));
                     }
                 }catch (Exception e){
-                    Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + split[0] + "."));
+                    Bukkit.getLogger().log(Level.WARNING, "", new IllegalConfigException("wrong target " + s + "."));
                 }
             });
         }

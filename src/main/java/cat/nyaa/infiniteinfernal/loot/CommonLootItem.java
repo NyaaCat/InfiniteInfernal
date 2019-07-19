@@ -29,6 +29,9 @@ public class CommonLootItem implements ILootItem, ISerializable {
 
     @Override
     public ItemStack getItemStack() {
+        if (item == null && nbt != null && !nbt.equals("")){
+            item = ItemStackUtils.itemFromBase64(nbt);
+        }
         return item;
     }
 

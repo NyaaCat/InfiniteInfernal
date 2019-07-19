@@ -63,8 +63,8 @@ public class AbilityUltraStrike extends ActiveAbility {
     }
 
     private void showEffect(Location location, IMob mobEntity) {
-//        location.getWorld().spawnParticle(Particle.END_ROD, location, 5, 0, 0, 0, 0.01, null, true);
-        location.getWorld().spawnParticle(Particle.PORTAL, location, 30, 0, 0, 0, 2, null, true);
+        location.getWorld().spawnParticle(Particle.END_ROD, location, 50, 0, 0, 0, 0.01, null, true);
+        location.getWorld().spawnParticle(Particle.PORTAL, location, 200, 0, 0, 0, 2, null, true);
         for (int i = 0; i < delay / 20; i++) {
             Bukkit.getScheduler().runTaskLater(InfPlugin.plugin, () -> {
                 location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);

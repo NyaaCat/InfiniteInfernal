@@ -35,7 +35,9 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
             public void run() {
                 World world = mobEntity.getWorld();
                 Location location = mobEntity.getLocation();
-                Utils.spawnParticle(particleConfig, world, location);
+                if (activited) {
+                    Utils.spawnParticle(particleConfig, world, location);
+                }else cancel();
             }
         };
         particleEffect.runTaskTimer(InfPlugin.plugin, 0, 1);

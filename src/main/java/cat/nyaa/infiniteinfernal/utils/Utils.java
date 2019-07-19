@@ -23,7 +23,7 @@ public class Utils {
     private static Random random = new Random();
 
     public static <T> T randomPick(List<T> list) {
-        return list.isEmpty()? null : list.get(random.nextInt(list.size()));
+        return list.isEmpty() ? null : list.get(random.nextInt(list.size()));
     }
 
     public static <T extends Weightable> T weightedRandomPick(List<T> list) {
@@ -31,7 +31,7 @@ public class Utils {
                 .mapToInt(Weightable::getWeight)
                 .sum();
         if (sum == 0) {
-            if(list.size()>0)return list.get(0);
+            if (list.size() > 0) return list.get(0);
             else return null;
         }
         int selected = random.nextInt(sum);
@@ -54,6 +54,9 @@ public class Utils {
         int sum = weightMap.values().stream().parallel()
                 .mapToInt(Integer::intValue)
                 .sum();
+        if (sum == 0) {
+            return weightMap.keySet().stream().findFirst().orElse(null);
+        }
         int selected = random.nextInt(sum);
         Iterator<Map.Entry<T, Integer>> iterator = weightMap.entrySet().stream().iterator();
         int count = 0;
@@ -62,6 +65,7 @@ public class Utils {
             next = iterator.next();
             int nextCount = count + next.getValue();
             if (count <= selected && nextCount > selected) {
+                break;
             }
             count = nextCount;
         }

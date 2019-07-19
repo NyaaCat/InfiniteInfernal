@@ -13,21 +13,21 @@ import java.util.Map;
 
 public class BroadcastManager extends FileConfigure {
     @Serializable
-    Map<String, BroadcastMode> broadcastSettings = new LinkedHashMap<>();
+    Map<String, String> broadcastSettings = new LinkedHashMap<>();
 
-    public void setReceivetype(String uuid, BroadcastMode receiveType){
+    public void setReceivetype(String uuid, String receiveType){
         broadcastSettings.put(uuid, receiveType);
         this.save();
     }
 
     public BroadcastMode getReceiveType(World world, String uuid){
-        return broadcastSettings.computeIfAbsent(uuid, s -> {
-            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world);
+        return BroadcastMode.valueOf(broadcastSettings.computeIfAbsent(uuid, s -> {
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
             if (worldConfig!=null){
-                return worldConfig.broadcastConfig.defaultMode;
+                return worldConfig.broadcastConfig.defaultMode.name();
             }
-            return BroadcastMode.NEARBY;
-        });
+            return BroadcastMode.NEARBY.name();
+        }));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class BroadcastManager extends FileConfigure {
                 receiveType = BroadcastMode.ALL;
                 break;
         }
-        setReceivetype(sender.getUniqueId().toString(), receiveType);
+        setReceivetype(sender.getUniqueId().toString(), receiveType.name());
         sendHint(sender,receiveType);
     }
 

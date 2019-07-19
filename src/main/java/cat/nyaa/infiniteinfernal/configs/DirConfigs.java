@@ -22,7 +22,8 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
         this.targetClass = targetClass;
     }
 
-    private Map<Integer, T> configures = new LinkedHashMap<>();
+    private Map<Integer, T>
+            configures = new LinkedHashMap<>();
 
     public int add(T config) {
         while (configures.containsKey(id)) {
@@ -42,6 +43,7 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
     }
 
     public void loadFromDir() {
+        this.clear();
         if (storageDir.exists()) {
             File[] files = storageDir.listFiles(pathname -> pathname.getName().endsWith(".yml"));
             if (files != null && files.length > 0) {
@@ -82,6 +84,11 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
         if (!configures.isEmpty()) {
             configures.forEach((integer, t) -> t.save());
         }
+    }
+
+    public void clear(){
+        configures.clear();
+        id = 0;
     }
 
     public T parseId(String s) throws IllegalArgumentException {
