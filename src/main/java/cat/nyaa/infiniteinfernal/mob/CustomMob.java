@@ -62,9 +62,12 @@ public class CustomMob implements IMob {
         //special loots
         specialLoots = config.loot.special.list.stream()
                 .map(s -> {
-                    ILootItem loot = LootManager.instance().getLoot(s);
-                    if (loot != null){
-                        return loot;
+                    String[] split = s.split(":", 2);
+                    String loot = split[0];
+                    int weight = Integer.parseInt(split[1]);
+                    ILootItem iLoot = LootManager.instance().getLoot(loot);
+                    if (iLoot != null){
+                        return iLoot;
                     }else {
                         Bukkit.getLogger().log(Level.WARNING, I18n.format("error.custom_mob.no_loot", s));
                     }
@@ -78,6 +81,10 @@ public class CustomMob implements IMob {
             config.abilities.forEach(s -> {
                 try {
                     AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseId(s);
+                    if (abilitySetConfig == null){
+                        Bukkit.getLogger().log(Level.WARNING, "no ability config for "+s);
+                        return;
+                    }
                     this.abilities.add(new AbilitySet(abilitySetConfig));
                 }catch (IllegalArgumentException e){
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("error.abilities.bad_config", s));
@@ -91,7 +98,7 @@ public class CustomMob implements IMob {
         this.entityType = config.type;
         this.name = config.name;
         this.specialChance = config.loot.special.chance;
-        this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, name, level);
+        this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, entityType, name, level);
     }
 
     @Override

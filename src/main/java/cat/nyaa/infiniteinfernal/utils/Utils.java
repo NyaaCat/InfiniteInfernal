@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -29,6 +30,10 @@ public class Utils {
         int sum = list.stream().parallel()
                 .mapToInt(Weightable::getWeight)
                 .sum();
+        if (sum == 0) {
+            if(list.size()>0)return list.get(0);
+            else return null;
+        }
         int selected = random.nextInt(sum);
         Iterator<Integer> iterator = list.stream().mapToInt(Weightable::getWeight).iterator();
         int count = 0;
@@ -63,10 +68,11 @@ public class Utils {
         return next == null ? null : next.getKey();
     }
 
-    public static String getTaggedName(String nameTag, String name, int level) {
+    public static String getTaggedName(String nameTag, EntityType type, String name, int level) {
         String levelPrefix = InfPlugin.plugin.config().levelConfigs.get(level).prefix;
         return nameTag.replaceAll("\\{level\\.prefix}", levelPrefix)
                 .replaceAll("\\{mob\\.name}", name)
+                .replaceAll("\\{mob\\.type}", type.name())
                 .replaceAll("\\{level\\.level}", String.valueOf(level));
     }
 

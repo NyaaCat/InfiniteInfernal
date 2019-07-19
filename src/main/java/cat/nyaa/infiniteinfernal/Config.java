@@ -48,7 +48,7 @@ public class Config extends PluginConfigure {
     public String language = "en_US";
 
     @Serializable
-    public String nameTag = "[INFERNAL] {level.prefix} {mob.type} Level {Level.level}";
+    public String nameTag = "[INFERNAL] {level.prefix} {mob.type} Level {level.level}";
 
     @Serializable
     public BossbarConfig bossbar = new BossbarConfig();
@@ -169,7 +169,7 @@ public class Config extends PluginConfigure {
         mobConfig.type = EntityType.ZOMBIE;
         mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getId());
         mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getId());
-        mobConfig.abilities.add("set-3");
+        mobConfig.abilities.add("set-2");
         mobConfig.name = "Zombie-King";
         mobConfig.spawn.biomes.add("PLAINS");
         mobConfig.spawn.worlds.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));

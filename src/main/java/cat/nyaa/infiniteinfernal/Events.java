@@ -120,8 +120,8 @@ public class Events implements Listener {
         if (!(ev.getEntity() instanceof LivingEntity)) return;
         if (!MobManager.instance().isIMob(ev.getDamager())) return;
 
-        IMob iMob = MobManager.instance().toIMob(ev.getEntity());
-
+        IMob iMob = MobManager.instance().toIMob(ev.getDamager());
+        if(iMob == null)return;
         IAbilitySet iAbilitySet = Utils.weightedRandomPick(iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsPassive)
                 .collect(Collectors.toList()));
