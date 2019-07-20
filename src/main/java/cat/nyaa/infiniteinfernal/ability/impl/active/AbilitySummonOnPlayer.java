@@ -18,7 +18,7 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
     @Serializable
     public int amount = 2;
     @Serializable
-    public double radius;
+    public double radius = 10;
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
 

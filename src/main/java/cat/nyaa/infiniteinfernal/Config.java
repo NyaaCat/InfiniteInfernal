@@ -86,6 +86,11 @@ public class Config extends PluginConfigure {
         getPlugin().saveDefaultConfig();
         getPlugin().reloadConfig();
         deserialize(getPlugin().getConfig());
+        abilityConfigs.clear();
+        levelConfigs.clear();
+        mobConfigs.clear();
+        regionConfigs.clear();
+
         if (worlds.size() == 0) {
             Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
             initConfigs();

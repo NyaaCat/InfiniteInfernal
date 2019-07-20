@@ -91,7 +91,7 @@ public class CustomMob implements IMob {
                 }
             });
         }
-        //level
+        //level                                         33333
         this.level = level;
         this.autoSpawn = config.spawn.autoSpawn;
         this.dropVanilla = config.loot.vanilla;
