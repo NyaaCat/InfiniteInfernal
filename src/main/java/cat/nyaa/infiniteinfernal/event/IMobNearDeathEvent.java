@@ -28,7 +28,7 @@ public class IMobNearDeathEvent extends Event {
         this.canceled = true;
     }
 
-    public boolean getCanceled(){
+    public boolean isCanceled(){
         return canceled;
     }
 

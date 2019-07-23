@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -233,7 +234,17 @@ public class MobManager {
         uuidMap.remove(mob.getEntity().getUniqueId());
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.remove(mob);
-        new BukkitRunnable(){
+        KeyedBossBar bossBar = mob.getBossBar();
+        if (bossBar != null) {
+            bossBar.setTitle(bossBar.getTitle().concat(InfPlugin.plugin.config().bossbar.killSuffix));
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    bossBar.removeAll();
+                }
+            }.runTaskLater(InfPlugin.plugin, 20);
+        }
+        new BukkitRunnable() {
             @Override
             public void run() {
                 mob.getEntity().remove();
@@ -260,13 +271,16 @@ public class MobManager {
 
         new ArrayList<>(worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>())).parallelStream()
                 .forEach(iMob -> {
+                    if (iMob.getEntity().isDead()){
+                        return;
+                    }
                     final List<Player> mobList = new ArrayList<>(uuidMap.size());
                     world.getPlayers().parallelStream()
                             .forEach(player -> {
                                 if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
                                     playerMobList.add(iMob);
                                     mobList.add(player);
-                                }else {
+                                } else {
                                     System.out.printf("should remove");
                                 }
                                 asyncMobsList.put(player, playerMobList);
@@ -283,5 +297,18 @@ public class MobManager {
 
     public List<Player> getPlayersNearMob(IMob iMob) {
         return ImmutableList.copyOf(mobNearbyList.computeIfAbsent(iMob, player1 -> new ArrayList<>()));
+    }
+
+    public void updateNearbyList(IMob iMob, int nearbyDistance) {
+        List<Player> players = mobNearbyList.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
+        World world = iMob.getEntity().getWorld();
+        world.getPlayers().parallelStream()
+                .forEach(player -> {
+                    if (player.getLocation().distance(iMob.getEntity().getLocation()) < nearbyDistance){
+                        players.add(player);
+                        List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, iMob1 -> new ArrayList<>());
+                        iMobs.add(iMob);
+                    }
+                });
     }
 }

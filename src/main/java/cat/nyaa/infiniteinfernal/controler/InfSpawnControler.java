@@ -9,25 +9,23 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
-import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InfSpawnControler implements ISpawnControler {
     private final InfPlugin plugin;
 
-    private Map<String, WorldConfig> worldConfigs;
     private Map<IMob, Player> mobPlayerMap = new LinkedHashMap<>();
 
 
     public InfSpawnControler(InfPlugin plugin) {
         this.plugin = plugin;
-        worldConfigs = plugin.config().worlds;
     }
 
     @Override
@@ -66,7 +64,7 @@ public class InfSpawnControler implements ISpawnControler {
 
     @Override
     public boolean canIMobAutoSpawn(World world) {
-        return worldConfigs.get(world.getName()) != null;
+        return InfPlugin.plugin.config().worlds.get(world.getName()) != null;
     }
 
     @Override
@@ -105,7 +103,7 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     private WorldConfig checkWorldConfigExistence(World world) {
-        WorldConfig worldConfig = worldConfigs.get(world.getName());
+        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
         if (worldConfig == null) {
             throw new NoWorldConfigException();
         }
@@ -137,12 +135,7 @@ public class InfSpawnControler implements ISpawnControler {
         if (iMob == null)return;
         World world = iMob.getEntity().getWorld();
         int maxSpawnDistance = getMaxSpawnDistance(world);
-        Utils.getValidTargets(iMob, world.getNearbyEntities(iMob.getEntity().getLocation(), maxSpawnDistance, maxSpawnDistance, maxSpawnDistance))
-                .filter(entity -> entity instanceof Player)
-                .map(entity -> ((Player) entity))
-                .forEach(player -> {
-                    mobPlayerMap.put(iMob, player);
-                });
+        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance);
     }
 
     @Override
@@ -186,7 +179,5 @@ public class InfSpawnControler implements ISpawnControler {
         if (iMob == null) return;
         MobManager.instance().removeMob(iMob);
         mobPlayerMap.remove(iMob);
-        KeyedBossBar bossBar = iMob.getBossBar();
-        if (bossBar!=null)bossBar.removeAll();
     }
 }

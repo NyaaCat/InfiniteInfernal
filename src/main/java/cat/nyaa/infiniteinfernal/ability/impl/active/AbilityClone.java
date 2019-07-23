@@ -26,7 +26,8 @@ public class AbilityClone extends ActiveAbility {
             Utils.randomSpawnLocation(location, 0, 5);
             IMob cloned = MobManager.instance().spawnMobByConfig(config, location, iMob.getLevel());
             LivingEntity clonedEntity = cloned.getEntity();
-            clonedEntity.setHealth(mobEntity.getHealth());
+            //this function will produce unexpected exception, skipping.
+//            clonedEntity.setHealth(mobEntity.getHealth());
             if (clonedEntity instanceof Mob && mobEntity instanceof Mob) {
                 ((Mob) clonedEntity).setTarget(((Mob) mobEntity).getTarget());
             }

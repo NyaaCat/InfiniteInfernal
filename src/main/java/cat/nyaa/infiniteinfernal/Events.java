@@ -17,6 +17,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -34,7 +35,7 @@ public class Events implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onMobDeath(EntityDeathEvent ev) {
         Entity entity = ev.getEntity();
         if (MobManager.instance().isIMob(entity)) {
@@ -59,7 +60,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onMobHurt(EntityDamageEvent event) {
         Entity entity = event.getEntity();
         if (event instanceof EntityDamageByEntityEvent) return;
@@ -79,13 +80,21 @@ public class Events implements Listener {
                 }
             }
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
-                IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, (LivingEntity) entity);
-                Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
+                callNearDeathEvent(event, iMob);
             }
+            InfPlugin.plugin.bossbarManager.update(iMob);
         }
     }
 
-    @EventHandler
+    private void callNearDeathEvent(EntityDamageEvent event, IMob iMob) {
+        IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, iMob.getEntity());
+        Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
+        if (iMobNearDeathEvent.isCanceled()){
+            event.setDamage(0);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onMobHurtByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (MobManager.instance().isIMob(entity)) {
@@ -110,13 +119,12 @@ public class Events implements Listener {
                 }
             }
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
-                IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, (LivingEntity) entity);
-                Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
+                callNearDeathEvent(event, iMob);
             }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onImobAttackLivingEntity(EntityDamageByEntityEvent ev) {
         if (!(ev.getEntity() instanceof LivingEntity)) return;
         if (!MobManager.instance().isIMob(ev.getDamager())) return;
@@ -132,10 +140,6 @@ public class Events implements Listener {
         List<AbilityAttack> attackAbilities = iAbilitySet.getAbilitiesInSet(AbilityAttack.class);
         if (attackAbilities.isEmpty()) return;
         attackAbilities.forEach(abilityAttack -> abilityAttack.onAttack(iMob, ((LivingEntity) ev.getEntity())));
-        if (ev.getFinalDamage() > iMob.getEntity().getHealth()) {
-            IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, (LivingEntity) ev.getEntity());
-            Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
-        }
     }
 
     @EventHandler
@@ -154,7 +158,7 @@ public class Events implements Listener {
         InfPlugin.plugin.getSpawnControler().handleSpawnEvent(event);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onIMobNearDeath(IMobNearDeathEvent ev) {
         List<IAbilitySet> abilities = ev.getMob().getAbilities();
         if (abilities.isEmpty()) return;
@@ -165,7 +169,7 @@ public class Events implements Listener {
         });
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onInfMobSpawn(InfernalSpawnEvent ev) {
         IMob iMob = ev.getIMob();
         List<IAbilitySet> abilities = iMob.getAbilities();

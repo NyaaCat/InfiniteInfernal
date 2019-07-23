@@ -230,7 +230,7 @@ public class Utils {
         }
         for (int i = 0; i < spawns; i++) {
             Location center = location.clone();
-            Vector rotated = vector.clone().rotateAroundY(angle * i);
+            Vector rotated = vector.rotateAroundY(angle * i);
             Location loc = center.add(rotated);
             locations.add(loc);
         }
@@ -283,9 +283,11 @@ public class Utils {
     public static List<Location> drawLine(Location l1, Location l2, int spawns) {
         ArrayList<Location> locations = new ArrayList<>();
         Location clone = l1.clone();
-        Vector direction = clone.subtract(l2).toVector().multiply(1 / spawns);
+        Vector direction = l2.clone().subtract(l1).toVector().multiply(1d / ((double)spawns));
         for (int i = 0; i < spawns; i++) {
-            locations.add(clone.add(direction));
+            Location nextLoc = clone.clone();
+            locations.add(nextLoc.add(direction));
+            clone = nextLoc;
         }
         return locations;
     }

@@ -72,10 +72,18 @@ public class MainLoopTask {
 
         private final World world;
         AsyncInfernalTicker infernalTicker;
+        BukkitRunnable runnable;
 
         public MainLoopRunnable(World world, int interval) {
             this.world = world;
             this.infernalTicker = new AsyncInfernalTicker(interval);
+            runnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    infernalTicker.tick();
+                }
+            };
+            runnable.runTaskTimer(InfPlugin.plugin, 0, 1);
         }
 
         @Override
@@ -83,13 +91,18 @@ public class MainLoopTask {
             List<IMob> mobs = MobManager.instance().getMobsInWorld(world);
             if (!mobs.isEmpty()) {
                 infernalTicker.submitInfernalTickMobs(mobs);
-                infernalTicker.tick();
             }
             world.getPlayers().forEach(player -> {
                 for (int i = 0; i < 5; i++) {
                     InfPlugin.plugin.spawnControler.spawnIMob(player, false);
                 }
             });
+        }
+
+        @Override
+        public synchronized void cancel() throws IllegalStateException {
+            super.cancel();
+            runnable.cancel();
         }
     }
 

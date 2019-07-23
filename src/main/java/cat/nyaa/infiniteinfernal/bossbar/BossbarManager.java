@@ -28,7 +28,29 @@ public class BossbarManager {
         task.runTaskTimer(InfPlugin.plugin, 0, interval);
     }
 
-    private static class BossbarRefreshTask extends BukkitRunnable {
+    public void update(IMob iMob) {
+        KeyedBossBar bossBar = iMob.getBossBar();
+        updateProgress(bossBar, iMob.getEntity());
+        if (iMob.getEntity().isDead()){
+            bossBar.removeAll();
+        }
+    }
+
+    private void updateProgress(KeyedBossBar bossBar, LivingEntity entity) {
+        double health = entity.getHealth();
+        double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double progress = health / maxHealth;
+        bossBar.setProgress(progress);
+        if (progress < 0.33) {
+            bossBar.setColor(BarColor.RED);
+        } else if (progress < 0.66) {
+            bossBar.setColor(BarColor.YELLOW);
+        } else {
+            bossBar.setColor(BarColor.BLUE);
+        }
+    }
+
+    private class BossbarRefreshTask extends BukkitRunnable {
         @Override
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
@@ -76,19 +98,7 @@ public class BossbarManager {
 
         }
 
-        private void updateProgress(KeyedBossBar bossBar, LivingEntity entity) {
-            double health = entity.getHealth();
-            double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-            double progress = health / maxHealth;
-            bossBar.setProgress(progress);
-            if (progress < 0.33) {
-                bossBar.setColor(BarColor.RED);
-            } else if (progress < 0.66) {
-                bossBar.setColor(BarColor.YELLOW);
-            } else {
-                bossBar.setColor(BarColor.BLUE);
-            }
-        }
+
 
         void add(List<Pair<BossBar, AngledEntity>> pairs, Pair<BossBar, AngledEntity> bar) {
             bar.getKey().addPlayer(((Player) bar.getValue().livingEntity));

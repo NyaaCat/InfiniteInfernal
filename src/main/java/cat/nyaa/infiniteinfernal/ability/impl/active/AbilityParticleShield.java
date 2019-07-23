@@ -3,15 +3,24 @@ package cat.nyaa.infiniteinfernal.ability.impl.active;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilityHurt;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
+import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class AbilityParticleShield extends ActiveAbility implements AbilityHurt {
 
@@ -24,38 +33,72 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
     @Serializable
     public double thornsPercentage = 10;
 
-    private boolean activited = false;
+    private static List<UUID> activited = new ArrayList<>();
+    private static Listener listener;
+    private static boolean registered = false;
+
+    BukkitRunnable cancelTask;
+
+    static {
+        listener = new Listener() {
+            @EventHandler
+            public void onHurt(EntityDamageByEntityEvent ev) {
+                if (activited.contains(ev.getEntity().getUniqueId())) {
+                    IMob mob = MobManager.instance().toIMob(ev.getEntity());
+                    if (mob != null) {
+                        List<IAbilitySet> abilities = mob.getAbilities();
+                        if (!abilities.isEmpty()) {
+                            abilities.forEach(iAbilitySet -> {
+                                        List<AbilityParticleShield> abilitiesInSet = iAbilitySet.getAbilitiesInSet(AbilityParticleShield.class);
+                                        if (!abilitiesInSet.isEmpty()) {
+                                            abilitiesInSet.forEach(abilityParticleShield -> abilityParticleShield.onHurtByPlayer(mob, ev));
+                                        }
+                                    });
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    public AbilityParticleShield() {
+        if (!registered) {
+            Bukkit.getPluginManager().registerEvents(listener, InfPlugin.plugin);
+            registered = true;
+        }
+    }
 
     @Override
     public void active(IMob iMob) {
-        activited = true;
+        activited.add(iMob.getEntity().getUniqueId());
         LivingEntity mobEntity = iMob.getEntity();
         BukkitRunnable particleEffect = new BukkitRunnable() {
             @Override
             public void run() {
                 World world = mobEntity.getWorld();
                 Location location = mobEntity.getLocation();
-                if (activited) {
+                if (activited.contains(mobEntity.getUniqueId()) && !mobEntity.isDead()) {
                     Utils.spawnParticle(particleConfig, world, location);
-                }else cancel();
+                } else cancel();
             }
         };
         particleEffect.runTaskTimer(InfPlugin.plugin, 0, 1);
-        new BukkitRunnable(){
+        cancelTask = new BukkitRunnable() {
             @Override
             public void run() {
                 try {
-                    activited = false;
-                }catch (Exception e){
+                    activited.remove(mobEntity.getUniqueId());
+                } catch (Exception e) {
                     particleEffect.cancel();
                 }
             }
-        }.runTaskLater(InfPlugin.plugin, duration);
+        };
+        cancelTask.runTaskLater(InfPlugin.plugin, duration);
     }
 
     @Override
     public void onHurtByPlayer(IMob mob, EntityDamageByEntityEvent event) {
-        if (!activited) return;
+        if (!activited.contains(mob.getEntity().getUniqueId())) return;
         Entity damager = event.getDamager();
         if (damager instanceof LivingEntity) {
             double orig = event.getDamage();

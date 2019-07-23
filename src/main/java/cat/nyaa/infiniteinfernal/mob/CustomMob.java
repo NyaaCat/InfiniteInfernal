@@ -23,7 +23,6 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -170,6 +169,7 @@ public class CustomMob implements IMob {
         Objects.requireNonNull(maxHealthAttr);
         damageAttr.setBaseValue(getDamage());
         maxHealthAttr.setBaseValue(getMaxHealth());
+        entity.setHealth(getMaxHealth());
         createBossbar(entity);
         InfernalSpawnEvent event = new InfernalSpawnEvent(this);
         Bukkit.getPluginManager().callEvent(event);
@@ -212,10 +212,7 @@ public class CustomMob implements IMob {
         LivingEntity entity = getEntity();
         World world = entity.getWorld();
         Location location = entity.getLocation();
-        world.spawnParticle(Particle.LAVA, location, 10, 0,0,0,1,null,false);
-        if (!(entity instanceof Player)){
-            nonPlayerTargets.put(entity, new Aggro(entity));
-        }
+        world.spawnParticle(Particle.LAVA, location, 10, 0,0,0,1,null,true);
     }
 
     @Override

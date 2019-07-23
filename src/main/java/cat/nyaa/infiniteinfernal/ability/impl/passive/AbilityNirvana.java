@@ -11,6 +11,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -20,7 +21,16 @@ public class AbilityNirvana extends AbilityPassive implements AbilityNearDeath {
     @Serializable
     public int lives = 1;
 
-    private int tempLives = lives;
+    private int tempLives;
+
+    public AbilityNirvana(){
+    }
+
+    @Override
+    public void deserialize(ConfigurationSection config) {
+        super.deserialize(config);
+        tempLives = lives;
+    }
 
     @Override
     public void onDeath(IMob iMob, IMobNearDeathEvent mobNearDeathEvent) {

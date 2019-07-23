@@ -1,7 +1,9 @@
 package cat.nyaa.infiniteinfernal.ability;
 
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +14,24 @@ public class AbilitySet implements IAbilitySet {
 
     public AbilitySet(AbilitySetConfig config){
         weight = config.weight;
-        abilities = new ArrayList<>(config.abilities.values());
+        abilities = new ArrayList<>();
+        config.abilities.values().stream().forEach(iAbility -> {
+            try {
+                IAbility clone= iAbility.getClass().getConstructor().newInstance();
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                iAbility.serialize(yamlConfiguration);
+                clone.deserialize(yamlConfiguration);
+                abilities.add(clone);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

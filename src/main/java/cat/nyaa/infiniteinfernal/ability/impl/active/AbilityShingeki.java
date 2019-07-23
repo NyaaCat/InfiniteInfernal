@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class AbilityShingeki extends ActiveAbility {
@@ -25,7 +26,7 @@ public class AbilityShingeki extends ActiveAbility {
     @Serializable
     public double damageAmplifier = 2.0;
 
-    public double radius = 3;
+    public double radius = 5;
 
     @Override
     public void active(IMob iMob) {
@@ -54,6 +55,14 @@ public class AbilityShingeki extends ActiveAbility {
             public void run() {
                 if (world != null) {
                     Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 3, 3, 3);
+                    for (int i = 0; i < 5; i++) {
+                        new BukkitRunnable(){
+                            @Override
+                            public void run() {
+                                world.strikeLightningEffect(location);
+                            }
+                        }.runTaskLater(InfPlugin.plugin, i*4);
+                    }
                     if (!nearbyEntities.isEmpty()) {
                         nearbyEntities.forEach(entity -> {
                             if (entity instanceof LivingEntity) {
@@ -79,6 +88,7 @@ public class AbilityShingeki extends ActiveAbility {
                 List<Location> roundLocationList = Utils.getRoundLocations(location, radius);
                 double theta = Utils.random() * 360;
                 Vector vector = new Vector(1,0,0);
+                vector.multiply(radius);
                 vector.rotateAroundY(theta);
                 List<Location> anchors = new ArrayList<>();
                 for (int i = 0; i < 6; i++) {
@@ -89,18 +99,19 @@ public class AbilityShingeki extends ActiveAbility {
 
                 roundLocationList.addAll(Utils.drawHexStar(anchors));
 
-                int tasks = (int) (Math.round((double) roundLocationList.size()) / ((double) delay));
-                int stepsPerTask = (int) (Math.round((double) roundLocationList.size()) / ((double) tasks));
+                double stepsPerTask = (double) roundLocationList.size() / (double) delay;
 
-                for (int i = 0; i < tasks; i++) {
+                AtomicInteger spawned = new AtomicInteger(0);
+                for (int i = 0; i < delay; i++) {
+                    int finalI = i;
                     new BukkitRunnable(){
                         @Override
                         public void run() {
-                            for (int j = 0; j < stepsPerTask; j++) {
-                                world.spawnParticle(Particle.END_ROD,roundLocationList.get(j), 1, 0.2, 0.2, 0.2, 0, null, true);
+                            while (spawned.get() < stepsPerTask * finalI) {
+                                world.spawnParticle(Particle.END_ROD,roundLocationList.get(spawned.getAndAdd(1)), 1, 0, 0, 0, 0, null, true);
                             }
                         }
-                    }.runTaskLater(InfPlugin.plugin, Math.round(((double) delay) / ((double) tasks)));
+                    }.runTaskLater(InfPlugin.plugin, i);
                 }
             }
         }.runTaskAsynchronously(InfPlugin.plugin);
