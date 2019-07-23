@@ -1,10 +1,11 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
-import cat.nyaa.infiniteinfernal.loot.infMessager;
+import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import org.bukkit.Bukkit;
@@ -21,9 +22,10 @@ public class InfPlugin extends JavaPlugin {
     LootManager lootManager;
     MobManager mobManager;
     BroadcastManager broadcastManager;
-    cat.nyaa.infiniteinfernal.loot.infMessager infMessager;
+    InfMessager infMessager;
     ISpawnControler spawnControler;
     ImiCommands imiCommand;
+    BossbarManager bossbarManager;
 
 
     @Override
@@ -43,17 +45,21 @@ public class InfPlugin extends JavaPlugin {
         broadcastManager.load();
         messageConfig = new MessageConfig();
         messageConfig.load();
-        infMessager = new infMessager(messageConfig);
+        infMessager = new InfMessager(messageConfig);
         spawnControler = new InfSpawnControler(this);
         Bukkit.getPluginManager().registerEvents(events, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
+        bossbarManager = new BossbarManager();
+        if (config.bossbar.enabled) {
+            bossbarManager.start(10);
+        }
         MainLoopTask.start();
     }
 
     public void onReload() {
         config.load();
-        i18n = new I18n(this,config.language);
+        i18n = new I18n(this, config.language);
         i18n.load();
         LootManager.instance().load();
         MainLoopTask.start();
@@ -62,7 +68,10 @@ public class InfPlugin extends JavaPlugin {
         broadcastManager.load();
 //        messageConfig = new MessageConfig();
         messageConfig.load();
-        infMessager = new infMessager(messageConfig);
+        infMessager = new InfMessager(messageConfig);
+        if (config.bossbar.enabled){
+            bossbarManager.start(10);
+        }
     }
 
     @Override

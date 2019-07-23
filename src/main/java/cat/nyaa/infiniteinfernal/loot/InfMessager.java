@@ -18,14 +18,14 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.logging.Level;
 
-public class infMessager implements IMessager {
+public class InfMessager implements IMessager {
     private List<String> drop;
     private List<String> mobKill;
     private List<String> noDrop;
     private List<String> playerKill;
     private List<String> specialDrop;
 
-    public infMessager(MessageConfig config){
+    public InfMessager(MessageConfig config){
         setupFromConfig(config);
     }
 

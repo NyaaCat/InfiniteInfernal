@@ -9,15 +9,16 @@ import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 
 public class MainLoopTask {
-    private static List<MainLoopRunnable> runnables = new ArrayList<>();
+    private static List<BukkitRunnable> runnables = new ArrayList<>();
 
-    public static void start(){
+    public static void start() {
         stop();
         Map<String, WorldConfig> worlds = InfPlugin.plugin.config.worlds;
         worlds.forEach((wn, value) -> {
@@ -28,9 +29,21 @@ public class MainLoopTask {
             runnables.add(runnable);
             runnable.runTaskTimer(InfPlugin.plugin, 0, interval);
         });
+        BukkitRunnable nearbyRunnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                MobManager instance = MobManager.instance();
+                Bukkit.getWorlds().parallelStream().forEach(world -> {
+                    WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
+                    instance.updateNearbyList(world, (worldConfig.aggro.range.max * 2));
+                });
+            }
+        };
+        nearbyRunnable.runTaskTimerAsynchronously(InfPlugin.plugin, 0, 10);
+        runnables.add(nearbyRunnable);
     }
 
-    public static void stop(){
+    public static void stop() {
         if (!runnables.isEmpty()) {
             runnables.forEach(BukkitRunnable::cancel);
             runnables.clear();
@@ -40,9 +53,14 @@ public class MainLoopTask {
     private static void mobEffect(IMob iMob) {
         iMob.showParticleEffect();
         iMob.autoRetarget();
-        if (iMob.getEntity().isDead()){
-            MobManager.instance().removeMob(iMob);
+        MobManager mobManager = MobManager.instance();
+        List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
+        if (playersNearMob.size() == 0){
+            mobManager.removeMob(iMob);
         }
+            if (iMob.getEntity().isDead()) {
+                mobManager.removeMob(iMob);
+            }
         List<IAbilitySet> abilities = iMob.getAbilities();
         Utils.weightedRandomPick(abilities).getAbilitiesInSet().stream()
                 .filter(iAbility -> iAbility instanceof AbilityActive)
@@ -53,12 +71,10 @@ public class MainLoopTask {
     static class MainLoopRunnable extends BukkitRunnable {
 
         private final World world;
-        private final int interval;
         AsyncInfernalTicker infernalTicker;
 
         public MainLoopRunnable(World world, int interval) {
             this.world = world;
-            this.interval = interval;
             this.infernalTicker = new AsyncInfernalTicker(interval);
         }
 

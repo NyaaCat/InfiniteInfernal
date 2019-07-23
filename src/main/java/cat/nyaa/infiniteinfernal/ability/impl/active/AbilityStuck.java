@@ -45,6 +45,7 @@ public class AbilityStuck extends ActiveAbility {
                 stucked.remove(victim.getUniqueId());
             }
         }.runTaskLater(InfPlugin.plugin, duration);
+        victim.sendMessage(I18n.format("message.stuck"));
     }
 
     private void init(){
@@ -70,7 +71,6 @@ public class AbilityStuck extends ActiveAbility {
             void onPlayerTeleport(PlayerTeleportEvent e) {
                 if (stucked.contains(e.getPlayer().getUniqueId())) {
                     if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
-                        e.getPlayer().sendMessage(I18n.format("message.stuck"));
                         e.setCancelled(true);
                     }
                 }

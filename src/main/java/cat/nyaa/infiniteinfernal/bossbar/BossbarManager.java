@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.bossbar;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.nyaacore.Pair;
@@ -15,8 +16,26 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BossbarManager {
+    BossbarRefreshTask task;
+
+    public void start(int interval) {
+        if (task != null){
+            if (!task.isCancelled()) {
+                task.cancel();
+            }
+        }
+        task = new BossbarRefreshTask();
+        task.runTaskTimer(InfPlugin.plugin, 0, interval);
+    }
 
     private static class BossbarRefreshTask extends BukkitRunnable {
+        @Override
+        public synchronized void cancel() throws IllegalStateException {
+            super.cancel();
+            Collection<IMob> mobs = MobManager.instance().getMobs();
+            mobs.parallelStream().forEach(iMob -> iMob.getBossBar().removeAll());
+        }
+
         @Override
         public void run() {
             Collection<IMob> mobs = MobManager.instance().getMobs();
@@ -24,18 +43,19 @@ public class BossbarManager {
             if (!mobs.isEmpty()) {
                 mobs.forEach(iMob -> {
                     LivingEntity entity = iMob.getEntity();
-                    List<AngledEntity> nearbyPlayers = entity.getNearbyEntities(50, 25, 50).stream()
-                            .filter(entity1 -> entity1 instanceof Player)
-                            .map(player -> AngledEntity.of(entity, (Player) player))
+                    List<AngledEntity> nearbyPlayers = MobManager.instance().getPlayersNearMob(iMob).parallelStream()
+                            .map(player -> AngledEntity.of(entity, player))
+                            .sequential()
                             .sorted(AngledEntity::compareTo)
                             .collect(Collectors.toList());
                     KeyedBossBar bossBar = iMob.getBossBar();
+                    if (bossBar == null)return;
                     bossBar.removeAll();
                     if (!nearbyPlayers.isEmpty()) {
                         nearbyPlayers.forEach(angledEntity -> {
                             LivingEntity player = angledEntity.livingEntity;
                             if (player instanceof Player) {
-                                List<Pair<BossBar, AngledEntity>> pairs = playerCounter.get(player);
+                                List<Pair<BossBar, AngledEntity>> pairs = playerCounter.computeIfAbsent(((Player) player), player1 -> new ArrayList<>());
                                 Pair<BossBar, AngledEntity> bar = new Pair<>(bossBar, AngledEntity.of(entity, player));
                                 if (pairs.size() < 5) {
                                     add(pairs, bar);
@@ -53,6 +73,7 @@ public class BossbarManager {
                     updateProgress(bossBar, entity);
                 });
             }
+
         }
 
         private void updateProgress(KeyedBossBar bossBar, LivingEntity entity) {

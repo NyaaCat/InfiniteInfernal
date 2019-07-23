@@ -9,6 +9,7 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -21,7 +22,6 @@ public class InfSpawnControler implements ISpawnControler {
     private final InfPlugin plugin;
 
     private Map<String, WorldConfig> worldConfigs;
-    private Map<Player, List<IMob>> playerNearbyList = new LinkedHashMap<>();
     private Map<IMob, Player> mobPlayerMap = new LinkedHashMap<>();
 
 
@@ -60,7 +60,7 @@ public class InfSpawnControler implements ISpawnControler {
 
     @Override
     public boolean canSpawnNearPlayer(Player player) {
-        int nearbyMobs = playerNearbyList.computeIfAbsent(player, player1 -> new ArrayList<>()).size();
+        int nearbyMobs = MobManager.instance().getMobsNearPlayer(player).size();
         return nearbyMobs < getMaxSpawnAmount(player);
     }
 
@@ -141,8 +141,6 @@ public class InfSpawnControler implements ISpawnControler {
                 .filter(entity -> entity instanceof Player)
                 .map(entity -> ((Player) entity))
                 .forEach(player -> {
-                    List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, player1 -> new ArrayList<>());
-                    iMobs.add(iMob);
                     mobPlayerMap.put(iMob, player);
                 });
     }
@@ -184,19 +182,11 @@ public class InfSpawnControler implements ISpawnControler {
 
     @Override
     public void handleMobDeath(EntityDeathEvent event) {
-        LivingEntity entity = event.getEntity();
-        World world = entity.getWorld();
         IMob iMob = MobManager.instance().toIMob(event.getEntity());
         if (iMob == null) return;
         MobManager.instance().removeMob(iMob);
         mobPlayerMap.remove(iMob);
-        int maxSpawnDistance = getMaxSpawnDistance(world);
-        Utils.getValidTargets(iMob, world.getNearbyEntities(iMob.getEntity().getLocation(), maxSpawnDistance, maxSpawnDistance, maxSpawnDistance))
-                .filter(livingEntity -> livingEntity instanceof Player)
-                .map(livingEntity -> ((Player) livingEntity))
-                .forEach(player -> {
-                    List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, player1 -> new ArrayList<>());
-                    iMobs.remove(iMob);
-                });
+        KeyedBossBar bossBar = iMob.getBossBar();
+        if (bossBar!=null)bossBar.removeAll();
     }
 }
