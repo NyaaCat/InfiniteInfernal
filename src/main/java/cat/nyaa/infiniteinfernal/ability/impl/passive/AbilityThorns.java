@@ -16,8 +16,13 @@ public class AbilityThorns extends AbilityPassive implements AbilityHurt {
 
     @Override
     public void onHurtByPlayer(IMob mob, EntityDamageByEntityEvent event) {
+        Boolean aBoolean = Context.instance().getBoolean(mob.getEntity().getUniqueId(), DAMAGE_THORN);
+        if (aBoolean != null && aBoolean) {
+            return;
+        }
         Entity damager = event.getDamager();
         if (damager instanceof LivingEntity) {
+            Context.instance().putTemp(damager.getUniqueId(), DAMAGE_THORN, true);
             ((LivingEntity) damager).damage(getThornDamage(event), mob.getEntity());
         }
     }
