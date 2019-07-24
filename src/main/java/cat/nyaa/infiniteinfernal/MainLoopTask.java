@@ -52,15 +52,15 @@ public class MainLoopTask {
 
     private static void mobEffect(IMob iMob) {
         iMob.showParticleEffect();
-        iMob.autoRetarget();
+//        iMob.autoRetarget();
         MobManager mobManager = MobManager.instance();
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
-        if (playersNearMob.size() == 0){
+        if (playersNearMob.size() == 0) {
             mobManager.removeMob(iMob);
         }
-            if (iMob.getEntity().isDead()) {
-                mobManager.removeMob(iMob);
-            }
+        if (iMob.getEntity().isDead()) {
+            mobManager.removeMob(iMob);
+        }
         List<IAbilitySet> abilities = iMob.getAbilities();
         Utils.weightedRandomPick(abilities).getAbilitiesInSet().stream()
                 .filter(iAbility -> iAbility instanceof AbilityActive)
@@ -92,11 +92,11 @@ public class MainLoopTask {
             if (!mobs.isEmpty()) {
                 infernalTicker.submitInfernalTickMobs(mobs);
             }
-            world.getPlayers().forEach(player -> {
-                for (int i = 0; i < 5; i++) {
-                    InfPlugin.plugin.spawnControler.spawnIMob(player, false);
-                }
-            });
+            List<Player> players = world.getPlayers();
+            for (int i = 0; i < 10; i++) {
+                Player player = Utils.randomPick(players);
+                InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+            }
         }
 
         @Override

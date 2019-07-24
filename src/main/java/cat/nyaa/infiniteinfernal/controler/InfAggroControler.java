@@ -20,7 +20,6 @@ public class InfAggroControler implements IAggroControler {
         WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
         if (worldConfig != null) {
             WorldConfig.AggroConfig aggro = worldConfig.aggro;
-            int base = aggro.base;
             WorldConfig.AggroConfig.RangeConfig range = aggro.range;
             ICorrector dec = aggro.getDec();
             ICorrector inc = aggro.getInc();
@@ -47,7 +46,10 @@ public class InfAggroControler implements IAggroControler {
                             }
                             return b;
                         }).map(player -> player);
-                LivingEntity livingEntity = Stream.concat(livingEntityStream, iMob.getNonPlayerTargets().keySet().stream()).max(comparator).orElse(null);
+                LivingEntity livingEntity = nearest.get();
+                if (livingEntity == null) {
+                    livingEntity = Stream.concat(livingEntityStream, iMob.getNonPlayerTargets().keySet().stream()).max(comparator).orElse(null);
+                }
                 return livingEntity;
             }
         }
