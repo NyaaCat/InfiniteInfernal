@@ -23,6 +23,9 @@ public class RegionConfig extends IdFileConfig {
     }
 
     @Serializable
+    public String name = "region";
+
+    @Serializable
     public Region region = new Region();
 
     @Serializable

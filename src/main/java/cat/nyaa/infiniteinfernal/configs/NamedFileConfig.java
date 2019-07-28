@@ -1,23 +1,14 @@
 package cat.nyaa.infiniteinfernal.configs;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.nyaacore.configuration.FileConfigure;
-
-import java.io.File;
-import java.util.Objects;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class NamedFileConfig extends FileConfigure {
     public String name = "";
     protected String prefix = "";
 
-    public File rootDir;
-
-    NamedFileConfig(String name){
-        this.name = name;
-    }
-
-    public NamedFileConfig(File rootDir, String name) {
-        Objects.requireNonNull(rootDir);
-        this.rootDir = rootDir;
+    public NamedFileConfig(String name){
         this.name = name;
     }
 
@@ -31,10 +22,17 @@ public abstract class NamedFileConfig extends FileConfigure {
 
     @Override
     protected String getFileName() {
-        return rootDir.getName().concat("/")
+        return getFileDirName().concat("/")
                 .concat(getPrefix())
                 .concat("-")
                 .concat(getName())
                 .concat(".yml");
+    }
+
+    protected abstract String getFileDirName();
+
+    @Override
+    protected JavaPlugin getPlugin() {
+        return InfPlugin.plugin;
     }
 }

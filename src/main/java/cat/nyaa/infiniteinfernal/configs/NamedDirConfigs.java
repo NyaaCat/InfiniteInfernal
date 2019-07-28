@@ -99,4 +99,5 @@ public class NamedDirConfigs<T extends NamedFileConfig> implements ISerializable
     public T get(int id) {
         return configs.get(id);
     }
+
 }

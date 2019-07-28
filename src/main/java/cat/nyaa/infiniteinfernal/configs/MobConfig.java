@@ -10,11 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
-public class MobConfig extends IdFileConfig implements Weightable {
+public class MobConfig extends NamedFileConfig implements Weightable {
     @Serializable
     public String name = "A custom mob";
     @Serializable
-    public String id = getPrefix() +"-"+ getId();
+    public String id = getPrefix() +"-"+ getName();
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
     @Serializable
@@ -26,7 +26,7 @@ public class MobConfig extends IdFileConfig implements Weightable {
     @Serializable
     public MobLootConfig loot = new MobLootConfig();
 
-    public MobConfig(int id) {
+    public MobConfig(String id) {
         super(id);
     }
 
@@ -104,7 +104,8 @@ public class MobConfig extends IdFileConfig implements Weightable {
     }
 
     @Override
-    public String getDir() {
+    protected String getFileDirName() {
         return "mobs";
     }
+
 }

@@ -6,12 +6,13 @@ import cat.nyaa.infiniteinfernal.ability.IAbility;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class AbilitySetConfig extends IdFileConfig {
+public class AbilitySetConfig extends NamedFileConfig {
     private InfPlugin plugin;
 
-    public AbilitySetConfig(int id) {
-        super(id);
+    public AbilitySetConfig(String name) {
+        super(name);
     }
+
 
     @Serializable
     public Map<String, IAbility> abilities = new LinkedHashMap<>();
@@ -24,8 +25,8 @@ public class AbilitySetConfig extends IdFileConfig {
     }
 
     @Override
-    public String getDir() {
-        return "abilities";
+    protected String getFileDirName() {
+        return "set";
     }
 
     public int getWeight() {
