@@ -79,7 +79,7 @@ public class CustomMob implements IMob {
         if (!config.abilities.isEmpty()) {
             config.abilities.forEach(s -> {
                 try {
-                    AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseId(s);
+                    AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseName(s);
                     if (abilitySetConfig == null){
                         Bukkit.getLogger().log(Level.WARNING, "no ability config for "+s);
                         return;

@@ -10,6 +10,7 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -26,6 +27,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class Events implements Listener {
@@ -51,7 +53,7 @@ public class Events implements Listener {
                     });
             InfPlugin.plugin.getSpawnControler().handleMobDeath(ev);
             Player killer = ev.getEntity().getKiller();
-            if (killer == null)return;
+            if (killer == null) return;
             ILootItem loot = LootManager.makeDrop(killer, iMob);
             ILootItem specialLoot = LootManager.makeSpecialDrop(killer, iMob);
             ev.setDroppedExp(iMob.getExp());
@@ -89,7 +91,7 @@ public class Events implements Listener {
     private void callNearDeathEvent(EntityDamageEvent event, IMob iMob) {
         IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, iMob.getEntity());
         Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
-        if (iMobNearDeathEvent.isCanceled()){
+        if (iMobNearDeathEvent.isCanceled()) {
             event.setDamage(0);
         }
     }
@@ -121,6 +123,27 @@ public class Events implements Listener {
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
                 callNearDeathEvent(event, iMob);
             }
+        } else if (entity instanceof Player) {
+            Entity damager = event.getDamager();
+            if (damager instanceof Player) {
+                if (!event.isCancelled()) {
+                    if (event.getFinalDamage() > 0) {
+                        String effect = InfPlugin.plugin.config().worlds.get(damager.getWorld().getName())
+                                .friendlyFireConfig.effect;
+                        String[] split = effect.split(":");
+                        try {
+                            String effectName = split[0].toUpperCase();
+                            int amplifier = Integer.parseInt(split[1]);
+                            int duration = Integer.parseInt(split[2]);
+                            Utils.doEffect(effectName, ((Player) damager), duration, amplifier, "friendly fire");
+                            new Message(I18n.format("friendly_fire"))
+                                    .send(damager);
+                        }catch (Exception e){
+                            Bukkit.getLogger().log(Level.WARNING, "invalid friendly fire config: \""+effect+"\"");
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -130,7 +153,7 @@ public class Events implements Listener {
         if (!MobManager.instance().isIMob(ev.getDamager())) return;
 
         IMob iMob = MobManager.instance().toIMob(ev.getDamager());
-        if(iMob == null)return;
+        if (iMob == null) return;
         IAbilitySet iAbilitySet = Utils.weightedRandomPick(iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsPassive)
                 .collect(Collectors.toList()));
@@ -193,7 +216,7 @@ public class Events implements Listener {
         if (normalLoot != null) {
             iMessager.broadcastToWorld(ev.getiMob(), ev.getKiller(), normalLoot);
             drops.add(normalLoot.getItemStack());
-        }else {
+        } else {
             iMessager.broadcastToWorld(ev.getiMob(), ev.getKiller(), null);
         }
 
@@ -201,7 +224,7 @@ public class Events implements Listener {
             iMessager.broadcastExtraToWorld(ev.getiMob(), ev.getKiller(), specialLoot);
             drops.add(specialLoot.getItemStack());
         }
-        if (drops.isEmpty()){
+        if (drops.isEmpty()) {
             drops.add(new ItemStack(Material.AIR));
         }
     }

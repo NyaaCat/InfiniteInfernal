@@ -32,7 +32,6 @@ public class InfAggroControler implements IAggroControler {
                     return aggroBase * correctFactor;
                 });
                 Stream<LivingEntity> livingEntityStream = players.stream()
-                        .sorted(comparator.reversed())
                         .filter(player -> {
                             double correctFactor = (1 + inc.getCorrection(player, null) - dec.getCorrection(player, null));
                             double maxRange = range.max * correctFactor;
@@ -45,10 +44,11 @@ public class InfAggroControler implements IAggroControler {
                                 nearest.set(player);
                             }
                             return b;
-                        }).map(player -> player);
+                        }).sorted(comparator.reversed())
+                        .map(player -> player);
                 LivingEntity livingEntity = nearest.get();
                 if (livingEntity == null) {
-                    livingEntity = Stream.concat(livingEntityStream, iMob.getNonPlayerTargets().keySet().stream()).max(comparator).orElse(null);
+                    livingEntity = livingEntityStream.max(comparator).orElse(null);
                 }
                 return livingEntity;
             }

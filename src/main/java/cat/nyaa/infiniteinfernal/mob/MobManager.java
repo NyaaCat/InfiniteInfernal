@@ -3,10 +3,7 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.configs.DirConfigs;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.configs.MobConfig;
-import cat.nyaa.infiniteinfernal.configs.RegionConfig;
+import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
@@ -46,7 +43,7 @@ public class MobManager {
 
     public void load() {
         initialize();
-        DirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+        NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
         buildNatualSpawnList(mobConfigs);
         buildCfgMaps(mobConfigs);
     }
@@ -69,7 +66,7 @@ public class MobManager {
         natualSpawnLists.clear();
     }
 
-    private void buildCfgMaps(DirConfigs<MobConfig> mobConfigs) {
+    private void buildCfgMaps(NamedDirConfigs<MobConfig> mobConfigs) {
         mobConfigs.values().stream().parallel()
                 .forEach(config -> {
                     nameCfgMap.put(config.name, config);
@@ -77,7 +74,7 @@ public class MobManager {
                 });
     }
 
-    private void buildNatualSpawnList(DirConfigs<MobConfig> mobConfigs) {
+    private void buildNatualSpawnList(NamedDirConfigs<MobConfig> mobConfigs) {
         mobConfigs.values().stream().parallel()
                 .filter(config -> config.spawn.autoSpawn)
                 .forEach(config -> {

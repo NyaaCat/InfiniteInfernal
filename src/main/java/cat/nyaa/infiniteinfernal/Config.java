@@ -34,9 +34,9 @@ public class Config extends PluginConfigure {
 
     Config(InfPlugin plugin) {
         this.plugin = plugin;
-        abilityConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "abilities"), AbilitySetConfig.class);
+        abilityConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "abilities"), AbilitySetConfig.class);
         levelConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "levels"), LevelConfig.class);
-        mobConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "mobs"), MobConfig.class);
+        mobConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "mobs"), MobConfig.class);
         regionConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
     }
 
@@ -61,9 +61,9 @@ public class Config extends PluginConfigure {
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     //<STANDALONE CONFIGS>
-    public DirConfigs<AbilitySetConfig> abilityConfigs;
+    public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
     public DirConfigs<LevelConfig> levelConfigs;
-    public DirConfigs<MobConfig> mobConfigs;
+    public NamedDirConfigs<MobConfig> mobConfigs;
     public DirConfigs<RegionConfig> regionConfigs;
 
     private void saveStandaloneConfigs() {
@@ -136,9 +136,9 @@ public class Config extends PluginConfigure {
             config.attr.health = 20 * i;
             config.prefix = "level "+i;
         }
-        AbilitySetConfig actives = new AbilitySetConfig(0);
-        AbilitySetConfig passives = new AbilitySetConfig(1);
-        AbilitySetConfig dummies = new AbilitySetConfig(2);
+        AbilitySetConfig actives = new AbilitySetConfig("a");
+        AbilitySetConfig passives = new AbilitySetConfig("b");
+        AbilitySetConfig dummies = new AbilitySetConfig("c");
         Class<? extends IAbility>[] activeClasses = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.active", IAbility.class);
         Class<? extends IAbility>[] passiveClasses = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.passive", IAbility.class);
         addAbilities(actives, activeClasses);
@@ -215,10 +215,10 @@ public class Config extends PluginConfigure {
         LootManager.instance().setDrop("inf-sample-20", 3, 20);
         LootManager.instance().setDrop("inf-sample-5", 3, 5);
         LootManager.instance().addLoot("inf-extra-sample", true, extraSampleItem);
-        MobConfig mobConfig = new MobConfig(0);
+        MobConfig mobConfig = new MobConfig("sample");
         mobConfig.type = EntityType.ZOMBIE;
-        mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getId());
-        mobConfig.abilities.add(passives.getPrefix()+"-"+passives.getId());
+        mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getName());
+        mobConfig.abilities.add(passives.getPrefix()+"-"+passives.getName());
         mobConfig.abilities.add("set-2");
         mobConfig.name = "Zombie-King";
         for (Biome value : Biome.values()) {

@@ -95,7 +95,9 @@ public class MainLoopTask {
             List<Player> players = world.getPlayers();
             for (int i = 0; i < 10; i++) {
                 Player player = Utils.randomPick(players);
-                InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+                if (player != null) {
+                    InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+                }
             }
         }
 

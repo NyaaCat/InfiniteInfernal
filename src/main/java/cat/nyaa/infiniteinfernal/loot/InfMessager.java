@@ -16,6 +16,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 
 public class InfMessager implements IMessager {
@@ -67,7 +68,7 @@ public class InfMessager implements IMessager {
     }
 
     private Message buildMessage(MessageType messageType, IMob deadMob, LivingEntity killer, ILootItem lootItem) {
-        Message message = new Message("");
+        BroadcastMessage message = new BroadcastMessage("");
         String str = "";
         EntityEquipment equipment;
         switch (messageType){
@@ -141,5 +142,22 @@ public class InfMessager implements IMessager {
 
     public enum MessageType{
         DROP, SPETIAL_DROP, NO_DROP, MOB_KILLED, PLAYER_KILLED
+    }
+
+    class BroadcastMessage extends Message{
+
+        public BroadcastMessage(String text) {
+            super(text);
+        }
+
+        @Override
+        public Message broadcast(MessageType type, Predicate<Player> playerFilter) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (playerFilter.test(player)) {
+                    this.send(player, type);
+                }
+            }
+            return this;
+        }
     }
 }

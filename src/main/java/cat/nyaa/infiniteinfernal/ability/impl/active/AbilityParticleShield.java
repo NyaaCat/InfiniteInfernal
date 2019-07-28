@@ -13,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -44,6 +45,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
             @EventHandler
             public void onHurt(EntityDamageByEntityEvent ev) {
                 if (activited.contains(ev.getEntity().getUniqueId())) {
+                    if (!(ev.getDamager() instanceof Player))return;
                     IMob mob = MobManager.instance().toIMob(ev.getEntity());
                     if (mob != null) {
                         List<IAbilitySet> abilities = mob.getAbilities();
