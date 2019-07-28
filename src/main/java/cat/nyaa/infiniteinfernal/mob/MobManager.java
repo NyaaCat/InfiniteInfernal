@@ -166,9 +166,8 @@ public class MobManager {
                             Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
                             return;
                         }
-                        Biome biome = location.getBlock().getBiome();
                         World world = location.getWorld();
-                        if (mobConfig.spawn.biomes.contains(biome.name()) && world != null && mobConfig.spawn.worlds.contains(world.getName())) {
+                        if (world != null && mobConfig.spawn.worlds.contains(world.getName())) {
                             spawnConfs.add(new WeightedPair<>(mobConfig, 0, mobWeight));
                         }
                     } catch (NumberFormatException e) {
