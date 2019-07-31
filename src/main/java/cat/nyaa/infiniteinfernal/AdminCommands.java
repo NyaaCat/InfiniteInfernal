@@ -36,7 +36,7 @@ public class AdminCommands extends CommandReceiver {
 
     @SubCommand(value = "spawn", permission = "im.spawnmob")
     public void onSpawn(CommandSender sender, Arguments arguments) {
-        String mobId = arguments.nextString();
+        String mobName = arguments.nextString();
         String worldName = arguments.nextString();
         double x = arguments.nextDouble();
         double y = arguments.nextDouble();
@@ -44,7 +44,7 @@ public class AdminCommands extends CommandReceiver {
         String top = arguments.top();
         Integer level = top == null ? null : Integer.valueOf(top);
         World world = Bukkit.getWorld(worldName);
-        MobManager.instance().spawnMobById(mobId, new Location(world, x, y, z), level);
+        MobManager.instance().spawnMobByName(mobName, new Location(world, x, y, z), level);
     }
 
     @SubCommand(value = "addloot", permission = "im.addloot")

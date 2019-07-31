@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public class RegionConfig extends IdFileConfig {
+public class RegionConfig extends NamedFileConfig {
 
-    public RegionConfig(int id) {
+    public RegionConfig(String id) {
         super(id);
     }
 
-    public RegionConfig(int id, Region region) {
+    public RegionConfig(String id, Region region) {
         super(id);
         this.region = region;
     }
@@ -37,7 +37,7 @@ public class RegionConfig extends IdFileConfig {
     }
 
     @Override
-    public String getDir() {
+    protected String getFileDirName() {
         return "regions";
     }
 

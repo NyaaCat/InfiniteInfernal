@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.controler.InfAggroControler;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
@@ -51,6 +52,19 @@ public class CustomMob implements IMob {
         generateFromConfig(config, level);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CustomMob customMob = (CustomMob) o;
+        return Objects.equals(entity, customMob.entity);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entity);
+    }
+
     private void generateFromConfig(MobConfig config, int level) {
         Config pluginConfig = InfPlugin.plugin.config();
         //common loots
@@ -79,7 +93,7 @@ public class CustomMob implements IMob {
         if (!config.abilities.isEmpty()) {
             config.abilities.forEach(s -> {
                 try {
-                    AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.parseName(s);
+                    AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.get(s);
                     if (abilitySetConfig == null){
                         Bukkit.getLogger().log(Level.WARNING, "no ability config for "+s);
                         return;
@@ -165,10 +179,24 @@ public class CustomMob implements IMob {
         entity.setCustomNameVisible(true);
         AttributeInstance damageAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
         AttributeInstance maxHealthAttr = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        Objects.requireNonNull(damageAttr);
-        Objects.requireNonNull(maxHealthAttr);
-        damageAttr.setBaseValue(getDamage());
-        maxHealthAttr.setBaseValue(getMaxHealth());
+        AttributeInstance followRangeAttr = entity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
+        if(damageAttr != null){
+            damageAttr.setBaseValue(getDamage());
+        }else {
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_ATTACK_DAMAGE");
+        }
+        if(maxHealthAttr != null){
+            maxHealthAttr.setBaseValue(getMaxHealth());
+        }else{
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_MAX_HEALTH");
+        }
+        if(followRangeAttr != null){
+            World entityWorld = entity.getWorld();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
+        }else{
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_MAX_HEALTH");
+        }
         entity.setHealth(getMaxHealth());
         createBossbar(entity);
         InfernalSpawnEvent event = new InfernalSpawnEvent(this);
@@ -180,10 +208,7 @@ public class CustomMob implements IMob {
     }
 
     private void createBossbar(LivingEntity entity) {
-        String customName = entity.getCustomName();
-        if (customName == null || customName.equals("")){
-            customName = entity.getName();
-        }
+        String customName = getTaggedName();
         bossBar = Bukkit.createBossBar(CUSTOM_MOB_BOSSBAR, customName, BarColor.BLUE, BarStyle.SEGMENTED_10);
     }
 
@@ -199,12 +224,12 @@ public class CustomMob implements IMob {
 
     @Override
     public String getName() {
-        return name;
+        return ChatColor.translateAlternateColorCodes('&', taggedName);
     }
 
     @Override
     public String getTaggedName() {
-        return taggedName;
+        return ChatColor.translateAlternateColorCodes('&', taggedName);
     }
 
     @Override

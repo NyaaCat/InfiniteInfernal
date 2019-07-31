@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class MainLoopTask {
     private static List<BukkitRunnable> runnables = new ArrayList<>();
@@ -23,7 +24,11 @@ public class MainLoopTask {
         Map<String, WorldConfig> worlds = InfPlugin.plugin.config.worlds;
         worlds.forEach((wn, value) -> {
             World world = Bukkit.getWorld(wn);
-            if (world == null) throw new IllegalConfigException("world " + wn + " don't exists");
+            if (world == null) {
+                Bukkit.getLogger().log(Level.WARNING, "world " + wn + " don't exists, skipping");
+                return;
+            }
+
             int interval = value.mobTickInterval;
             MainLoopRunnable runnable = new MainLoopRunnable(world, interval);
             runnables.add(runnable);
@@ -33,10 +38,7 @@ public class MainLoopTask {
             @Override
             public void run() {
                 MobManager instance = MobManager.instance();
-                Bukkit.getWorlds().parallelStream().forEach(world -> {
-                    WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
-                    instance.updateNearbyList(world, (worldConfig.aggro.range.max * 2));
-                });
+                instance.updateNearbyList(256);
             }
         };
         nearbyRunnable.runTaskTimerAsynchronously(InfPlugin.plugin, 0, 10);
@@ -52,20 +54,25 @@ public class MainLoopTask {
 
     private static void mobEffect(IMob iMob) {
         iMob.showParticleEffect();
-//        iMob.autoRetarget();
+        iMob.autoRetarget();
         MobManager mobManager = MobManager.instance();
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
-        if (playersNearMob.size() == 0) {
+        if (playersNearMob.size() == 0 ) {
             mobManager.removeMob(iMob);
         }
         if (iMob.getEntity().isDead()) {
             mobManager.removeMob(iMob);
         }
         List<IAbilitySet> abilities = iMob.getAbilities();
-        Utils.weightedRandomPick(abilities).getAbilitiesInSet().stream()
+        IAbilitySet iAbilitySet = Utils.weightedRandomPick(abilities);
+        if (iAbilitySet == null) {
+            return;
+        }
+        iAbilitySet.getAbilitiesInSet().stream()
                 .filter(iAbility -> iAbility instanceof AbilityActive)
                 .map(iAbility -> ((AbilityActive) iAbility))
                 .forEach(abilityTick -> abilityTick.active(iMob));
+
     }
 
     static class MainLoopRunnable extends BukkitRunnable {

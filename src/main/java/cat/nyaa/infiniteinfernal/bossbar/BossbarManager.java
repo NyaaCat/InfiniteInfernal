@@ -61,44 +61,83 @@ public class BossbarManager {
         @Override
         public void run() {
             Collection<IMob> mobs = MobManager.instance().getMobs();
-            Map<Player, List<Pair<BossBar, AngledEntity>>> playerCounter = new HashMap<>();
+            BarUpdater updater = new BarUpdater();
             if (!mobs.isEmpty()) {
                 mobs.forEach(iMob -> {
                     LivingEntity entity = iMob.getEntity();
-                    List<AngledEntity> nearbyPlayers = MobManager.instance().getPlayersNearMob(iMob).parallelStream()
+                    List<AngledEntity> nearbyPlayers = MobManager.instance().getPlayersNearMob(iMob).stream()
                             .map(player -> AngledEntity.of(entity, player))
-                            .sequential()
                             .sorted(AngledEntity::compareTo)
                             .collect(Collectors.toList());
                     KeyedBossBar bossBar = iMob.getBossBar();
                     if (bossBar == null)return;
-                    bossBar.removeAll();
                     if (!nearbyPlayers.isEmpty()) {
-                        nearbyPlayers.forEach(angledEntity -> {
-                            LivingEntity player = angledEntity.livingEntity;
-                            if (player instanceof Player) {
-                                List<Pair<BossBar, AngledEntity>> pairs = playerCounter.computeIfAbsent(((Player) player), player1 -> new ArrayList<>());
-                                Pair<BossBar, AngledEntity> bar = new Pair<>(bossBar, AngledEntity.of(entity, player));
-                                if (pairs.size() < 5) {
-                                    add(pairs, bar);
-                                } else {
-                                    for (int i = 0; i < pairs.size(); i++) {
-                                        if (bar.getValue().compareTo(pairs.get(i).getValue()) < 0) {
-                                            replace(pairs, i, bar);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        });
+                        updater.registerIMob(iMob, nearbyPlayers);
                     }
                     updateProgress(bossBar, entity);
                 });
+                updater.commit();
             }
-
         }
 
+        class BarUpdater{
+            List<IMob> iMobs;
+            private Map<Player, List<Pair<IMob, AngledEntity>>> playerCounter;
+            private Map<IMob, List<Player>> barPlayerMap;
 
+            BarUpdater(){
+                this.playerCounter = new LinkedHashMap<>();
+                barPlayerMap = new LinkedHashMap<>();
+                iMobs = new ArrayList<>();
+            }
+
+            void registerIMob(IMob iMob, List<AngledEntity> nearbyPlayers){
+                iMobs.add(iMob);
+                nearbyPlayers.stream()
+                        .forEach(angledEntity -> {
+                            LivingEntity livingEntity = angledEntity.livingEntity;
+                            if (!(livingEntity instanceof Player))return;
+                            this.add(iMob, (Player) livingEntity);
+                        });
+            }
+
+            void add(IMob iMob, Player player){
+                List<Player> players = barPlayerMap.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
+                List<Pair<IMob, AngledEntity>> pairs = playerCounter.computeIfAbsent(player, player1 -> new ArrayList<>());
+                Pair<IMob, AngledEntity> bar = new Pair<>(iMob, AngledEntity.of(iMob.getEntity(), player));
+                if (pairs.size() < 5) {
+                    pairs.add(bar);
+                    players.add(player);
+                } else {
+                    for (int i = 0; i < pairs.size(); i++) {
+                        AngledEntity targetEntity = bar.getValue();
+                        if (targetEntity.compareTo(pairs.get(i).getValue()) < 0) {
+                            IMob key = bar.getKey();
+                            pairs.set(i, bar);
+                            players.add(player);
+                            List<Player> players1 = barPlayerMap.computeIfAbsent(key, iMob1 -> new ArrayList<>());
+                            if (targetEntity.livingEntity instanceof Player) {
+                                players1.remove(targetEntity.livingEntity);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            void commit(){
+                barPlayerMap.entrySet().parallelStream()
+                        .forEach(entry -> {
+                            List<Player> watchers = entry.getValue();
+                            KeyedBossBar bossBar = entry.getKey().getBossBar();
+                            bossBar.getPlayers().parallelStream()
+                                    .filter(player -> !watchers.contains(player))
+                                    .forEach(bossBar::removePlayer);
+                            watchers.parallelStream()
+                                    .forEach(bossBar::addPlayer);
+                        });
+            }
+        }
 
         void add(List<Pair<BossBar, AngledEntity>> pairs, Pair<BossBar, AngledEntity> bar) {
             bar.getKey().addPlayer(((Player) bar.getValue().livingEntity));
@@ -106,10 +145,10 @@ public class BossbarManager {
         }
 
         void replace(List<Pair<BossBar, AngledEntity>> pairs, int origin, Pair<BossBar, AngledEntity> replacement) {
-            replacement.getKey().addPlayer(((Player) replacement.getValue().livingEntity));
+//            replacement.getKey().addPlayer(((Player) replacement.getValue().livingEntity));
             pairs.add(origin, replacement);
             Pair<BossBar, AngledEntity> remove = pairs.remove(pairs.size() - 1);
-            remove.getKey().removePlayer(((Player) remove.getValue().livingEntity));
+//            remove.getKey().removePlayer(((Player) remove.getValue().livingEntity));
         }
     }
 

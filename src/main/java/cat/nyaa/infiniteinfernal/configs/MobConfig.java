@@ -14,8 +14,6 @@ public class MobConfig extends NamedFileConfig implements Weightable {
     @Serializable
     public String name = "A custom mob";
     @Serializable
-    public String id = getPrefix() +"-"+ getName();
-    @Serializable
     public EntityType type = EntityType.ZOMBIE;
     @Serializable
     public List<String> abilities = new LinkedList<>();
@@ -100,7 +98,7 @@ public class MobConfig extends NamedFileConfig implements Weightable {
 
     @Override
     public String getPrefix() {
-        return "mob";
+        return "";
     }
 
     @Override

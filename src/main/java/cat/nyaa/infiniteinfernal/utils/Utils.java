@@ -27,8 +27,7 @@ public class Utils {
     }
 
     public static <T extends Weightable> T weightedRandomPick(List<T> list) {
-        int sum = list.stream().parallel()
-                .mapToInt(Weightable::getWeight)
+        int sum = list.stream().mapToInt(Weightable::getWeight)
                 .sum();
         if (sum == 0) {
             if (list.size() > 0) return list.get(0);
@@ -51,8 +50,7 @@ public class Utils {
     }
 
     public static <T> T weightedRandomPick(Map<T, Integer> weightMap) {
-        int sum = weightMap.values().stream().parallel()
-                .mapToInt(Integer::intValue)
+        int sum = weightMap.values().stream().mapToInt(Integer::intValue)
                 .sum();
         if (sum == 0) {
             return weightMap.keySet().stream().findFirst().orElse(null);

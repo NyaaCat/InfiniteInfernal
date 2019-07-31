@@ -23,8 +23,6 @@ public abstract class NamedFileConfig extends FileConfigure {
     @Override
     protected String getFileName() {
         return getFileDirName().concat("/")
-                .concat(getPrefix())
-                .concat("-")
                 .concat(getName())
                 .concat(".yml");
     }

@@ -34,7 +34,6 @@ public class MobManager {
     Map<IMob, List<Player>> mobNearbyList = new LinkedHashMap<>();
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
-    Map<String, MobConfig> idCfgMap = new LinkedHashMap<>();
     Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
 
     private MobManager() {
@@ -62,20 +61,18 @@ public class MobManager {
         }
         worldMobMap.clear();
         nameCfgMap.clear();
-        idCfgMap.clear();
         natualSpawnLists.clear();
     }
 
     private void buildCfgMaps(NamedDirConfigs<MobConfig> mobConfigs) {
-        mobConfigs.values().stream().parallel()
+        mobConfigs.values().stream()
                 .forEach(config -> {
                     nameCfgMap.put(config.name, config);
-                    idCfgMap.put(config.id, config);
                 });
     }
 
     private void buildNatualSpawnList(NamedDirConfigs<MobConfig> mobConfigs) {
-        mobConfigs.values().stream().parallel()
+        mobConfigs.values().stream()
                 .filter(config -> config.spawn.autoSpawn)
                 .forEach(config -> {
                     List<Integer> validLevels = MobConfig.parseLevels(config.spawn.levels);
@@ -136,14 +133,6 @@ public class MobManager {
         return spawnMobByConfig(mobConfig, location, level);
     }
 
-    public IMob spawnMobById(String mobId, Location location, Integer level) {
-        MobConfig iMob = idCfgMap.get(mobId);
-        if (iMob == null) {
-            throw new IllegalArgumentException();
-        }
-        return spawnMobByConfig(iMob, location, level);
-    }
-
     public IMob natualSpawn(Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
@@ -158,7 +147,7 @@ public class MobManager {
                         String[] split = mobs.split(":");
                         String mobId = split[0];
                         int mobWeight = Integer.parseInt(split[1]);
-                        MobConfig mobConfig = idCfgMap.get(mobId);
+                        MobConfig mobConfig = nameCfgMap.get(mobId);
                         if (mobConfig == null) {
                             Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
                             return;
@@ -199,10 +188,15 @@ public class MobManager {
                 List<MobConfig> collect = natualSpawnLists.get(level);
                 if (collect == null) return;
                 Biome biome = location.getBlock().getBiome();
-                collect = collect.stream().parallel()
-                        .filter(config1 -> config1.spawn.worlds.contains(world.getName()) && config1.spawn.biomes.contains(biome.name()))
-                        .collect(Collectors.toList());
                 if (!collect.isEmpty()) {
+                    collect = collect.stream()
+                            .filter(config1 -> {
+                                List<String> biomes = config1.spawn.biomes;
+                                List<String> worlds = config1.spawn.worlds;
+                                return biomes != null && worlds != null
+                                        && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                            })
+                            .collect(Collectors.toList());
                     levelCandidates.add(new WeightedPair<>(collect, level, weight));
                 }
             });
@@ -233,7 +227,7 @@ public class MobManager {
         KeyedBossBar bossBar = mob.getBossBar();
         if (bossBar != null) {
             bossBar.setTitle(bossBar.getTitle().concat(InfPlugin.plugin.config().bossbar.killSuffix));
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     bossBar.removeAll();
@@ -260,28 +254,27 @@ public class MobManager {
         return uuidMap.get(entity.getUniqueId());
     }
 
-    public void updateNearbyList(World world, int nearbyDistance) {
-        final List<IMob> playerMobList = new ArrayList<>(uuidMap.size());
-        Map<Player, List<IMob>> asyncMobsList = new LinkedHashMap<>();
-        Map<IMob, List<Player>> asyncPlayersList = new LinkedHashMap<>();
+    public void updateNearbyList(int nearbyDistance) {
+        Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+        Map<Player, List<IMob>> asyncMobsList = new LinkedHashMap<>(players.size());
+        Map<IMob, List<Player>> asyncPlayersList = new LinkedHashMap<>(uuidMap.size());
 
-        new ArrayList<>(worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>())).parallelStream()
+        new ArrayList<>(uuidMap.values()).stream()
                 .forEach(iMob -> {
-                    if (iMob.getEntity().isDead()){
+                    if (iMob.getEntity().isDead()) {
                         return;
                     }
-                    final List<Player> mobList = new ArrayList<>(uuidMap.size());
-                    world.getPlayers().parallelStream()
-                            .forEach(player -> {
-                                if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
-                                    playerMobList.add(iMob);
-                                    mobList.add(player);
-                                } else {
-                                    System.out.printf("should remove");
-                                }
-                                asyncMobsList.put(player, playerMobList);
-                            });
-                    asyncPlayersList.put(iMob, mobList);
+                    players.stream().forEach(player -> {
+                        if (!iMob.getEntity().getWorld().equals(player.getWorld())) {
+                            return;
+                        }
+                        if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
+                            List<IMob> mobList = asyncMobsList.computeIfAbsent(player, player1 -> new ArrayList<>());
+                            List<Player> playerMobList = asyncPlayersList.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
+                            playerMobList.add(player);
+                            mobList.add(iMob);
+                        }
+                    });
                 });
         playerNearbyList = asyncMobsList;
         mobNearbyList = asyncPlayersList;
@@ -298,13 +291,12 @@ public class MobManager {
     public void updateNearbyList(IMob iMob, int nearbyDistance) {
         List<Player> players = mobNearbyList.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
         World world = iMob.getEntity().getWorld();
-        world.getPlayers().parallelStream()
-                .forEach(player -> {
-                    if (player.getLocation().distance(iMob.getEntity().getLocation()) < nearbyDistance){
-                        players.add(player);
-                        List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, iMob1 -> new ArrayList<>());
-                        iMobs.add(iMob);
-                    }
-                });
+        world.getPlayers().forEach(player -> {
+            if (player.getLocation().distance(iMob.getEntity().getLocation()) < nearbyDistance) {
+                players.add(player);
+                List<IMob> iMobs = playerNearbyList.computeIfAbsent(player, iMob1 -> new ArrayList<>());
+                iMobs.add(iMob);
+            }
+        });
     }
 }

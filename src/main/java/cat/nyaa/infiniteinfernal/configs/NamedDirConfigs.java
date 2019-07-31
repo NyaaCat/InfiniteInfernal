@@ -51,19 +51,16 @@ public class NamedDirConfigs<T extends NamedFileConfig> implements ISerializable
             if (files != null && files.length > 0) {
                 for (File file : files) {
                     try {
-                        String[] split = file.getName().split("-");
-                        if (split.length == 2) {
-                            String name = split[1].split("\\.")[0];
+                        String name = file.getName().split("\\.")[0];
 
-                            T t = targetClass.getConstructor(String.class).newInstance(name);
+                        T t = targetClass.getConstructor(String.class).newInstance(name);
 //                            if (t.getFileName().equals(file.getName())) {
 //                                t.load();
-                            configs.put(name, t);
-                            YamlConfiguration config = new YamlConfiguration();
-                            config.load(file);
-                            t.deserialize(config);
+                        configs.put(name, t);
+                        YamlConfiguration config = new YamlConfiguration();
+                        config.load(file);
+                        t.deserialize(config);
 //                            }
-                        }
                     } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | NumberFormatException | InvocationTargetException e) {
                         e.printStackTrace();
                     } catch (InvalidConfigurationException e) {
@@ -96,7 +93,7 @@ public class NamedDirConfigs<T extends NamedFileConfig> implements ISerializable
         return this.configs.get(split[1]);
     }
 
-    public T get(int id) {
+    public T get(String id) {
         return configs.get(id);
     }
 

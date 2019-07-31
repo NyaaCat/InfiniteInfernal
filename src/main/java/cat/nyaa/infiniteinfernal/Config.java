@@ -37,7 +37,7 @@ public class Config extends PluginConfigure {
         abilityConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "abilities"), AbilitySetConfig.class);
         levelConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "levels"), LevelConfig.class);
         mobConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "mobs"), MobConfig.class);
-        regionConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
+        regionConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class Config extends PluginConfigure {
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
     public DirConfigs<LevelConfig> levelConfigs;
     public NamedDirConfigs<MobConfig> mobConfigs;
-    public DirConfigs<RegionConfig> regionConfigs;
+    public NamedDirConfigs<RegionConfig> regionConfigs;
 
     private void saveStandaloneConfigs() {
         abilityConfigs.saveToDir();
@@ -231,7 +231,7 @@ public class Config extends PluginConfigure {
         mobConfig.loot.special.list.add("inf-extra-sample:10");
         mobConfigs.add(mobConfig);
         Bukkit.getWorlds().stream().forEach(world -> {
-            RegionConfig config = new RegionConfig(0, new RegionConfig.Region(new Location(world, 0, 0, 0), new Location(world, 100, 100, 100)));
+            RegionConfig config = new RegionConfig("sample-region", new RegionConfig.Region(new Location(world, 0, 0, 0), new Location(world, 100, 100, 100)));
             config.mobs.add("mob-0:10");
             regionConfigs.add(config);
         });
