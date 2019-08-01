@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.*;
+import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityProjectile;
 import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.LootDropEvent;
@@ -17,6 +18,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -25,6 +27,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -138,8 +142,8 @@ public class Events implements Listener {
                             Utils.doEffect(effectName, ((Player) damager), duration, amplifier, "friendly fire");
                             new Message(I18n.format("friendly_fire"))
                                     .send(damager);
-                        }catch (Exception e){
-                            Bukkit.getLogger().log(Level.WARNING, "invalid friendly fire config: \""+effect+"\"");
+                        } catch (Exception e) {
+                            Bukkit.getLogger().log(Level.WARNING, "invalid friendly fire config: \"" + effect + "\"");
                         }
                     }
                 }
@@ -150,9 +154,21 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onImobAttackLivingEntity(EntityDamageByEntityEvent ev) {
         if (!(ev.getEntity() instanceof LivingEntity)) return;
-        if (!MobManager.instance().isIMob(ev.getDamager())) return;
+        IMob iMob;
+        if (!MobManager.instance().isIMob(ev.getDamager())) {
+            Entity damager = ev.getDamager();
+            if (!(damager instanceof Projectile)) return;
+            List<MetadataValue> metadata = damager.getMetadata(AbilityProjectile.INF_PROJECTILE_KEY);
+            if (metadata.size() < 1) return;
+            double damage = metadata.get(0).asDouble();
+            ev.setDamage(damage);
+            ProjectileSource shooter = ((Projectile) damager).getShooter();
+            if (shooter == null)return;
+            iMob = MobManager.instance().toIMob((Entity) shooter);
+        } else {
+            iMob = MobManager.instance().toIMob(ev.getDamager());
+        }
 
-        IMob iMob = MobManager.instance().toIMob(ev.getDamager());
         if (iMob == null) return;
         IAbilitySet iAbilitySet = Utils.weightedRandomPick(iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsPassive)

@@ -6,9 +6,9 @@ import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
+import org.bukkit.metadata.LazyMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
-
+    public static String INF_PROJECTILE_KEY = "inf_projectile";
     @Serializable
     public int range = 30;
     @Serializable
@@ -36,8 +36,10 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
     public int burstCount = 1;
     @Serializable
     public int burstInterval = 10;
+    @Serializable
+    public double damageAmplifier = 1.0d;
 
-    private Projectile launch(LivingEntity mobEntity, Entity target, Vector vector, boolean isExtra) {
+    private Projectile launch(LivingEntity mobEntity, Vector vector, double damage) {
         vector = Utils.cone(vector, cone);
         Class<?> aClass = null;
         try {
@@ -45,6 +47,7 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
             if (Projectile.class.isAssignableFrom(aClass)){
                 Projectile projectile = mobEntity.launchProjectile(((Class<? extends Projectile>) aClass), vector);
                 projectile.setGravity(gravity);
+                projectile.setMetadata(INF_PROJECTILE_KEY, new LazyMetadataValue(InfPlugin.plugin, ()-> damage));
                 Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
                 return projectile;
             }
@@ -68,7 +71,12 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
                 .multiply(speed);
         int i = 0;
         do {
-            launch(mobEntity, target, vector, false);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    launch(mobEntity, vector, damageAmplifier*iMob.getDamage());
+                }
+            }.runTaskLater(InfPlugin.plugin, burstInterval * i);
         } while (++i < burstInterval);
     }
 
@@ -92,7 +100,7 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    launch(mobEntity, target, vector, false);
+                    launch(mobEntity, vector, damageAmplifier*mob.getDamage());
                 }
             }.runTaskLater(InfPlugin.plugin, burstInterval * i);
         } while (++i < burstCount);

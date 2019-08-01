@@ -19,6 +19,10 @@ repositories {
         name 'NyaaCentral'
         url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
     }
+    maven {
+        name 'sk89q'
+        url "http://maven.sk89q.com/repo/"
+    }
 }
 
 dependencies {
@@ -27,5 +31,6 @@ dependencies {
     implementation 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
     implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
 
 }

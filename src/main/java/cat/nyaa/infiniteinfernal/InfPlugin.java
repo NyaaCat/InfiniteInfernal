@@ -25,6 +25,7 @@ public class InfPlugin extends JavaPlugin {
     InfMessager infMessager;
     ISpawnControler spawnControler;
     ImiCommands imiCommand;
+    DebugCommands debugCommands;
     BossbarManager bossbarManager;
 
 
@@ -39,6 +40,7 @@ public class InfPlugin extends JavaPlugin {
         i18n.load();
         commands = new AdminCommands(this, i18n);
         imiCommand = new ImiCommands(this, i18n);
+        debugCommands = new DebugCommands(this, i18n);
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
         broadcastManager = new BroadcastManager();
@@ -50,6 +52,7 @@ public class InfPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(events, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
+        Bukkit.getPluginCommand("infdebug").setExecutor(debugCommands);
         bossbarManager = new BossbarManager();
         if (config.bossbar.enabled) {
             bossbarManager.start(10);

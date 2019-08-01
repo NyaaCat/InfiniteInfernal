@@ -65,7 +65,9 @@ public class MainLoopTask {
         if (iMob.getEntity().isDead()) {
             mobManager.removeMob(iMob, false);
         }
-        List<IAbilitySet> abilities = iMob.getAbilities();
+        List<IAbilitySet> abilities = iMob.getAbilities().stream()
+                .filter(IAbilitySet::containsActive)
+                .collect(Collectors.toList());
         IAbilitySet iAbilitySet = Utils.weightedRandomPick(abilities);
         if (iAbilitySet == null) {
             return;

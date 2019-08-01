@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -37,6 +38,13 @@ public class AdminCommands extends CommandReceiver {
     @SubCommand(value = "spawn", permission = "im.spawnmob")
     public void onSpawn(CommandSender sender, Arguments arguments) {
         String mobName = arguments.nextString();
+        if (arguments.top() == null){
+            if (sender instanceof Player) {
+                Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
+                MobManager.instance().spawnMobByName(mobName, targetBlock.getLocation(), null);
+                return;
+            }
+        }
         String worldName = arguments.nextString();
         double x = arguments.nextDouble();
         double y = arguments.nextDouble();

@@ -84,6 +84,7 @@ public class AbilityBeam extends ActiveAbility {
     }
 
     private class MovingTask extends BukkitRunnable {
+        private final Object extraData;
         private IMob iMob;
         private Vector direction;
         private int length = AbilityBeam.this.length;
@@ -102,6 +103,7 @@ public class AbilityBeam extends ActiveAbility {
         public MovingTask(IMob iMob, Vector direction) {
             this.iMob = iMob;
             damage = AbilityBeam.this.damageMultiplier * iMob.getDamage();
+            extraData = Utils.parseExtraData(particle.extraData);
             this.direction = direction;
         }
 
@@ -112,7 +114,7 @@ public class AbilityBeam extends ActiveAbility {
 //        if (from instanceof Player) {
 //            ((Player) from).spawnParticle(this.particleType, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
 //        }
-            world.spawnParticle(this.particleType, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeedExtra, Utils.parseExtraData(particle.extraData), particle.forced);
+            world.spawnParticle(this.particleType, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeedExtra, extraData, particle.forced);
         }
 
         private boolean canHit(Location loc, Entity entity) {
@@ -182,18 +184,16 @@ public class AbilityBeam extends ActiveAbility {
                             this.cancel();
                         }
                         double lengthInThisTick = lengthPerTick + lengthRemains.get();
+                        int cycle = 0;
                         while ((lengthInThisTick -= lengthPerSpawn) > 0) {
                             boolean isHit = tryHit(from, lastLocation, false, damage);
-                            Block block = lastLocation.getBlock();
-                            if (block.getChunk().isLoaded()) {
-                                if (transp.contains(block.getType())) {
-                                    spawnParticle(from, world, lastLocation, 1);
-                                } else if (!ignoreWall) {
+                            if (cycle++ > 2) {
+                                if (!ignoreWall && !transp.contains(lastLocation.getBlock()) ) {
                                     this.cancel();
-                                } else {
-                                    spawnParticle(from, world, lastLocation, 1);
                                 }
+                                cycle = 0;
                             }
+                            spawnParticle(from, world, lastLocation, 1);
                             Vector step = direction.normalize().multiply(lengthPerSpawn);
                             lastLocation.add(step);
                             if (isHit && !pierce) {

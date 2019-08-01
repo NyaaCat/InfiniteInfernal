@@ -125,10 +125,18 @@ public class InfSpawnControler implements ISpawnControler {
 
         Location spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
         if (canSpawnNearPlayer(player) || force) {
+            centerSpawnLocation(spawnLocation);
             IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
             registerMob(iMob);
             return iMob;
         } else return null;
+    }
+
+    private void centerSpawnLocation(Location spawnLocation) {
+        int blockX = spawnLocation.getBlockX();
+        int blockZ = spawnLocation.getBlockZ();
+        spawnLocation.setX(blockX + 0.5);
+        spawnLocation.setZ(blockZ + 0.5);
     }
 
     private void registerMob(IMob iMob) {
@@ -170,8 +178,6 @@ public class InfSpawnControler implements ISpawnControler {
 //                event.setCancelled(true);
                 return;
             }
-        } else {
-            event.setCancelled(true);
         }
     }
 
