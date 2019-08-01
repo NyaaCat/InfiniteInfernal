@@ -33,7 +33,12 @@ public class RegionConfig extends NamedFileConfig {
 
     @Override
     public String getPrefix() {
-        return "region";
+        return "";
+    }
+
+    @Override
+    protected String getFileName() {
+        return super.getFileName();
     }
 
     @Override

@@ -69,7 +69,7 @@ public class ImiCommands extends CommandReceiver {
 //            Bukkit.getScheduler().runTaskAsynchronously(InfPlugin.plugin, () -> {
 //                BroadcastManager broadcastConfig = new BroadcastManager();
 //                broadcastConfig.globalSetting(receiveType);
-//                new Message(I18n.format("imi.global_success", receiveType.name()))
+//                new Message(I18n.format("imi.global_success", receiveType.fileName()))
 //                        .send(sender);
 //            });
 //        } catch (Exception e) {

@@ -59,7 +59,7 @@ public class InfSpawnControler implements ISpawnControler {
     @Override
     public boolean canSpawnNearPlayer(Player player) {
         int nearbyMobs = MobManager.instance().getMobsNearPlayer(player).size();
-        return nearbyMobs < getMaxSpawnAmount(player);
+        return Utils.validGamemode(player) && nearbyMobs < getMaxSpawnAmount(player);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     private void registerMob(IMob iMob) {
-        if (iMob == null)return;
+        if (iMob == null) return;
         World world = iMob.getEntity().getWorld();
         int maxSpawnDistance = getMaxSpawnDistance(world);
         MobManager.instance().updateNearbyList(iMob, maxSpawnDistance);
@@ -167,9 +167,11 @@ public class InfSpawnControler implements ISpawnControler {
         Boolean isIMob = Context.instance().getBoolean(MobManager.MOB_SPAWN_CONTEXT, MobManager.IS_IMOB);
         if (isIMob != null && isIMob) {
             if (!canSpawn(world, event.getLocation())) {
-                event.setCancelled(true);
+//                event.setCancelled(true);
                 return;
             }
+        } else {
+            event.setCancelled(true);
         }
     }
 
@@ -177,7 +179,7 @@ public class InfSpawnControler implements ISpawnControler {
     public void handleMobDeath(EntityDeathEvent event) {
         IMob iMob = MobManager.instance().toIMob(event.getEntity());
         if (iMob == null) return;
-        MobManager.instance().removeMob(iMob);
+        MobManager.instance().removeMob(iMob, true);
         mobPlayerMap.remove(iMob);
     }
 }

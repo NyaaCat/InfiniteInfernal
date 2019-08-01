@@ -5,15 +5,15 @@ import cat.nyaa.nyaacore.configuration.FileConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class NamedFileConfig extends FileConfigure {
-    public String name = "";
+    public String fileName = "";
     protected String prefix = "";
 
     public NamedFileConfig(String name){
-        this.name = name;
+        this.fileName = name;
     }
 
     public String getName() {
-        return name;
+        return fileName;
     }
 
     public String getPrefix() {

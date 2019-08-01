@@ -57,23 +57,21 @@ public class AbilityBeam extends ActiveAbility {
         LivingEntity mobEntity = iMob.getEntity();
         Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range))
                 .forEach(entity -> {
-                    Location eyeLocation = mobEntity.getEyeLocation();
-                    Location targetLocation = entity.getEyeLocation().add(entity.getLocation()).multiply(0.5);
-                    Vector direction = targetLocation.clone().subtract(eyeLocation).toVector();
                     for (int i = 0; i < burst; i++) {
-                        new BukkitRunnable(){
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
-                                Vector conedDir = Utils.cone(direction, cone);
+                                Vector eyeLocation = mobEntity.getEyeLocation().getDirection();
+                                Vector conedDir = Utils.cone(eyeLocation, cone);
                                 beam(iMob, conedDir);
                             }
-                        }.runTaskLater(InfPlugin.plugin, i*burstInterval);
+                        }.runTaskLater(InfPlugin.plugin, i * burstInterval);
                     }
                 });
     }
 
     public void beam(IMob from, Vector direction) {
-        new MovingTask(from, direction);
+        new MovingTask(from, direction).runTask(InfPlugin.plugin);
     }
 
     private NamespacedKey getNamespacedKey() {
@@ -88,7 +86,7 @@ public class AbilityBeam extends ActiveAbility {
     private class MovingTask extends BukkitRunnable {
         private IMob iMob;
         private Vector direction;
-        private int length = 10;
+        private int length = AbilityBeam.this.length;
         private Particle particleType = AbilityBeam.this.particle.type;
         private double offsetX = AbilityBeam.this.particle.delta.get(0);
         private double offsetY = AbilityBeam.this.particle.delta.get(1);
@@ -116,6 +114,7 @@ public class AbilityBeam extends ActiveAbility {
 //        }
             world.spawnParticle(this.particleType, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeedExtra, Utils.parseExtraData(particle.extraData), particle.forced);
         }
+
         private boolean canHit(Location loc, Entity entity) {
             BoundingBox boundingBox = entity.getBoundingBox();
             BoundingBox particleBox;
@@ -179,23 +178,25 @@ public class AbilityBeam extends ActiveAbility {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        if (currentStep.getAndAdd(1) >= totalSteps){
+                        if (currentStep.getAndAdd(1) >= totalSteps) {
                             this.cancel();
                         }
                         double lengthInThisTick = lengthPerTick + lengthRemains.get();
                         while ((lengthInThisTick -= lengthPerSpawn) > 0) {
                             boolean isHit = tryHit(from, lastLocation, false, damage);
                             Block block = lastLocation.getBlock();
-                            if (transp.contains(block.getType())) {
-                                spawnParticle(from, world, lastLocation, 1);
-                            } else if (!ignoreWall){
-                                this.cancel();
-                            }else {
-                                spawnParticle(from, world, lastLocation, 1);
+                            if (block.getChunk().isLoaded()) {
+                                if (transp.contains(block.getType())) {
+                                    spawnParticle(from, world, lastLocation, 1);
+                                } else if (!ignoreWall) {
+                                    this.cancel();
+                                } else {
+                                    spawnParticle(from, world, lastLocation, 1);
+                                }
                             }
                             Vector step = direction.normalize().multiply(lengthPerSpawn);
                             lastLocation.add(step);
-                            if (isHit && !pierce){
+                            if (isHit && !pierce) {
                                 this.cancel();
                             }
                         }

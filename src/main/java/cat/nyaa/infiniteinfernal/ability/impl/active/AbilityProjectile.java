@@ -48,9 +48,9 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
                 Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
                 return projectile;
             }
-            Bukkit.getLogger().log(Level.WARNING, "no projectile name "+projectile);
+            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName "+projectile);
         } catch (ClassNotFoundException e) {
-            Bukkit.getLogger().log(Level.WARNING, "no projectile name "+projectile);
+            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName "+projectile);
         }
         return null;
     }

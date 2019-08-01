@@ -9,6 +9,7 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -54,7 +55,7 @@ public class MobManager {
                     LinkedList<IMob> iMobs = new LinkedList<>(list);
                     IMob poll;
                     while ((poll = iMobs.poll()) != null) {
-                        removeMob(poll);
+                        removeMob(poll, false);
                     }
                 }
             });
@@ -67,7 +68,7 @@ public class MobManager {
     private void buildCfgMaps(NamedDirConfigs<MobConfig> mobConfigs) {
         mobConfigs.values().stream()
                 .forEach(config -> {
-                    nameCfgMap.put(config.name, config);
+                    nameCfgMap.put(config.getName(), config);
                 });
     }
 
@@ -219,27 +220,36 @@ public class MobManager {
         iMobs.add(mob);
     }
 
-    public void removeMob(IMob mob) {
+    public void removeMob(IMob mob, boolean isKilled) {
         World world = mob.getEntity().getWorld();
         uuidMap.remove(mob.getEntity().getUniqueId());
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.remove(mob);
-        KeyedBossBar bossBar = mob.getBossBar();
-        if (bossBar != null) {
-            bossBar.setTitle(bossBar.getTitle().concat(InfPlugin.plugin.config().bossbar.killSuffix));
+        if (isKilled) {
+            KeyedBossBar bossBar = mob.getBossBar();
+            if (bossBar != null) {
+                bossBar.setProgress(0);
+                bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', mob.getTaggedName().concat(" ").concat(InfPlugin.plugin.config().bossbar.killSuffix)));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        bossBar.removeAll();
+                    }
+                }.runTaskLater(InfPlugin.plugin, 20);
+            }
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    bossBar.removeAll();
+                    mob.getEntity().remove();
                 }
             }.runTaskLater(InfPlugin.plugin, 20);
-        }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
+        }else{
+            KeyedBossBar bossBar = mob.getBossBar();
+            if (bossBar != null) {
+                bossBar.removeAll();
                 mob.getEntity().remove();
             }
-        }.runTaskLater(InfPlugin.plugin, 20);
+        }
     }
 
     public List<IMob> getMobsInWorld(World world) {

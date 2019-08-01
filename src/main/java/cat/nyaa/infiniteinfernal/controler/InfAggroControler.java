@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,6 +34,7 @@ public class InfAggroControler implements IAggroControler {
                 });
                 Stream<LivingEntity> livingEntityStream = players.stream()
                         .filter(player -> {
+                            if(!Utils.validGamemode(player))return false;
                             double correctFactor = (1 + inc.getCorrection(player, null) - dec.getCorrection(player, null));
                             double maxRange = range.max * correctFactor;
                             double minRange = range.min * correctFactor;

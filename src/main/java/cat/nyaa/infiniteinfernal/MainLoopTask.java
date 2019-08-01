@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -15,6 +16,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class MainLoopTask {
     private static List<BukkitRunnable> runnables = new ArrayList<>();
@@ -58,10 +60,10 @@ public class MainLoopTask {
         MobManager mobManager = MobManager.instance();
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
         if (playersNearMob.size() == 0 ) {
-            mobManager.removeMob(iMob);
+            mobManager.removeMob(iMob, false);
         }
         if (iMob.getEntity().isDead()) {
-            mobManager.removeMob(iMob);
+            mobManager.removeMob(iMob, false);
         }
         List<IAbilitySet> abilities = iMob.getAbilities();
         IAbilitySet iAbilitySet = Utils.weightedRandomPick(abilities);
@@ -99,7 +101,7 @@ public class MainLoopTask {
             if (!mobs.isEmpty()) {
                 infernalTicker.submitInfernalTickMobs(mobs);
             }
-            List<Player> players = world.getPlayers();
+            List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
             for (int i = 0; i < 10; i++) {
                 Player player = Utils.randomPick(players);
                 if (player != null) {

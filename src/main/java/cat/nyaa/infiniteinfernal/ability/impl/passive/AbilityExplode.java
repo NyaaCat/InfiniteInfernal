@@ -16,7 +16,7 @@ public class AbilityExplode extends AbilityPassive implements AbilityDeath {
         Location location = iMob.getEntity().getLocation();
         World world = location.getWorld();
         if (world != null) {
-            world.createExplosion(location, (float) power);
+            world.createExplosion(location.getX(), location.getY(), location.getZ(), ((float) power), false, false);
         }
     }
 

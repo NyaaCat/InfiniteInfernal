@@ -21,12 +21,12 @@ public class AbilitySetConfig extends NamedFileConfig {
 
     @Override
     public String getPrefix() {
-        return "set";
+        return "";
     }
 
     @Override
     protected String getFileDirName() {
-        return "set";
+        return "abilities";
     }
 
     public int getWeight() {

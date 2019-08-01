@@ -15,6 +15,7 @@ import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -104,7 +105,7 @@ public class CustomMob implements IMob {
                 }
             });
         }
-        //level                                         33333
+        //level
         this.level = level;
         this.autoSpawn = config.spawn.autoSpawn;
         this.dropVanilla = config.loot.vanilla;
@@ -112,6 +113,7 @@ public class CustomMob implements IMob {
         this.name = config.name;
         this.specialChance = config.loot.special.chance;
         this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, entityType, name, level);
+
     }
 
     @Override
@@ -172,7 +174,7 @@ public class CustomMob implements IMob {
     public void makeInfernal(LivingEntity entity) {
         this.entity = entity;
         if (entity.isDead()){
-            MobManager.instance().removeMob(this);
+            MobManager.instance().removeMob(this, false);
             return;
         }
         entity.setCustomName(getTaggedName());
@@ -202,8 +204,12 @@ public class CustomMob implements IMob {
         InfernalSpawnEvent event = new InfernalSpawnEvent(this);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            MobManager.instance().removeMob(this);
+            MobManager.instance().removeMob(this, false);
             entity.remove();
+            return;
+        }
+        if (config.nbtTags!=null && !config.nbtTags.equals("")) {
+            NmsUtils.setEntityTag(entity, config.nbtTags);
         }
     }
 
@@ -297,7 +303,7 @@ public class CustomMob implements IMob {
 
     @Override
     public void onDeath() {
-        MobManager.instance().removeMob(this);
+        MobManager.instance().removeMob(this, true);
     }
 
     @Override
