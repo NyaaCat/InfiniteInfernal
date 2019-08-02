@@ -135,6 +135,7 @@ public class MobManager {
     }
 
     public IMob natualSpawn(Location location) {
+
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();

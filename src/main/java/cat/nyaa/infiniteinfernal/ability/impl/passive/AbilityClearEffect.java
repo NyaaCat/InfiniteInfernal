@@ -1,7 +1,8 @@
-package cat.nyaa.infiniteinfernal.ability.impl.active;
+package cat.nyaa.infiniteinfernal.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
+import cat.nyaa.infiniteinfernal.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -22,7 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class AbilityClearEffect extends ActiveAbility implements AbilityAttack {
+public class AbilityClearEffect extends AbilityPassive implements AbilityAttack {
     private static List<UUID> affected = new ArrayList<>();
     private static final String CACHE_EFFECT = "EFFECT";
 
@@ -41,18 +42,18 @@ public class AbilityClearEffect extends ActiveAbility implements AbilityAttack {
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (!Utils.possibility(attackChance))return;
-        if (!inited){
+        if (!Utils.possibility(attackChance)) return;
+        if (!inited) {
             init();
         }
         affect(target);
     }
 
     private void affect(LivingEntity target) {
-        if (target == null)return;
+        if (target == null) return;
         UUID uniqueId = target.getUniqueId();
         affected.add(uniqueId);
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 affected.remove(uniqueId);
@@ -62,19 +63,29 @@ public class AbilityClearEffect extends ActiveAbility implements AbilityAttack {
     }
 
     private void createCacheAndClearEffect(LivingEntity target) {
-        if (duration != durationWatcher){
-            cache = cacheBuilder.expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS ).build();
+        if (duration != durationWatcher) {
+            cache = cacheBuilder.expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS).build();
         }
-        List<PotionEffectType> peT = new ArrayList<>(effects.size());
-        if (!effects.isEmpty()) {
-            effects.forEach(s->{
-                PotionEffectType potionEffect = Utils.parseEffect(s, getName());
-                peT.add(potionEffect);
-                clearEffect(target, potionEffect);
-            });
+        List<PotionEffectType> peT;
+        peT = cache.getIfPresent(CACHE_EFFECT);
+        if (peT == null) {
+            peT = new ArrayList<>(effects.size());
         }
-        cache.put(CACHE_EFFECT, peT);
+        if (peT.isEmpty()) {
+            if (!effects.isEmpty()) {
+                List<PotionEffectType> finalPeT = peT;
+                effects.forEach(s -> {
+                    PotionEffectType potionEffect = Utils.parseEffect(s, getName());
+                    finalPeT.add(potionEffect);
+                    clearEffect(target, potionEffect);
+                });
+            }
+            cache.put(CACHE_EFFECT, peT);
+        }else {
+            peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
+        }
     }
+
     CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder()
             .concurrencyLevel(2)
             .initialCapacity(100)
@@ -82,41 +93,32 @@ public class AbilityClearEffect extends ActiveAbility implements AbilityAttack {
 
     Cache<String, List<PotionEffectType>> cache = cacheBuilder.build();
 
-    public void clearEffect(LivingEntity entity, PotionEffectType type){
+    public void clearEffect(LivingEntity entity, PotionEffectType type) {
         entity.removePotionEffect(type);
     }
 
-    public void init(){
-           listener = new Listener() {
-               @EventHandler
-               public void onPotion(EntityPotionEffectEvent ev){
-                   List<PotionEffectType> potions = cache.getIfPresent(CACHE_EFFECT);
-                   if (potions != null && !potions.isEmpty()){
-                       if (potions.contains(ev.getModifiedType()))
-                           ev.setCancelled(true);
-                   }else {
-                       Entity entity = ev.getEntity();
-                       if (entity instanceof LivingEntity) {
-                           createCacheAndClearEffect((LivingEntity) entity);
-                       }
-                   }
-               }
-           };
+    public void init() {
+        listener = new Listener() {
+            @EventHandler
+            public void onPotion(EntityPotionEffectEvent ev) {
+                List<PotionEffectType> potions = cache.getIfPresent(CACHE_EFFECT);
+                if(!affected.contains(ev.getEntity().getUniqueId()))return;
+                if (potions != null && !potions.isEmpty()) {
+                    if (potions.contains(ev.getModifiedType()))
+                        ev.setCancelled(true);
+                } else {
+                    Entity entity = ev.getEntity();
+                    if (entity instanceof LivingEntity) {
+                        createCacheAndClearEffect((LivingEntity) entity);
+                    }
+                }
+            }
+        };
         Bukkit.getPluginManager().registerEvents(listener, InfPlugin.plugin);
     }
 
-    public void disable(){
+    public void disable() {
         inited = false;
-    }
-
-    @Override
-    public void active(IMob iMob) {
-        if (!Utils.possibility(tickChance))return;
-        if (!inited){
-            init();
-        }
-        LivingEntity livingEntity = Utils.randomPick(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(30, 30, 30)).collect(Collectors.toList()));
-        affect(livingEntity);
     }
 
     @Override

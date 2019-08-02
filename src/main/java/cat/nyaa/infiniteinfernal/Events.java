@@ -17,10 +17,7 @@ import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -161,12 +158,22 @@ public class Events implements Listener {
             Entity damager = ev.getDamager();
             if (!(damager instanceof Projectile)) return;
             List<MetadataValue> metadata = damager.getMetadata(AbilityProjectile.INF_PROJECTILE_KEY);
-            if (metadata.size() < 1) return;
-            double damage = metadata.get(0).asDouble();
-            ev.setDamage(damage);
-            ProjectileSource shooter = ((Projectile) damager).getShooter();
-            if (shooter == null)return;
-            iMob = MobManager.instance().toIMob((Entity) shooter);
+            if (metadata.size() < 1) {
+                double damage = metadata.get(0).asDouble();
+                ev.setDamage(damage);
+                ProjectileSource shooter = ((Projectile) damager).getShooter();
+                if (shooter == null) return;
+                iMob = MobManager.instance().toIMob((Entity) shooter);
+            }else {
+                ProjectileSource shooter = ((Projectile) damager).getShooter();
+                if (!(shooter instanceof LivingEntity))return;
+                iMob = MobManager.instance().toIMob((Entity) shooter);
+                if (iMob!=null){
+                    ev.setDamage(iMob.getDamage());
+                }else{
+                    return;
+                }
+            }
         } else {
             iMob = MobManager.instance().toIMob(ev.getDamager());
         }
