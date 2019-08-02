@@ -55,19 +55,16 @@ public class AbilityBeam extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range))
-                .forEach(entity -> {
-                    for (int i = 0; i < burst; i++) {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Vector eyeLocation = mobEntity.getEyeLocation().getDirection();
-                                Vector conedDir = Utils.cone(eyeLocation, cone);
-                                beam(iMob, conedDir);
-                            }
-                        }.runTaskLater(InfPlugin.plugin, i * burstInterval);
-                    }
-                });
+        for (int i = 0; i < burst; i++) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Vector eyeLocation = mobEntity.getEyeLocation().getDirection();
+                    Vector conedDir = Utils.cone(eyeLocation, cone);
+                    beam(iMob, conedDir);
+                }
+            }.runTaskLater(InfPlugin.plugin, i * burstInterval);
+        }
     }
 
     public void beam(IMob from, Vector direction) {
@@ -180,15 +177,15 @@ public class AbilityBeam extends ActiveAbility {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        if (currentStep.getAndAdd(1) >= totalSteps) {
-                            this.cancel();
-                        }
                         double lengthInThisTick = lengthPerTick + lengthRemains.get();
                         int cycle = 0;
                         while ((lengthInThisTick -= lengthPerSpawn) > 0) {
+                            if (currentStep.getAndAdd(1) >= totalSteps) {
+                                this.cancel();
+                            }
                             boolean isHit = tryHit(from, lastLocation, false, damage);
                             if (cycle++ > 2) {
-                                if (!ignoreWall && !transp.contains(lastLocation.getBlock()) ) {
+                                if (!ignoreWall && !transp.contains(lastLocation.getBlock().getType()) ) {
                                     this.cancel();
                                 }
                                 cycle = 0;
