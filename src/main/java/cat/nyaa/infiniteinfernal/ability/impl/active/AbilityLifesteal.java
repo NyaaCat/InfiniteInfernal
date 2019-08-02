@@ -3,6 +3,8 @@ package cat.nyaa.infiniteinfernal.ability.impl.active;
 import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
@@ -38,7 +40,10 @@ public class AbilityLifesteal extends ActiveAbility implements AbilityAttack {
         double health = mob.getEntity().getHealth();
         double max = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
         mob.getEntity().setHealth(Math.max(0, Math.min(health + gain, max)));
+        Context.instance().putTemp(mob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY, suck);
         target.damage(suck, mob.getEntity());
+        Context.instance().removeTemp(mob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY);
+
     }
 
     @Override

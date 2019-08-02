@@ -10,6 +10,8 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
@@ -176,6 +178,9 @@ public class Events implements Listener {
 
         if (iAbilitySet == null) return;
         if (iAbilitySet.containsDummy()) return;
+        if (Context.instance().getDouble(iMob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY)!=null){
+            return;
+        }
         List<AbilityAttack> attackAbilities = iAbilitySet.getAbilitiesInSet(AbilityAttack.class);
         if (attackAbilities.isEmpty()) return;
         attackAbilities.forEach(abilityAttack -> abilityAttack.onAttack(iMob, ((LivingEntity) ev.getEntity())));
