@@ -45,6 +45,8 @@ public class AbilityBeam extends ActiveAbility {
     public int burst = 1;
     @Serializable
     public int burstInterval = 10;
+    @Serializable
+    public boolean aimAtTarget = false;
 
     private Set<Material> transp = Stream.of(Material.values())
             .filter(material -> material.isBlock())
@@ -59,7 +61,10 @@ public class AbilityBeam extends ActiveAbility {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    Vector eyeLocation = mobEntity.getEyeLocation().getDirection();
+                    LivingEntity target = iMob.getTarget();
+                    Vector eyeLocation = aimAtTarget && target != null ?
+                            iMob.getTarget().getEyeLocation().subtract(iMob.getEntity().getEyeLocation()).toVector()
+                            : mobEntity.getEyeLocation().getDirection();
                     Vector conedDir = Utils.cone(eyeLocation, cone);
                     beam(iMob, conedDir);
                 }
@@ -117,10 +122,10 @@ public class AbilityBeam extends ActiveAbility {
         private boolean canHit(Location loc, Entity entity) {
             BoundingBox boundingBox = entity.getBoundingBox();
             BoundingBox particleBox;
-            double x = Math.max(offsetX, 0.1);
-            double y = Math.max(offsetY, 0.1);
-            double z = Math.max(offsetZ, 0.1);
-            particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
+            double x = Math.max(offsetX, 0);
+            double y = Math.max(offsetY, 0);
+            double z = Math.max(offsetZ, 0);
+            particleBox = BoundingBox.of(loc, x, y, z);
             return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
         }
 
@@ -185,7 +190,7 @@ public class AbilityBeam extends ActiveAbility {
                             }
                             boolean isHit = tryHit(from, lastLocation, false, damage);
                             if (cycle++ > 2) {
-                                if (!ignoreWall && !transp.contains(lastLocation.getBlock().getType()) ) {
+                                if (!ignoreWall && !transp.contains(lastLocation.getBlock().getType())) {
                                     this.cancel();
                                 }
                                 cycle = 0;

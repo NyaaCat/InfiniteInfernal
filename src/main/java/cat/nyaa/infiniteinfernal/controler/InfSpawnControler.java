@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import com.sk89q.worldguard.WorldGuard;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;

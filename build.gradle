@@ -32,5 +32,9 @@ dependencies {
 
     implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
-
+    implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
+        exclude group: 'io.papermc', module: 'paperlib'
+        exclude group: 'org.bstats', module: 'bstats-bukkit'
+        exclude group: 'org.bukkit', module: 'bukkit'
+    }
 }

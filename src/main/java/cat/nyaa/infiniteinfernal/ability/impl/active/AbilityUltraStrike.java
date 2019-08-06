@@ -4,11 +4,9 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -63,18 +61,32 @@ public class AbilityUltraStrike extends ActiveAbility {
     }
 
     private void showEffect(Location location, IMob mobEntity) {
-        location.getWorld().spawnParticle(Particle.END_ROD, location, 100, 0, 0, 0, 0.03, null, true);
-        location.getWorld().spawnParticle(Particle.PORTAL, location, 200, 0, 0, 0, 2, null, true);
+        final World world = location.getWorld();
+        if (world == null)return;
+        BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+            int times = 0;
+            @Override
+            public void run() {
+                if (times++ > 20){
+                    this.cancel();
+                    return;
+                }
+                world.spawnParticle(Particle.END_ROD, location, 20, 0, 0, 0, 0.03, null, true);
+                world.spawnParticle(Particle.PORTAL, location, 30, 0, 0, 0, 2, null, true);
+            }
+        };
+        bukkitRunnable.runTaskTimer(InfPlugin.plugin, 0, 1);
+
         for (int i = 0; i < delay / 20; i++) {
             Bukkit.getScheduler().runTaskLater(InfPlugin.plugin, () -> {
-                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
+                world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
             }, i * 20);
         }
     }
 
     private void boom(Location location, IMob iMob) {
         location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1, 1.5f);
-        location.getWorld().spawnParticle(Particle.FLAME, location, 50, 0, 0, 0, 1, null, false);
+        location.getWorld().spawnParticle(Particle.FLAME, location, 100, 0, 0, 0, 1, null, false);
         location.getWorld().spawnParticle(Particle.DRAGON_BREATH, location, 100, 0, 0, 0, 1, null, false);
         Utils.getValidTargets(iMob, location.getWorld().getNearbyEntities(location, explodeRange, explodeRange, explodeRange))
                 .forEach(entity -> {

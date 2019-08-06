@@ -7,21 +7,25 @@ import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.BeamUtil;
+import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class AbilityParticleShield extends ActiveAbility implements AbilityHurt {
 
@@ -33,10 +37,28 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
     public double resistance = 20;
     @Serializable
     public double thornsPercentage = 10;
+    @Serializable
+    public int delay = 10;
 
     private static List<UUID> activited = new ArrayList<>();
+    private static List<UUID> thorns = new ArrayList<>();
     private static Listener listener;
     private static boolean registered = false;
+    BeamUtil.BeamConfig beamConfig;
+
+    {
+        ParticleConfig particle = new ParticleConfig();
+        particle.type = Particle.END_ROD;
+        particle.forced = true;
+        particle.amount = 1;
+        particle.speed = 0;
+        beamConfig = new BeamUtil.BeamBuilder().particle(particle)
+                .burst(1)
+                .cone(0)
+                .damage(0)
+                .ignoreWall(true)
+                .build();
+    }
 
     BukkitRunnable cancelTask;
 
@@ -45,17 +67,18 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
             @EventHandler
             public void onHurt(EntityDamageByEntityEvent ev) {
                 if (activited.contains(ev.getEntity().getUniqueId())) {
-                    if (!(ev.getDamager() instanceof Player))return;
+                    if (!(ev.getDamager() instanceof Player) && !(ev.getDamager() instanceof Projectile))
+                        return;
                     IMob mob = MobManager.instance().toIMob(ev.getEntity());
                     if (mob != null) {
                         List<IAbilitySet> abilities = mob.getAbilities();
                         if (!abilities.isEmpty()) {
                             abilities.forEach(iAbilitySet -> {
-                                        List<AbilityParticleShield> abilitiesInSet = iAbilitySet.getAbilitiesInSet(AbilityParticleShield.class);
-                                        if (!abilitiesInSet.isEmpty()) {
-                                            abilitiesInSet.forEach(abilityParticleShield -> abilityParticleShield.onHurtByPlayer(mob, ev));
-                                        }
-                                    });
+                                List<AbilityParticleShield> abilitiesInSet = iAbilitySet.getAbilitiesInSet(AbilityParticleShield.class);
+                                if (!abilitiesInSet.isEmpty()) {
+                                    abilitiesInSet.forEach(abilityParticleShield -> abilityParticleShield.onHurtByPlayer(mob, ev));
+                                }
+                            });
                         }
                     }
                 }
@@ -72,6 +95,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
 
     @Override
     public void active(IMob iMob) {
+
         activited.add(iMob.getEntity().getUniqueId());
         LivingEntity mobEntity = iMob.getEntity();
         BukkitRunnable particleEffect = new BukkitRunnable() {
@@ -79,17 +103,28 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
             public void run() {
                 World world = mobEntity.getWorld();
                 Location location = mobEntity.getLocation();
-                if (activited.contains(mobEntity.getUniqueId()) && !mobEntity.isDead()) {
-                    Utils.spawnParticle(particleConfig, world, location);
-                } else cancel();
+                if (mobEntity.isDead()) {
+                    cancel();
+                    return;
+                }
+                Utils.spawnParticle(particleConfig, world, location);
             }
         };
         particleEffect.runTaskTimer(InfPlugin.plugin, 0, 1);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                thorns.add(mobEntity.getUniqueId());
+                mobEntity.getWorld().playSound(mobEntity.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 0.5f);
+            }
+        }.runTaskLater(InfPlugin.plugin, delay);
         cancelTask = new BukkitRunnable() {
             @Override
             public void run() {
                 try {
                     activited.remove(mobEntity.getUniqueId());
+                    thorns.remove(mobEntity.getUniqueId());
+                    particleEffect.cancel();
                 } catch (Exception e) {
                     particleEffect.cancel();
                 }
@@ -101,12 +136,25 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
     @Override
     public void onHurtByPlayer(IMob mob, EntityDamageByEntityEvent event) {
         if (!activited.contains(mob.getEntity().getUniqueId())) return;
-        Entity damager = event.getDamager();
-        if (damager instanceof LivingEntity) {
-            double orig = event.getDamage();
-            ((LivingEntity) damager).damage(orig * thornsPercentage / 100d, mob.getEntity());
-            event.setDamage(orig * (1 - resistance / 100d));
+        LivingEntity target = Utils.getValidTargets(mob, mob.getEntity().getNearbyEntities(24, 24, 24))
+                .filter(livingEntity -> livingEntity.getLocation().distance(mob.getEntity().getLocation()) > 3)
+                .findAny().orElse(null);
+        if (target == null) return;
+        double orig = event.getDamage();
+        double damage = orig * thornsPercentage / 100d;
+        if (thorns.contains(mob.getEntity().getUniqueId())) {
+            Context.instance().putTemp(mob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY, damage);
+            beamConfig.length = mob.getEntity().getEyeLocation().distance(target.getLocation());
+            beamConfig.damage = damage;
+            BeamUtil.beam(beamConfig, mob.getEntity(), target.getLocation().subtract(mob.getEntity().getEyeLocation()).toVector(), aDouble -> new Vector(0, 1, 0).multiply(distanceShift(aDouble) * 20));
+            Context.instance().removeTemp(mob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY);
         }
+        event.setDamage(orig * (1 - resistance / 100d));
+    }
+
+    private double distanceShift(double x) {
+        //0.57x^2-3,89x^3+10.88x^4-7.56x^5
+        return 0.57 * Math.pow(x, 2) - 3.89 * Math.pow(x, 3) + 10.88 * Math.pow(x, 4) - 7.56 * Math.pow(x, 5);
     }
 
     @Override

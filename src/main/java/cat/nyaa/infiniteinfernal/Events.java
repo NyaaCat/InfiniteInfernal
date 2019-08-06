@@ -158,7 +158,7 @@ public class Events implements Listener {
             Entity damager = ev.getDamager();
             if (!(damager instanceof Projectile)) return;
             List<MetadataValue> metadata = damager.getMetadata(AbilityProjectile.INF_PROJECTILE_KEY);
-            if (metadata.size() < 1) {
+            if (metadata.size() >= 1) {
                 double damage = metadata.get(0).asDouble();
                 ev.setDamage(damage);
                 ProjectileSource shooter = ((Projectile) damager).getShooter();

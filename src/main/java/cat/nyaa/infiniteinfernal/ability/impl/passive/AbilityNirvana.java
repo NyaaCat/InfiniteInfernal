@@ -55,13 +55,13 @@ public class AbilityNirvana extends AbilityPassive implements AbilityNearDeath {
         Location location = mobEntity.getLocation();
         World world = location.getWorld();
         if (world != null) {
-            int duration = 10;
+            int duration = 20;
             AtomicInteger runTimes = new AtomicInteger(0);
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     try {
-                        world.spawnParticle(Particle.FLAME, location, 50, 0.5, 0.5, 0.5, 0.1, null, true);
+                        world.spawnParticle(Particle.FLAME, location, 20, 0.5, 0.5, 0.5, 0.4, null, true);
                         if (runTimes.getAndAdd(1) == duration - 1) {
                             this.cancel();
                         }

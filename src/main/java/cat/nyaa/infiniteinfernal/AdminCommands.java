@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -82,10 +83,16 @@ public class AdminCommands extends CommandReceiver {
         String lootName = arguments.nextString();
         ILootItem loot = plugin.getLootManager().getLoot(lootName);
         if (loot != null) {
-            new Message("").append(I18n.format("loot.get.success"), loot.getItemStack());
-
+            new Message("").append(I18n.format("loot.get.success"), loot.getItemStack())
+                    .send(sender);
+            if (sender instanceof Player) {
+                if (!InventoryUtils.addItem((Player) sender, loot.getItemStack())) {
+                    ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), loot.getItemStack());
+                }
+            }
         } else {
-            new Message("").append(I18n.format("loot.get.no_item", lootName));
+            new Message("").append(I18n.format("loot.get.no_item", lootName))
+                    .send(sender);
         }
     }
 

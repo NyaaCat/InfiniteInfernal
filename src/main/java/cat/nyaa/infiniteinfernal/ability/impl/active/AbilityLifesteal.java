@@ -5,6 +5,7 @@ import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import com.google.common.util.concurrent.AtomicDouble;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -16,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AbilityLifesteal extends ActiveAbility {
     @Serializable
@@ -56,14 +58,18 @@ public class AbilityLifesteal extends ActiveAbility {
         double totalLength;
         Location end;
         Location current;
-        Particle particle = Particle.DAMAGE_INDICATOR;
+        Particle particle = Particle.HEART;
         World world;
+        LivingEntity endEntity;
+        LivingEntity fromEntity;
 
         public LifestealEffect(LivingEntity target, IMob mob) {
             totalLength = target.getLocation().distance(mob.getEntity().getLocation());
             current = target.getEyeLocation();
             end = mob.getEntity().getEyeLocation();
             world = target.getWorld();
+            endEntity = mob.getEntity();
+            fromEntity = target;
         }
 
         @Override
@@ -88,9 +94,36 @@ public class AbilityLifesteal extends ActiveAbility {
                 }.runTaskAsynchronously(InfPlugin.plugin);
             } else {
                 new BukkitRunnable() {
+                    AtomicDouble remains = new AtomicDouble(0);
+
                     @Override
                     public void run() {
-
+                        Location eyeLocation = endEntity.getEyeLocation();
+                        Location fromLocation = fromEntity.getEyeLocation();
+                        if (Objects.equals(eyeLocation.getWorld(), fromLocation.getWorld())) {
+                            totalLength = eyeLocation.distance(fromLocation);
+                        }
+                        end = eyeLocation;
+                        double stepLength = 0.5;
+                        Vector direction = end.clone().subtract(current).toVector().normalize().multiply(stepLength);
+                        double distance = end.distance(current);
+                        if (distance < 0.5) {
+                            this.cancel();
+                            return;
+                        }
+                        double x = distance / totalLength;
+                        double lengthInTick =( speedShift(x) / 20) + remains.getAndSet(0);
+                        while ((lengthInTick -= stepLength) >= 0) {
+                            distance = end.distance(current);
+                            if (distance < 0.5) {
+                                this.cancel();
+                                return;
+                            }
+                            x = distance / totalLength;
+                            spawnStarParticle(current, direction, x);
+                            current.add(direction);
+                        }
+                        remains.set(lengthInTick + stepLength);
                     }
                 }.runTaskTimer(InfPlugin.plugin, 0, 1);
             }
@@ -99,19 +132,40 @@ public class AbilityLifesteal extends ActiveAbility {
         private void spawnParticle(Location location, Particle particle) {
             World world = location.getWorld();
             if (world != null) {
-                world.spawnParticle(particle, location, 1, 0.05d, 0.05d, 0.05d, 0, null, true);
+                world.spawnParticle(particle, location, 1, 0, 0, 0, 0, null, true);
             }
         }
 
-        private double distanceShift(double distance) {
-            //0.57x^2-3,89x^3+10.88x^4-7.56x^5
-            double x = (distance / totalLength);
-            return 0.57*Math.pow(x,2) - 3.89*Math.pow(x,3) + 10.88*Math.pow(x,4) - 7.56*Math.pow(x,5);
+        Vector yAxies = new Vector(0,1,0);
+        Vector xAxies = new Vector(1,0,0);
+
+        private void spawnStarParticle(Location location, Vector towards, double x){
+            Vector nonLinerVec;
+            if (towards.getX() != 0 || towards.getZ() != 0) {
+                nonLinerVec = yAxies;
+            } else if (towards.getY() != 0) {
+                nonLinerVec = xAxies;
+            } else throw new IllegalArgumentException("towards 0");
+            Vector crossProduct = towards.getCrossProduct(nonLinerVec);
+            Vector v1 = crossProduct.getCrossProduct(towards).normalize().multiply(3*(distanceShift(x)));
+            Vector v2 = v1.clone().rotateAroundAxis(towards, Math.toRadians(72));
+            Vector v3 = v2.clone().rotateAroundAxis(towards, Math.toRadians(72));
+            Vector v4 = v3.clone().rotateAroundAxis(towards, Math.toRadians(72));
+            Vector v5 = v4.clone().rotateAroundAxis(towards, Math.toRadians(72));
+            spawnParticle(location.clone().add(v1), particle);
+            spawnParticle(location.clone().add(v2), particle);
+            spawnParticle(location.clone().add(v3), particle);
+            spawnParticle(location.clone().add(v4), particle);
+            spawnParticle(location.clone().add(v5), particle);
         }
 
-        private double speedShift(double distance) {
-            double x = (distance / totalLength);
-            return x * x * 9.5 + 0.5;
+        private double distanceShift(double x) {
+            //0.57x^2-3,89x^3+10.88x^4-7.56x^5
+            return 0.57 * Math.pow(x, 2) - 3.89 * Math.pow(x, 3) + 10.88 * Math.pow(x, 4) - 7.56 * Math.pow(x, 5);
+        }
+
+        private double speedShift(double x) {
+            return Math.pow(x,6) * (-18) + 20;
         }
     }
 }
