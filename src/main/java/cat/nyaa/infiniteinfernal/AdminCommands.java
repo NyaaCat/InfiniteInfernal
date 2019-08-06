@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
@@ -42,7 +43,7 @@ public class AdminCommands extends CommandReceiver {
         if (arguments.top() == null){
             if (sender instanceof Player) {
                 Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                MobManager.instance().spawnMobByName(mobName, targetBlock.getLocation(), null);
+                MobManager.instance().spawnMobByName(mobName, Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1), null);
                 return;
             }
         }

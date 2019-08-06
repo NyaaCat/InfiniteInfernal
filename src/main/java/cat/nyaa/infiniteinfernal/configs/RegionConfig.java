@@ -31,6 +31,9 @@ public class RegionConfig extends NamedFileConfig {
     @Serializable
     public List<String> mobs = new ArrayList<>();
 
+    @Serializable
+    public boolean followGlobalLevel = false;
+
     @Override
     public String getPrefix() {
         return "";

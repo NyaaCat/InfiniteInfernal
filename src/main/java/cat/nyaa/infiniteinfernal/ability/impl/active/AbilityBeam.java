@@ -73,6 +73,7 @@ public class AbilityBeam extends ActiveAbility {
     }
 
     public void beam(IMob from, Vector direction) {
+        if (from.getEntity().isDead())return;
         new MovingTask(from, direction).runTask(InfPlugin.plugin);
     }
 

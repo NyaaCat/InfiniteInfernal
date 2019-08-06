@@ -132,7 +132,13 @@ public class Utils {
     }
 
     private static Location findValidSpawnLocationInY(Location targetLocation) {
-        for (int j = -10; j < 10; j++) {
+        for (int j = 0; j > -20; j--) {
+            Location clone = targetLocation.clone().add(0, j, 0);
+            if (isValidLocation(clone)) {
+                return clone;
+            }
+        }
+        for (int j = 0; j < 10; j++) {
             Location clone = targetLocation.clone().add(0, j, 0);
             if (isValidLocation(clone)) {
                 return clone;
@@ -153,7 +159,7 @@ public class Utils {
         Block block = targetLocation.getBlock();
         Block lowerBlock = block.getRelative(BlockFace.DOWN);
         Block upperBlock = block.getRelative(BlockFace.UP);
-        return !block.getType().isSolid() && !upperBlock.getType().isSolid() && lowerBlock.getType().isSolid() && block.getType().isBlock();
+        return !block.getType().isSolid() && !upperBlock.getType().isSolid() && (lowerBlock.getType().isSolid() || block.getType().equals(Material.WATER));
     }
 
     public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {
@@ -281,7 +287,7 @@ public class Utils {
     public static List<Location> drawLine(Location l1, Location l2, int spawns) {
         ArrayList<Location> locations = new ArrayList<>();
         Location clone = l1.clone();
-        Vector direction = l2.clone().subtract(l1).toVector().multiply(1d / ((double)spawns));
+        Vector direction = l2.clone().subtract(l1).toVector().multiply(1d / ((double) spawns));
         for (int i = 0; i < spawns; i++) {
             Location nextLoc = clone.clone();
             locations.add(nextLoc.add(direction));

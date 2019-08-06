@@ -165,7 +165,7 @@ public class AbilityLifesteal extends ActiveAbility {
         }
 
         private double speedShift(double x) {
-            return Math.pow(x,6) * (-18) + 20;
+            return Math.pow(x,4) * (-15) + 30;
         }
     }
 }

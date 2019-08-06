@@ -16,14 +16,10 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
+public class AbilityProjectile extends ActiveAbility{
     public static String INF_PROJECTILE_KEY = "inf_projectile";
     @Serializable
     public int range = 30;
-    @Serializable
-    public double perCycleChance = 0.5;
-    @Serializable
-    public double onPlayerAttackChance = 1;
     @Serializable
     public double speed = 1;
     @Serializable
@@ -61,7 +57,6 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
 
     @Override
     public void active(IMob iMob) {
-        if (!Utils.possibility(perCycleChance)) return;
         LivingEntity mobEntity = iMob.getEntity();
         Stream<LivingEntity> validTarget = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
         LivingEntity target = Utils.randomPick(validTarget.collect(Collectors.toList()));
@@ -74,10 +69,11 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
             new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (iMob.getEntity().isDead())return;
                     launch(mobEntity, vector, damageAmplifier*iMob.getDamage());
                 }
             }.runTaskLater(InfPlugin.plugin, burstInterval * i);
-        } while (++i < burstInterval);
+        } while (i++ < burstCount);
     }
 
     @Override
@@ -85,24 +81,24 @@ public class AbilityProjectile extends ActiveAbility implements AbilityAttack {
         return "Projectile";
     }
 
-    @Override
-    public void onAttack(IMob mob, LivingEntity target) {
-        if (!Utils.possibility(onPlayerAttackChance)) return;
-
-        double speed = this.speed;
-        if (speed <= 0.1) speed = 0.1;
-
-        LivingEntity mobEntity = mob.getEntity();
-        Vector vector = Utils.unitDirectionVector(mobEntity.getEyeLocation().toVector(), target.getEyeLocation().toVector())
-                .multiply(speed);
-        int i = 0;
-        do {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    launch(mobEntity, vector, damageAmplifier*mob.getDamage());
-                }
-            }.runTaskLater(InfPlugin.plugin, burstInterval * i);
-        } while (++i < burstCount);
-    }
+//    @Override
+//    public void onAttack(IMob mob, LivingEntity target) {
+//        if (!Utils.possibility(onPlayerAttackChance)) return;
+//
+//        double speed = this.speed;
+//        if (speed <= 0.1) speed = 0.1;
+//
+//        LivingEntity mobEntity = mob.getEntity();
+//        Vector vector = Utils.unitDirectionVector(mobEntity.getEyeLocation().toVector(), target.getEyeLocation().toVector())
+//                .multiply(speed);
+//        int i = 0;
+//        do {
+//            new BukkitRunnable() {
+//                @Override
+//                public void run() {
+//                    launch(mobEntity, vector, damageAmplifier*mob.getDamage());
+//                }
+//            }.runTaskLater(InfPlugin.plugin, burstInterval * i);
+//        } while (++i < burstCount);
+//    }
 }

@@ -8,11 +8,10 @@ import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import com.google.common.collect.ImmutableList;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -134,84 +133,157 @@ public class MobManager {
         return spawnMobByConfig(mobConfig, location, level);
     }
 
-    public IMob natualSpawn(Location location) {
+    static class FluidLocationWrapper {
+        private static final List<EntityType> skyEntities = Arrays.asList(
+                EntityType.PHANTOM,
+                EntityType.BAT,
+                EntityType.VEX,
+                EntityType.BLAZE,
+                EntityType.GHAST,
+                EntityType.PARROT,
+                EntityType.ENDER_DRAGON,
+                EntityType.WITHER);
 
+        private static final List<EntityType> waterEntities = Arrays.asList(
+                EntityType.DROWNED,
+                EntityType.GUARDIAN,
+                EntityType.ELDER_GUARDIAN,
+                EntityType.COD,
+                EntityType.PUFFERFISH,
+                EntityType.SALMON,
+                EntityType.DOLPHIN,
+                EntityType.TROPICAL_FISH,
+                EntityType.SQUID,
+                EntityType.TURTLE);
+        private final Location location;
+        FluidLocationWrapper(Location location) {
+            this.location = location;
+        }
+
+        public boolean isValid(EntityType type) {
+            if (location == null || type == null) return false;
+            boolean isSky = checkSky(location);
+            if (isSky) {
+                return skyEntities.contains(type);
+            }
+            boolean isFluid = checkFluid(location);
+            if (isFluid) {
+                return waterEntities.contains(type);
+            }
+            return true;
+        }
+
+        private boolean checkFluid(Location location) {
+            boolean result = true;
+            Block block = location.getBlock();
+            for (BlockFace value : BlockFace.values()) {
+                result = result && block.getRelative(value).getType().equals(Material.WATER);
+            }
+            return result;
+        }
+
+        private boolean checkSky(Location location) {
+            Block block = location.getBlock();
+            Block d1 = block.getRelative(BlockFace.DOWN);
+            return !d1.getType().equals(Material.AIR);
+        }
+    }
+
+    public IMob natualSpawn(Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
         if (!regions.isEmpty()) {
-            regions.forEach(regionConfig -> {
-                if (regionConfig.mobs.isEmpty()) {
-                    return;
-                }
-                regionConfig.mobs.forEach(mobs -> {
-                    try {
-                        String[] split = mobs.split(":");
-                        String mobId = split[0];
-                        int mobWeight = Integer.parseInt(split[1]);
-                        MobConfig mobConfig = nameCfgMap.get(mobId);
-                        if (mobConfig == null) {
-                            Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
-                            return;
-                        }
-                        World world = location.getWorld();
-                        if (world != null && mobConfig.spawn.worlds.contains(world.getName())) {
-                            spawnConfs.add(new WeightedPair<>(mobConfig, 0, mobWeight));
-                        }
-                    } catch (NumberFormatException e) {
-                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
-                    } catch (Exception e) {
-                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.bad_config", mobs));
-                    }
-                });
-            });
+            return spawnInRegion(regions, location);
         }
+        Integer level = randomLevel(location);
+        List<MobConfig> collect = natualSpawnLists.get(level);
+        if (collect == null) return null;
+        World world = location.getWorld();
+        if (world == null) return null;
+        Biome biome = location.getBlock().getBiome();
+        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
+        if (!collect.isEmpty()) {
+            collect = collect.stream()
+                    .filter(config1 -> {
+                        List<String> biomes = config1.spawn.biomes;
+                        List<String> worlds = config1.spawn.worlds;
+                        return biomes != null && worlds != null
+                                && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                    })
+                    .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
+                    .collect(Collectors.toList());
+            MobConfig mobConfig = Utils.weightedRandomPick(collect);
+            return spawnMobByConfig(mobConfig, location, level);
+        }
+        return null;
+    }
+
+    private Integer randomLevel(Location location) {
+        Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
+        List<WeightedPair<Integer, Integer>> levelCandidates = new ArrayList<>();
+        values.forEach(levelConfig -> {
+            int from = levelConfig.spawnConfig.from;
+            int to = levelConfig.spawnConfig.to;
+            int level = levelConfig.level;
+            int weight = levelConfig.spawnConfig.weight;
+            World world = location.getWorld();
+            if (world == null) {
+                throw new IllegalArgumentException();
+            }
+            double distance = location.distance(world.getSpawnLocation());
+            if (distance < from || distance >= to) {
+                return;
+            }
+            levelCandidates.add(new WeightedPair<>(level, level, weight));
+        });
+        WeightedPair<Integer, Integer> integerIntegerWeightedPair = Utils.weightedRandomPick(levelCandidates);
+        return integerIntegerWeightedPair == null ? null : integerIntegerWeightedPair.getKey();
+    }
+
+    private IMob spawnInRegion(List<RegionConfig> regions, Location location) {
+        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        regions.forEach(regionConfig -> {
+            if (regionConfig.mobs.isEmpty()) {
+                return;
+            }
+            regionConfig.mobs.forEach(mobs -> {
+                try {
+                    String[] split = mobs.split(":");
+                    String mobId = split[0];
+                    int mobWeight = Integer.parseInt(split[1]);
+                    MobConfig mobConfig = nameCfgMap.get(mobId);
+                    if (mobConfig == null) {
+                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
+                        return;
+                    }
+                    World world = location.getWorld();
+                    if (world != null && mobConfig.spawn.worlds.contains(world.getName())) {
+                        Integer level = 0;
+                        if (regionConfig.followGlobalLevel) {
+                            level = randomLevel(location);
+                        } else {
+                            level = Utils.randomPick(MobConfig.parseLevels(mobConfig.spawn.levels));
+                        }
+                        if (level == null) return;
+                        if (fluidLocationWrapper.isValid(mobConfig.type)) {
+                            spawnConfs.add(new WeightedPair<>(mobConfig, level, mobWeight));
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
+                } catch (Exception e) {
+                    Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.bad_config", mobs));
+                }
+            });
+        });
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
+            if (selected == null) return null;
             MobConfig mobConfig = selected.getKey();
-            List<Integer> possibleLevels = MobConfig.parseLevels(mobConfig.spawn.levels);
-            return spawnMobByConfig(mobConfig, location, Utils.randomPick(possibleLevels));
-        } else {
-            Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
-            List<WeightedPair<List<MobConfig>, Integer>> levelCandidates = new ArrayList<>();
-            values.forEach(levelConfig -> {
-                int from = levelConfig.spawnConfig.from;
-                int to = levelConfig.spawnConfig.to;
-                int level = levelConfig.level;
-                int weight = levelConfig.spawnConfig.weight;
-                World world = location.getWorld();
-                if (world == null) {
-                    throw new IllegalArgumentException();
-                }
-                double distance = location.distance(world.getSpawnLocation());
-                if (distance < from || distance >= to) {
-                    return;
-                }
-                List<MobConfig> collect = natualSpawnLists.get(level);
-                if (collect == null) return;
-                Biome biome = location.getBlock().getBiome();
-                if (!collect.isEmpty()) {
-                    collect = collect.stream()
-                            .filter(config1 -> {
-                                List<String> biomes = config1.spawn.biomes;
-                                List<String> worlds = config1.spawn.worlds;
-                                return biomes != null && worlds != null
-                                        && worlds.contains(world.getName()) && biomes.contains(biome.name());
-                            })
-                            .collect(Collectors.toList());
-                    levelCandidates.add(new WeightedPair<>(collect, level, weight));
-                }
-            });
-            if (!levelCandidates.isEmpty()) {
-                WeightedPair<List<MobConfig>, Integer> selected = Utils.weightedRandomPick(levelCandidates);
-                Integer level = selected.getValue();
-                List<MobConfig> candidates = selected.getKey();
-                MobConfig mobConfig = Utils.weightedRandomPick(candidates);
-                return spawnMobByConfig(mobConfig, location, level);
-            } else {
-                return null;
-            }
+            return spawnMobByConfig(mobConfig, location, selected.getValue());
         }
+        return null;
     }
 
     public void registerMob(IMob mob) {
@@ -244,7 +316,7 @@ public class MobManager {
                     mob.getEntity().remove();
                 }
             }.runTaskLater(InfPlugin.plugin, 20);
-        }else{
+        } else {
             KeyedBossBar bossBar = mob.getBossBar();
             if (bossBar != null) {
                 bossBar.removeAll();
