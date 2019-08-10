@@ -8,8 +8,11 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.logging.Level;
 
 public class InfPlugin extends JavaPlugin {
     public static InfPlugin plugin;
@@ -53,6 +56,12 @@ public class InfPlugin extends JavaPlugin {
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
         Bukkit.getPluginCommand("infdebug").setExecutor(debugCommands);
+
+        try {
+            WorldGuardUtils.init();
+        } catch (NoClassDefFoundError e) {
+            Bukkit.getLogger().log(Level.WARNING, "WorldGuard didn't detected, support will be disabled");
+        }
         bossbarManager = new BossbarManager();
         if (config.bossbar.enabled) {
             bossbarManager.start(10);
@@ -72,7 +81,7 @@ public class InfPlugin extends JavaPlugin {
 //        messageConfig = new MessageConfig();
         messageConfig.load();
         infMessager = new InfMessager(messageConfig);
-        if (config.bossbar.enabled){
+        if (config.bossbar.enabled) {
             bossbarManager.start(10);
         }
     }
