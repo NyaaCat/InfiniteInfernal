@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
@@ -107,6 +108,11 @@ public class MainLoopTask {
             for (int i = 0; i < 10; i++) {
                 Player player = Utils.randomPick(players);
                 if (player != null) {
+                    if (WorldGuardUtils.enabled){
+                        if(WorldGuardUtils.isPlayerInProtectedRegion(player)){
+                            continue;
+                        }
+                    }
                     InfPlugin.plugin.spawnControler.spawnIMob(player, false);
                 }
             }

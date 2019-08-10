@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -130,7 +131,12 @@ public class InfSpawnControler implements ISpawnControler {
         int minSpawnDistance = getMinSpawnDistance(world);
 
         Location spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
-        if (canSpawnNearPlayer(player) || force) {
+        if (canSpawn(world,spawnLocation) || force) {
+            if (!force && WorldGuardUtils.enabled){
+                if (WorldGuardUtils.isProtectedRegion(location, player)) {
+                    return null;
+                }
+            }
             centerSpawnLocation(spawnLocation);
             IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
             registerMob(iMob);
