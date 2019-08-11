@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.CommandReceiver;
@@ -17,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collection;
 import java.util.List;
 
 public class AdminCommands extends CommandReceiver {
@@ -40,7 +42,7 @@ public class AdminCommands extends CommandReceiver {
     @SubCommand(value = "spawn", permission = "im.spawnmob")
     public void onSpawn(CommandSender sender, Arguments arguments) {
         String mobName = arguments.nextString();
-        if (arguments.top() == null){
+        if (arguments.top() == null) {
             if (sender instanceof Player) {
                 Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
                 MobManager.instance().spawnMobByName(mobName, Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1), null);
@@ -144,5 +146,24 @@ public class AdminCommands extends CommandReceiver {
                         .send(sender);
                 break;
         }
+    }
+
+    @SubCommand("killall")
+    public void onKillAll(CommandSender sender, Arguments arguments) {
+        String top = arguments.top();
+        Collection<IMob> toKill;
+        if (top != null) {
+            World world = Bukkit.getWorld(top);
+            if (world != null) {
+                toKill = MobManager.instance().getMobsInWorld(world);
+            } else {
+                new Message(I18n.format("killall.error.unknown_world"))
+                        .send(sender);
+                return;
+            }
+        } else {
+             toKill = MobManager.instance().getMobs();
+        }
+        toKill.parallelStream().forEach(iMob -> MobManager.instance().removeMob(iMob, false));
     }
 }
