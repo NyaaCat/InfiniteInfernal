@@ -57,19 +57,24 @@ public class AbilityBeam extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        for (int i = 0; i < burst; i++) {
-            new BukkitRunnable() {
+        AtomicInteger burstCounter = new AtomicInteger(0);
+
+            class Task extends BukkitRunnable{
                 @Override
                 public void run() {
-                    LivingEntity target = iMob.getTarget();
-                    Vector eyeLocation = aimAtTarget && target != null ?
-                            iMob.getTarget().getEyeLocation().subtract(iMob.getEntity().getEyeLocation()).toVector()
-                            : mobEntity.getEyeLocation().getDirection();
-                    Vector conedDir = Utils.cone(eyeLocation, cone);
-                    beam(iMob, conedDir);
+                    if (burstCounter.getAndAdd(1)<burst) {
+                        LivingEntity target = iMob.getTarget();
+                        Vector eyeLocation = aimAtTarget && target != null ?
+                                iMob.getTarget().getEyeLocation().subtract(iMob.getEntity().getEyeLocation()).toVector()
+                                : mobEntity.getEyeLocation().getDirection();
+                        Vector conedDir = Utils.cone(eyeLocation, cone);
+                        beam(iMob, conedDir);
+                        new Task().runTaskLater(InfPlugin.plugin, burstInterval);
+                    }
                 }
-            }.runTaskLater(InfPlugin.plugin, i * burstInterval);
-        }
+            }
+            new Task().runTask(InfPlugin.plugin);
+
     }
 
     public void beam(IMob from, Vector direction) {

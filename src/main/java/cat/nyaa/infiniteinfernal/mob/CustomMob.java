@@ -197,7 +197,7 @@ public class CustomMob implements IMob {
             WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
             followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
         }else{
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_MAX_HEALTH");
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_FOLLOW_RANGE");
         }
         entity.setHealth(getMaxHealth());
         createBossbar(entity);

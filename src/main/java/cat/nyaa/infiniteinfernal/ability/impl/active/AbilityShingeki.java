@@ -56,12 +56,12 @@ public class AbilityShingeki extends ActiveAbility {
                 if (world != null) {
                     Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 3, 3, 3);
                     for (int i = 0; i < 5; i++) {
-                        new BukkitRunnable(){
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
                                 world.strikeLightningEffect(location);
                             }
-                        }.runTaskLater(InfPlugin.plugin, i*4);
+                        }.runTaskLater(InfPlugin.plugin, i * 4);
                     }
                     if (!nearbyEntities.isEmpty()) {
                         nearbyEntities.forEach(entity -> {
@@ -80,14 +80,14 @@ public class AbilityShingeki extends ActiveAbility {
     }
 
     private void showEffect(Location location) {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 World world = location.getWorld();
-                if (world == null)return;
+                if (world == null) return;
                 List<Location> roundLocationList = Utils.getRoundLocations(location, radius);
                 double theta = Utils.random() * 360;
-                Vector vector = new Vector(1,0,0);
+                Vector vector = new Vector(1, 0, 0);
                 vector.multiply(radius);
                 vector.rotateAroundY(theta);
                 List<Location> anchors = new ArrayList<>();
@@ -97,22 +97,36 @@ public class AbilityShingeki extends ActiveAbility {
                     anchors.add(anchor);
                 }
 
-                roundLocationList.addAll(Utils.drawHexStar(anchors));
+                List<Location> hexStar = Utils.drawHexStar(anchors);
+                int sizePerTask = roundLocationList.size() / 3;
+                List<Location> r1 = roundLocationList.subList(0, sizePerTask);
+                List<Location> r2 = roundLocationList.subList(sizePerTask, 2 * sizePerTask);
+                List<Location> r3 = roundLocationList.subList(2 * sizePerTask, roundLocationList.size());
 
-                double stepsPerTask = (double) roundLocationList.size() / (double) delay;
+                draw(hexStar, delay);
+                draw(r1, delay);
+                draw(r2, delay);
+                draw(r3, delay);
+            }
 
+            private void draw(List<Location> locations, int delay) {
+                double stepsPerTask = (double) locations.size() / (double) delay;
+                World world = location.getWorld();
+                if(world == null)return;
                 AtomicInteger spawned = new AtomicInteger(0);
-                for (int i = 0; i < delay; i++) {
-                    int finalI = i;
-                    new BukkitRunnable(){
-                        @Override
-                        public void run() {
-                            while (spawned.get() < stepsPerTask * finalI) {
-                                world.spawnParticle(Particle.END_ROD,roundLocationList.get(spawned.getAndAdd(1)), 1, 0, 0, 0, 0, null, true);
-                            }
+                AtomicInteger taskNum = new AtomicInteger(1);
+                class Task extends BukkitRunnable{
+                    @Override
+                    public void run() {
+                        while (spawned.get() < stepsPerTask * taskNum.get()) {
+                            world.spawnParticle(Particle.END_ROD, locations.get(spawned.getAndAdd(1)), 1, 0, 0, 0, 0, null, true);
                         }
-                    }.runTaskLater(InfPlugin.plugin, i);
+                        if (taskNum.getAndAdd(1) < delay){
+                            new Task().runTaskLater(InfPlugin.plugin, 1);
+                        }
+                    }
                 }
+                new Task().runTask(InfPlugin.plugin);
             }
         }.runTaskAsynchronously(InfPlugin.plugin);
     }

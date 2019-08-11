@@ -1,19 +1,32 @@
 package cat.nyaa.infiniteinfernal.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
 
 public class AbilityClone extends ActiveAbility {
     @Serializable
     public int amount = 1;
 
-    private int clonedTimes = 3;
+    @Serializable
+    public int cloneTimes = 3;
+
+    private static Map<IMob, Integer> clonedTimesMap = new LinkedHashMap<>();
 
     @Override
     public void active(IMob iMob) {
@@ -23,25 +36,48 @@ public class AbilityClone extends ActiveAbility {
     private void cloneMob(IMob iMob) {
         MobConfig config = iMob.getConfig();
         LivingEntity mobEntity = iMob.getEntity();
-        if (mobEntity.getScoreboardTags().contains("inf_cloned")){
-            return;
-        }
-        if (clonedTimes <= 0)return;
+        Integer timesRemains = clonedTimesMap.computeIfAbsent(iMob, iMob1 -> 3);
+        if (timesRemains-- < 0) return;
+
         for (int i = 0; i < amount; i++) {
             Location location = mobEntity.getLocation();
             Utils.randomSpawnLocation(location, 0, 5);
             IMob cloned = MobManager.instance().spawnMobByConfig(config, location, iMob.getLevel());
-            LivingEntity clonedEntity = cloned.getEntity();
-            clonedEntity.addScoreboardTag("inf_cloned");
-            //this function will produce unexpected exception, skipping.
-//            clonedEntity.setHealth(mobEntity.getHealth());
-            if (clonedEntity instanceof Mob && mobEntity instanceof Mob) {
-                ((Mob) clonedEntity).setTarget(((Mob) mobEntity).getTarget());
-            }
-            clonedEntity.addPotionEffects(mobEntity.getActivePotionEffects());
-            clonedTimes--;
+            Integer finalTimesRemains = timesRemains;
+            clonedTimesMap.put(cloned, clonedTimesMap.computeIfAbsent(iMob, iMob1 -> finalTimesRemains));
+            cloneAttributes(iMob,cloned);
         }
 
+    }
+
+    private void cloneAttributes(IMob from, IMob to){
+        LivingEntity clonedEntity = to.getEntity();
+//            this function will produce unexpected exception, skipping.
+        AttributeInstance damageAttr = clonedEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        AttributeInstance maxHealthAttr = clonedEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance followRangeAttr = clonedEntity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
+        if(damageAttr != null){
+            damageAttr.setBaseValue(from.getDamage());
+        }else {
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_ATTACK_DAMAGE");
+        }
+        if(maxHealthAttr != null){
+            maxHealthAttr.setBaseValue(from.getMaxHealth());
+        }else{
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_MAX_HEALTH");
+        }
+        if(followRangeAttr != null){
+            World entityWorld = clonedEntity.getWorld();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
+        }else{
+            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_FOLLOW_RANGE");
+        }
+        clonedEntity.setHealth(from.getEntity().getHealth());
+        if (clonedEntity instanceof Mob && from.getEntity() instanceof Mob) {
+            ((Mob) clonedEntity).setTarget(((Mob) from.getEntity()).getTarget());
+        }
+        clonedEntity.addPotionEffects(from.getEntity().getActivePotionEffects());
     }
 
     @Override

@@ -12,6 +12,7 @@ import org.bukkit.metadata.LazyMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,6 +36,31 @@ public class AbilityProjectile extends ActiveAbility{
     @Serializable
     public double damageAmplifier = 1.0d;
 
+
+    @Override
+    public void active(IMob iMob) {
+        LivingEntity mobEntity = iMob.getEntity();
+        Stream<LivingEntity> validTarget = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
+        LivingEntity target = Utils.randomPick(validTarget.collect(Collectors.toList()));
+        if (target == null) return;
+        if (!mobEntity.hasLineOfSight(target)) return;
+        Vector vector = Utils.unitDirectionVector(mobEntity.getEyeLocation().toVector(), target.getEyeLocation().toVector())
+                .multiply(speed);
+        int i = 0;
+        AtomicInteger burstCounter = new AtomicInteger(0);
+            class Task extends BukkitRunnable{
+                @Override
+                public void run() {
+                    if (iMob.getEntity().isDead())return;
+                    if (burstCounter.getAndAdd(1) < burstCount){
+                        launch(mobEntity, vector, damageAmplifier*iMob.getDamage());
+                        new Task().runTaskLater(InfPlugin.plugin, burstInterval);
+                    }
+                }
+            }
+            new Task().runTask(InfPlugin.plugin);
+    }
+
     private Projectile launch(LivingEntity mobEntity, Vector vector, double damage) {
         vector = Utils.cone(vector, cone);
         Class<?> aClass = null;
@@ -52,28 +78,6 @@ public class AbilityProjectile extends ActiveAbility{
             Bukkit.getLogger().log(Level.WARNING, "no projectile fileName "+projectile);
         }
         return null;
-    }
-
-
-    @Override
-    public void active(IMob iMob) {
-        LivingEntity mobEntity = iMob.getEntity();
-        Stream<LivingEntity> validTarget = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
-        LivingEntity target = Utils.randomPick(validTarget.collect(Collectors.toList()));
-        if (target == null) return;
-        if (!mobEntity.hasLineOfSight(target)) return;
-        Vector vector = Utils.unitDirectionVector(mobEntity.getEyeLocation().toVector(), target.getEyeLocation().toVector())
-                .multiply(speed);
-        int i = 0;
-        do {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (iMob.getEntity().isDead())return;
-                    launch(mobEntity, vector, damageAmplifier*iMob.getDamage());
-                }
-            }.runTaskLater(InfPlugin.plugin, burstInterval * i);
-        } while (i++ < burstCount);
     }
 
     @Override

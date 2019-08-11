@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityShingeki;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
@@ -9,12 +10,15 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class DebugCommands extends CommandReceiver {
@@ -245,4 +249,41 @@ public class DebugCommands extends CommandReceiver {
         }
     }
 
+    @SubCommand("shingeki")
+    public void onShingeki(CommandSender sender, Arguments arguments){
+        if (sender instanceof Player) {
+            Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
+            if(targetBlock.getType().isSolid()){
+                Block relative = targetBlock.getRelative(BlockFace.UP);
+                if (!relative.getType().isSolid()){
+                    strikeShingeki(relative.getLocation());
+                    return;
+                }else {
+                    for (BlockFace value : BlockFace.values()) {
+                        Block relative1 = targetBlock.getRelative(value);
+                        if (!relative1.getType().isSolid()) {
+                            strikeShingeki(relative1.getLocation());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void strikeShingeki(Location location) {
+        AbilityShingeki abilityShingeki = new AbilityShingeki();
+        abilityShingeki.delay = 60;
+        try {
+            Method showEffect = abilityShingeki.getClass().getDeclaredMethod("showEffect", Location.class);
+            showEffect.setAccessible(true);
+            showEffect.invoke(abilityShingeki, location);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
 }

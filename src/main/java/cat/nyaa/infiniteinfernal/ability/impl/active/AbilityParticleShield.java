@@ -38,7 +38,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
     @Serializable
     public double thornsPercentage = 10;
     @Serializable
-    public int delay = 10;
+    public int delay = 20;
 
     private static List<UUID> activited = new ArrayList<>();
     private static List<UUID> thorns = new ArrayList<>();
@@ -98,6 +98,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
 
         activited.add(iMob.getEntity().getUniqueId());
         LivingEntity mobEntity = iMob.getEntity();
+        mobEntity.getWorld().playSound(mobEntity.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 0.5f);
         BukkitRunnable particleEffect = new BukkitRunnable() {
             @Override
             public void run() {
@@ -115,7 +116,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
             @Override
             public void run() {
                 thorns.add(mobEntity.getUniqueId());
-                mobEntity.getWorld().playSound(mobEntity.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 0.5f);
+                mobEntity.getWorld().playSound(mobEntity.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1f);
             }
         }.runTaskLater(InfPlugin.plugin, delay);
         cancelTask = new BukkitRunnable() {
