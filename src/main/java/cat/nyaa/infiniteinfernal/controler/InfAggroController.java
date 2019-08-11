@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class InfAggroControler implements IAggroControler {
+public class InfAggroController implements IAggroControler {
     @Override
     public LivingEntity findAggroTarget(IMob iMob) {
         World world = iMob.getEntity().getWorld();
@@ -26,7 +26,6 @@ public class InfAggroControler implements IAggroControler {
             ICorrector inc = aggro.getInc();
             List<Player> players = world.getPlayers();
             if (!players.isEmpty()) {
-                AtomicReference<LivingEntity> nearest = new AtomicReference<>(players.get(0));
                 Comparator<LivingEntity> comparator = Comparator.comparing(player -> {
                     double correctFactor = (1 + inc.getCorrection(player, null) - dec.getCorrection(player, null));
                     double aggroBase = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
@@ -41,18 +40,10 @@ public class InfAggroControler implements IAggroControler {
                             double distance = player.getLocation().distance(iMob.getEntity().getLocation());
                             double aggroBase = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
                             double aggroDistance = aggroBase * correctFactor;
-                            boolean b = distance < Math.min(Math.min(maxRange, aggroDistance), Math.max(minRange, aggroDistance));
-                            if (b) {
-                                nearest.set(player);
-                            }
-                            return b;
+                            return distance < Math.min(Math.min(maxRange, aggroDistance), Math.max(minRange, aggroDistance));
                         }).sorted(comparator.reversed())
                         .map(player -> player);
-                LivingEntity livingEntity = nearest.get();
-                if (livingEntity == null) {
-                    livingEntity = livingEntityStream.max(comparator).orElse(null);
-                }
-                return livingEntity;
+                return livingEntityStream.max(comparator).orElse(null);
             }
         }
         return null;

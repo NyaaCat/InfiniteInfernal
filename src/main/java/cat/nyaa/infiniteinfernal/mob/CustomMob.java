@@ -10,7 +10,7 @@ import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
-import cat.nyaa.infiniteinfernal.controler.InfAggroControler;
+import cat.nyaa.infiniteinfernal.controler.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
@@ -251,7 +251,7 @@ public class CustomMob implements IMob {
         new BukkitRunnable(){
             @Override
             public void run() {
-                LivingEntity aggroTarget = new InfAggroControler().findAggroTarget(CustomMob.this);
+                LivingEntity aggroTarget = new InfAggroController().findAggroTarget(CustomMob.this);
                 new BukkitRunnable(){
                     @Override
                     public void run() {
