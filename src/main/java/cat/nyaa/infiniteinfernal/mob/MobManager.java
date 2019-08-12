@@ -13,6 +13,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BossBar;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -33,6 +34,7 @@ public class MobManager {
     Map<World, List<IMob>> worldMobMap = new LinkedHashMap<>();
     Map<Player, List<IMob>> playerNearbyList = new LinkedHashMap<>();
     Map<IMob, List<Player>> mobNearbyList = new LinkedHashMap<>();
+    Map<BossBar, IMob> bossBarIMobMap= new LinkedHashMap<>();
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
     Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
@@ -130,6 +132,10 @@ public class MobManager {
     public IMob spawnMobByName(String name, Location location, Integer level) {
         MobConfig mobConfig = nameCfgMap.get(name);
         return spawnMobByConfig(mobConfig, location, level);
+    }
+
+    public boolean isMobBar(KeyedBossBar keyedBossBar) {
+        return bossBarIMobMap.containsKey(keyedBossBar);
     }
 
     static class FluidLocationWrapper {
@@ -288,6 +294,7 @@ public class MobManager {
     public void registerMob(IMob mob) {
         World world = mob.getEntity().getWorld();
         uuidMap.put(mob.getEntity().getUniqueId(), mob);
+        bossBarIMobMap.put(mob.getBossBar(), mob);
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.add(mob);
     }
@@ -314,14 +321,16 @@ public class MobManager {
                 @Override
                 public void run() {
                     mob.getEntity().remove();
+                    bossBarIMobMap.remove(mob.getBossBar(), mob);
                 }
             }.runTaskLater(InfPlugin.plugin, 20);
         } else {
             KeyedBossBar bossBar = mob.getBossBar();
             if (bossBar != null) {
                 bossBar.removeAll();
-                mob.getEntity().remove();
+                bossBarIMobMap.remove(mob.getBossBar(), mob);
             }
+            mob.getEntity().remove();
         }
     }
 

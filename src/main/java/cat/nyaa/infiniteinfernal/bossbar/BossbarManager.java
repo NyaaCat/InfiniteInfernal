@@ -63,6 +63,11 @@ public class BossbarManager {
         public void run() {
             Collection<IMob> mobs = MobManager.instance().getMobs();
             Iterator<KeyedBossBar> bossBars = Bukkit.getBossBars();
+            bossBars.forEachRemaining(keyedBossBar -> {
+                if (!MobManager.instance().isMobBar(keyedBossBar)){
+                    Bukkit.removeBossBar(keyedBossBar.getKey());
+                }
+            });
             BarUpdater updater = new BarUpdater();
             if (!mobs.isEmpty()) {
                 mobs.forEach(iMob -> {
