@@ -19,7 +19,7 @@ public class AbilityTeleportToPlayer extends ActiveAbility {
         LivingEntity mobEntity = iMob.getEntity();
         LivingEntity livingEntity = Utils.randomSelectTarget(iMob, range);
         if (livingEntity == null)return;
-        Location to = Utils.randomLocation(livingEntity.getLocation(), 0, radius);
+        Location to = Utils.randomNonNullLocation(livingEntity.getLocation(), 0, radius);
         teleport(mobEntity, to);
     }
 

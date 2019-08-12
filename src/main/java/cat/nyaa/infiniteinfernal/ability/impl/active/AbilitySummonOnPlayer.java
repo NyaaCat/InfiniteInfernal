@@ -29,7 +29,7 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
         LivingEntity victim = Utils.randomPick(candidate);
         if (victim == null)return;
         for (int i = 0; i < amount; i++) {
-            Location location = Utils.randomSpawnLocation(victim.getLocation(), 0, radius);
+            Location location = Utils.randomNonNullLocation(victim.getLocation(), 0, radius);
             Entity entity = location.getWorld().spawnEntity(location, type);
             if (!nbt.equals("")){
                 NmsUtils.setEntityTag(entity,nbt);

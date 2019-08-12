@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.nyaacore.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BossBar;
@@ -61,6 +62,7 @@ public class BossbarManager {
         @Override
         public void run() {
             Collection<IMob> mobs = MobManager.instance().getMobs();
+            Iterator<KeyedBossBar> bossBars = Bukkit.getBossBars();
             BarUpdater updater = new BarUpdater();
             if (!mobs.isEmpty()) {
                 mobs.forEach(iMob -> {

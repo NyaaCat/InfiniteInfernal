@@ -105,17 +105,14 @@ public class MainLoopTask {
                 infernalTicker.submitInfernalTickMobs(mobs);
             }
             List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
-            for (int i = 0; i < 10; i++) {
-                Player player = Utils.randomPick(players);
-                if (player != null) {
-                    if (WorldGuardUtils.enabled){
-                        if(WorldGuardUtils.isPlayerInProtectedRegion(player)){
-                            continue;
-                        }
+            players.stream().forEach(player -> {
+                if (WorldGuardUtils.enabled){
+                    if(WorldGuardUtils.isPlayerInProtectedRegion(player)){
+                        return;
                     }
-                    InfPlugin.plugin.spawnControler.spawnIMob(player, false);
                 }
-            }
+                InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+            });
         }
 
         @Override

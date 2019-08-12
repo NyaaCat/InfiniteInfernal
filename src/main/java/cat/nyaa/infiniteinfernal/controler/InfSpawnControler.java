@@ -131,6 +131,7 @@ public class InfSpawnControler implements ISpawnControler {
         int minSpawnDistance = getMinSpawnDistance(world);
 
         Location spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+        if (spawnLocation== null)return null;
         if (canSpawn(world,spawnLocation) || force) {
             if (!force && WorldGuardUtils.enabled){
                 if (WorldGuardUtils.isProtectedRegion(spawnLocation, player)) {

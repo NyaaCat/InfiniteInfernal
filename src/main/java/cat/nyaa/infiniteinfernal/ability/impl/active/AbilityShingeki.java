@@ -42,7 +42,14 @@ public class AbilityShingeki extends ActiveAbility {
                 }
                 strike(location, iMob);
             } else {
-                strike(Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, 30), iMob);
+                Location location = null;
+                for (int j = 0; j < 20; j++) {
+                    location = Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, 30);
+                    if (location != null) break;
+                }
+                if (location != null) {
+                    strike(location, iMob);
+                }
             }
         }
     }
@@ -112,16 +119,16 @@ public class AbilityShingeki extends ActiveAbility {
             private void draw(List<Location> locations, int delay) {
                 double stepsPerTask = (double) locations.size() / (double) delay;
                 World world = location.getWorld();
-                if(world == null)return;
+                if (world == null) return;
                 AtomicInteger spawned = new AtomicInteger(0);
                 AtomicInteger taskNum = new AtomicInteger(1);
-                class Task extends BukkitRunnable{
+                class Task extends BukkitRunnable {
                     @Override
                     public void run() {
                         while (spawned.get() < stepsPerTask * taskNum.get()) {
                             world.spawnParticle(Particle.END_ROD, locations.get(spawned.getAndAdd(1)), 1, 0, 0, 0, 0, null, true);
                         }
-                        if (taskNum.getAndAdd(1) < delay){
+                        if (taskNum.getAndAdd(1) < delay) {
                             new Task().runTaskLater(InfPlugin.plugin, 1);
                         }
                     }

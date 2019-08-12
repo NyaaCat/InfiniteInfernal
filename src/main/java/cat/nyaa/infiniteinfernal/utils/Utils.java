@@ -128,6 +128,15 @@ public class Utils {
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
             if (!validSpawnLocationInY.equals(center)) return validSpawnLocationInY;
         }
+        return null;
+    }
+
+    public static Location randomNonNullLocation(Location center, double innerRange, double outerRange) {
+        for (int i = 0; i < 30; i++) {
+            Location targetLocation = randomLocation(center, innerRange, outerRange);
+            Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
+            if (!validSpawnLocationInY.equals(center)) return validSpawnLocationInY;
+        }
         return center;
     }
 
@@ -147,7 +156,7 @@ public class Utils {
         return targetLocation;
     }
 
-    public static Location randomLocation(Location center, double innerRange, double outerRange) {
+    private static Location randomLocation(Location center, double innerRange, double outerRange) {
         double r = innerRange + random() * outerRange;
         double theta = Math.toRadians(random.nextInt(360));
         Location targetLocation = center.clone();
@@ -159,7 +168,7 @@ public class Utils {
         Block block = targetLocation.getBlock();
         Block lowerBlock = block.getRelative(BlockFace.DOWN);
         Block upperBlock = block.getRelative(BlockFace.UP);
-        return !block.getType().isSolid() && !upperBlock.getType().isSolid() && (lowerBlock.getType().isSolid() || block.getType().equals(Material.WATER));
+        return !block.getType().isSolid() && !upperBlock.getType().isSolid() && ((lowerBlock.getType().isSolid() || block.getType().equals(Material.WATER)));
     }
 
     public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {

@@ -17,7 +17,7 @@ public class AbilityTeleport extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        Location to = Utils.randomLocation(mobEntity.getLocation(), 0, radius);
+        Location to = Utils.randomNonNullLocation(mobEntity.getLocation(), 0, radius);
         teleport(mobEntity, to);
     }
 

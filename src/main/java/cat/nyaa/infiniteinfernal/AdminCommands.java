@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 public class AdminCommands extends CommandReceiver {
@@ -45,7 +46,10 @@ public class AdminCommands extends CommandReceiver {
         if (arguments.top() == null) {
             if (sender instanceof Player) {
                 Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                MobManager.instance().spawnMobByName(mobName, Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1), null);
+                Location location = Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1);
+                if (location != null) {
+                    MobManager.instance().spawnMobByName(mobName, location, null);
+                }
                 return;
             }
         }
@@ -155,15 +159,15 @@ public class AdminCommands extends CommandReceiver {
         if (top != null) {
             World world = Bukkit.getWorld(top);
             if (world != null) {
-                toKill = MobManager.instance().getMobsInWorld(world);
+                toKill = new LinkedList<>(MobManager.instance().getMobsInWorld(world));
             } else {
                 new Message(I18n.format("killall.error.unknown_world"))
                         .send(sender);
                 return;
             }
         } else {
-             toKill = MobManager.instance().getMobs();
+             toKill = new LinkedList<>(MobManager.instance().getMobs());
         }
-        toKill.parallelStream().forEach(iMob -> MobManager.instance().removeMob(iMob, false));
+        toKill.stream().forEach(iMob -> MobManager.instance().removeMob(iMob, false));
     }
 }

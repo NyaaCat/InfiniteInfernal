@@ -38,10 +38,10 @@ public class AbilityClone extends ActiveAbility {
         LivingEntity mobEntity = iMob.getEntity();
         Integer timesRemains = clonedTimesMap.computeIfAbsent(iMob, iMob1 -> 3);
         if (timesRemains-- < 0) return;
-
+        clonedTimesMap.put(iMob, timesRemains);
         for (int i = 0; i < amount; i++) {
             Location location = mobEntity.getLocation();
-            Utils.randomSpawnLocation(location, 0, 5);
+            Utils.randomNonNullLocation(location, 0, 5);
             IMob cloned = MobManager.instance().spawnMobByConfig(config, location, iMob.getLevel());
             Integer finalTimesRemains = timesRemains;
             clonedTimesMap.put(cloned, clonedTimesMap.computeIfAbsent(iMob, iMob1 -> finalTimesRemains));
@@ -73,7 +73,6 @@ public class AbilityClone extends ActiveAbility {
         }else{
             Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_FOLLOW_RANGE");
         }
-        clonedEntity.setHealth(from.getEntity().getHealth());
         if (clonedEntity instanceof Mob && from.getEntity() instanceof Mob) {
             ((Mob) clonedEntity).setTarget(((Mob) from.getEntity()).getTarget());
         }

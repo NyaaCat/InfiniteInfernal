@@ -12,6 +12,7 @@ import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.boss.BarColor;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -108,9 +109,7 @@ public class MobManager {
             Class<? extends Entity> entityClass = entityType.getEntityClass();
             if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
                 if (level == null) {
-                    List<String> levelStrs = config.spawn.levels;
-                    List<Integer> levels = MobConfig.parseLevels(levelStrs);
-                    level = Utils.randomPick(levels);
+                    level = randomLevel(location);
                 }
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
@@ -185,7 +184,7 @@ public class MobManager {
         private boolean checkSky(Location location) {
             Block block = location.getBlock();
             Block d1 = block.getRelative(BlockFace.DOWN);
-            return !d1.getType().equals(Material.AIR);
+            return d1.getType().equals(Material.AIR);
         }
     }
 
@@ -302,6 +301,7 @@ public class MobManager {
             KeyedBossBar bossBar = mob.getBossBar();
             if (bossBar != null) {
                 bossBar.setProgress(0);
+                bossBar.setColor(BarColor.RED);
                 bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', mob.getTaggedName().concat(" ").concat(InfPlugin.plugin.config().bossbar.killSuffix)));
                 new BukkitRunnable() {
                     @Override

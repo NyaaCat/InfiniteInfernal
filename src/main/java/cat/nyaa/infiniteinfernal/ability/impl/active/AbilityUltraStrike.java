@@ -44,7 +44,7 @@ public class AbilityUltraStrike extends ActiveAbility {
                 }
                 summonUltraStrike(location, iMob);
             } else {
-                summonUltraStrike(Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, nearbyRange), iMob);
+                summonUltraStrike(Utils.randomNonNullLocation(iMob.getEntity().getLocation(), 0, nearbyRange), iMob);
             }
         }
     }

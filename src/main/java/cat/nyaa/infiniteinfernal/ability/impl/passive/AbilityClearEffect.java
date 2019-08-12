@@ -11,6 +11,7 @@ import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
@@ -27,8 +28,6 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
     private static List<UUID> affected = new ArrayList<>();
     private static final String CACHE_EFFECT = "EFFECT";
 
-    @Serializable
-    public double tickChance = 0.5;
     @Serializable
     public double attackChance = 0.5;
     @Serializable
@@ -82,7 +81,22 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
             }
             cache.put(CACHE_EFFECT, peT);
         }else {
-            peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
+            List<PotionEffectType> finalPeT1 = peT;
+            class ClearTask extends BukkitRunnable{
+                private LivingEntity target;
+
+                private ClearTask(LivingEntity target){
+                    this.target = target;
+                }
+                @Override
+                public void run() {
+                    if (affected.contains(target.getUniqueId())){
+                        finalPeT1.forEach(potionEffectType -> clearEffect(target, potionEffectType));
+                        new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
+                    }
+                }
+            }
+            new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
         }
     }
 
