@@ -60,6 +60,9 @@ public class Config extends PluginConfigure {
     @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
+    @Serializable(name = "GetDropMessageFeedback")
+    public boolean isGetDropMessageEnabled = false;
+
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
     public DirConfigs<LevelConfig> levelConfigs;

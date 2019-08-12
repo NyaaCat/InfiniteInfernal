@@ -40,7 +40,7 @@ public class Events implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMobDeath(EntityDeathEvent ev) {
         Entity entity = ev.getEntity();
         if (MobManager.instance().isIMob(entity)) {
@@ -65,7 +65,15 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onArmorStandHurt(EntityDamageEvent event){
+        Entity entity = event.getEntity();
+            if (entity.getScoreboardTags().contains("inf_damage_indicator")){
+                event.setCancelled(true);
+            }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurt(EntityDamageEvent event) {
         Entity entity = event.getEntity();
         if (event instanceof EntityDamageByEntityEvent) return;
@@ -101,7 +109,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST,ignoreCancelled = true)
     public void onMobHurtByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (MobManager.instance().isIMob(entity)) {
@@ -154,7 +162,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onImobAttackLivingEntity(EntityDamageByEntityEvent ev) {
         if (!(ev.getEntity() instanceof LivingEntity)) return;
         IMob iMob;
@@ -197,7 +205,7 @@ public class Events implements Listener {
         attackAbilities.forEach(abilityAttack -> abilityAttack.onAttack(iMob, ((LivingEntity) ev.getEntity())));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onNatualMobSpawn(CreatureSpawnEvent event) {
         World world = event.getEntity().getWorld();
         if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.NATURAL)) {
@@ -213,7 +221,7 @@ public class Events implements Listener {
         InfPlugin.plugin.getSpawnControler().handleSpawnEvent(event);
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onIMobNearDeath(IMobNearDeathEvent ev) {
         List<IAbilitySet> abilities = ev.getMob().getAbilities();
         if (abilities.isEmpty()) return;
@@ -224,7 +232,7 @@ public class Events implements Listener {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInfMobSpawn(InfernalSpawnEvent ev) {
         IMob iMob = ev.getIMob();
         List<IAbilitySet> abilities = iMob.getAbilities();
@@ -238,7 +246,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onLootEvent(LootDropEvent ev) {
         List<ItemStack> drops = ev.getEntityDeathEvent().getDrops();
         drops.clear();

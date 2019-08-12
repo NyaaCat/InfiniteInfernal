@@ -27,7 +27,7 @@ public class InfMessager implements IMessager {
     private List<String> playerKill;
     private List<String> specialDrop;
 
-    public InfMessager(MessageConfig config){
+    public InfMessager(MessageConfig config) {
         setupFromConfig(config);
     }
 
@@ -43,10 +43,10 @@ public class InfMessager implements IMessager {
     public void broadcastToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
         buildMessage(MessageType.MOB_KILLED, deadMob, killer, item)
                 .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
-        if (item !=null){
+        if (item != null) {
             buildMessage(MessageType.DROP, deadMob, killer, item)
                     .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
-        }else {
+        } else {
             buildMessage(MessageType.NO_DROP, deadMob, killer, item)
                     .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
         }
@@ -55,7 +55,7 @@ public class InfMessager implements IMessager {
     private boolean shouldReceiveMessage(LivingEntity killer, Player player) {
         BroadcastManager broadcastManager = InfPlugin.plugin.getBroadcastManager();
         BroadcastMode receiveType = broadcastManager.getReceiveType(player.getWorld(), player.getUniqueId().toString());
-        switch (receiveType){
+        switch (receiveType) {
             case ALL:
                 return true;
             case NEARBY:
@@ -72,7 +72,7 @@ public class InfMessager implements IMessager {
         BroadcastMessage message = new BroadcastMessage("");
         String str = "";
         EntityEquipment equipment;
-        switch (messageType){
+        switch (messageType) {
             case DROP:
                 str = Utils.randomPick(drop);
                 if (str == null) {
@@ -81,19 +81,21 @@ public class InfMessager implements IMessager {
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
-                        .replaceAll("\\{drop\\.item}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&',str), lootItem.getItemStack());
+                        .replaceAll("\\{drop\\.item}", "{itemName}")
+                        .replaceAll("\\{drop\\.amount}", "{amount}");
+                message.append(ChatColor.translateAlternateColorCodes('&', str), lootItem.getItemStack());
                 break;
             case SPETIAL_DROP:
                 str = Utils.randomPick(specialDrop);
-                if (str == null){
+                if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.special_drop"));
                     return new Message(I18n.format("message.error.special_drop"));
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
-                        .replaceAll("\\{drop\\.special}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&',str), lootItem.getItemStack());
+                        .replaceAll("\\{drop\\.special}", "{itemName}")
+                        .replaceAll("\\{drop\\.amount}", "{amount}");
+                message.append(ChatColor.translateAlternateColorCodes('&', str), lootItem.getItemStack());
                 break;
             case NO_DROP:
                 str = Utils.randomPick(noDrop);
@@ -103,7 +105,7 @@ public class InfMessager implements IMessager {
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName());
-                message.append(ChatColor.translateAlternateColorCodes('&',str));
+                message.append(ChatColor.translateAlternateColorCodes('&', str));
                 break;
             case MOB_KILLED:
                 str = Utils.randomPick(playerKill);
@@ -115,7 +117,7 @@ public class InfMessager implements IMessager {
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{player\\.item}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&',str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
+                message.append(ChatColor.translateAlternateColorCodes('&', str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
                 break;
             case PLAYER_KILLED:
                 str = Utils.randomPick(mobKill);
@@ -127,7 +129,7 @@ public class InfMessager implements IMessager {
                 str = str.replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.item}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&',str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
+                message.append(ChatColor.translateAlternateColorCodes('&', str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
                 break;
         }
         return message;
@@ -135,17 +137,17 @@ public class InfMessager implements IMessager {
 
     @Override
     public void broadcastExtraToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
-        if (item !=null){
+        if (item != null) {
             buildMessage(MessageType.SPETIAL_DROP, deadMob, killer, item)
                     .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
         }
     }
 
-    public enum MessageType{
+    public enum MessageType {
         DROP, SPETIAL_DROP, NO_DROP, MOB_KILLED, PLAYER_KILLED
     }
 
-    class BroadcastMessage extends Message{
+    class BroadcastMessage extends Message {
 
         public BroadcastMessage(String text) {
             super(text);

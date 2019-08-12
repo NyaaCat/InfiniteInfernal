@@ -1,0 +1,49 @@
+loot:
+  add:
+    success: "物品 {itemName} &r* {amount}, id: %s, 动态几率: %b, 添加成功"
+    error:
+      exists: "物品id: %s 已被应用于\"{itemName} &r* {amount}\", 添加失败"
+      no_item: "主手没有物品"
+  get:
+    success: "成功给予 {itemName} &r* {amount}"
+    no_item: "没有名为\"%s\"的物品"
+  set:
+    success: "成功设置 {itemName} &r* {amount} 在等级 %d 掉落， 权重： %d"
+    no_item: "没有名为\"%s\"的物品"
+inspect:
+  item:
+    success: "{itemName} * {amount}, 动态掉落: %b"
+    no_item: "没有名为\"%s\"的物品"
+  level:
+    success: "查询成功"
+    info: "{itemName} &r* {amount}, 动态掉落: %b"
+    no_level: "等级 %d 不存在或无掉落"
+  error:
+    invalid_action: "未知命令 %s"
+killall:
+  success: "成功清理了 %d 只黑化怪"
+  error:
+    unknown_world: "未知世界 %s"
+imi:
+  state_all: "当前模式: 全部, 将接收全部击杀信息"
+  state_near: "当前模式: 附近, 将接收附近击杀信息"
+  state_self: "当前模式: 自我, 将接收自己的击杀信息"
+  state_off: "当前模式: 关闭, 将不再接收击杀信息"
+damage:
+  mob_hurt: "&c&l伤害 -%%,2f"
+friendly_fire: "击中友军!"
+error:
+  not_player: "只有玩家才能执行该命令"
+  permission: "你没有足够的权限"
+  wrong_argument: "参数错误"
+  custom_mob:
+    no_loot: "没有掉落物品\"%s\""
+    mob:
+      spawn_no_id: "没有id为 %s 的生物"
+      num_format: "数字格式错误 %s"
+      bad_config: "错误配置文件 %s"
+message:
+  stuck: "你被定身了，不能移动或传送"
+  error:
+    drop: "没有掉落提示信息，请联系管理员"
+    special_drop: "没有特殊掉落提示信息，请联系管理员"

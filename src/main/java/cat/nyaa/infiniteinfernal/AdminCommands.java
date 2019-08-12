@@ -72,13 +72,20 @@ public class AdminCommands extends CommandReceiver {
         if (sender instanceof Player) {
             ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
             if (itemInMainHand.getType().equals(Material.AIR)) {
-                new Message("").append(I18n.format("loot.add.error_no_item"))
+                new Message("").append(I18n.format("loot.add.error.no_item"))
+                        .send(sender);
+                return;
+            }
+            ILootItem loot = lootManager.getLoot(itemName);
+            if (loot != null) {
+                Message message = new Message("");
+                message.append(I18n.format("loot.add.error.exists", itemName), loot.getItemStack())
                         .send(sender);
                 return;
             }
             lootManager.addLoot(itemName, isDynamic, itemInMainHand);
             Message append = new Message("");
-            append.append(I18n.format("loot.add.success", isDynamic), itemInMainHand)
+            append.append(I18n.format("loot.add.success", itemName, isDynamic), itemInMainHand)
                     .send(sender);
 
         } else {
@@ -91,8 +98,10 @@ public class AdminCommands extends CommandReceiver {
         String lootName = arguments.nextString();
         ILootItem loot = plugin.getLootManager().getLoot(lootName);
         if (loot != null) {
-            new Message("").append(I18n.format("loot.get.success"), loot.getItemStack())
-                    .send(sender);
+            if (InfPlugin.plugin.config().isGetDropMessageEnabled) {
+                new Message("").append(I18n.format("loot.get.success"), loot.getItemStack())
+                        .send(sender);
+            }
             if (sender instanceof Player) {
                 if (!InventoryUtils.addItem((Player) sender, loot.getItemStack())) {
                     ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), loot.getItemStack());
@@ -116,7 +125,7 @@ public class AdminCommands extends CommandReceiver {
             return;
         }
         LootManager.instance().addCommonLoot(lootItem, level, weight);
-        new Message(I18n.format("loot.set.success", itemName, level, weight))
+        new Message("").append(I18n.format("loot.set.success", level, weight), lootItem.getItemStack())
                 .send(sender);
     }
 
@@ -139,15 +148,20 @@ public class AdminCommands extends CommandReceiver {
                 int level = Integer.parseInt(id);
                 List<ILootItem> loots = LootManager.instance().getLoots(level);
                 if (!loots.isEmpty()) {
+                    new Message("").append(I18n.format("inspect.level.success"))
+                            .send(sender);
                     loots.forEach(lootItem -> {
                         int weight = lootItem.getWeight(level);
-                        new Message("").append(I18n.format("inspect.level.success", id, weight))
+                        new Message("").append(I18n.format("inspect.level.info", level, weight))
                                 .send(sender);
                     });
+                }else {
+                    new Message("").append(I18n.format("inspect.level.no_level", level))
+                            .send(sender);
                 }
                 break;
             default:
-                new Message("").append(I18n.format("inspect.error.invalid_action"))
+                new Message("").append(I18n.format("inspect.error.invalid_action", target))
                         .send(sender);
                 break;
         }
@@ -162,7 +176,7 @@ public class AdminCommands extends CommandReceiver {
             if (world != null) {
                 toKill = new LinkedList<>(MobManager.instance().getMobsInWorld(world));
             } else {
-                new Message(I18n.format("killall.error.unknown_world"))
+                new Message(I18n.format("killall.error.unknown_world", top))
                         .send(sender);
                 return;
             }
@@ -170,6 +184,8 @@ public class AdminCommands extends CommandReceiver {
             toKill = new LinkedList<>(MobManager.instance().getMobs());
         }
         toKill.stream().forEach(iMob -> MobManager.instance().removeMob(iMob, false));
+        new Message(I18n.format("killall.success", toKill.size()))
+                .send(sender);
     }
 
     @SubCommand(value = "killDamages", permission = "im.kill.damages")
@@ -181,7 +197,7 @@ public class AdminCommands extends CommandReceiver {
                         forEach(world -> world.getLivingEntities().stream()
                                 .forEach(entity -> {
                                     if (entity.getScoreboardTags().contains("inf_damage_indicator")) {
-                                        new BukkitRunnable(){
+                                        new BukkitRunnable() {
                                             @Override
                                             public void run() {
                                                 entity.remove();
