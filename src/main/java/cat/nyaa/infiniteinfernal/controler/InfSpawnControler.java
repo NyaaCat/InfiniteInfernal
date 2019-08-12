@@ -48,7 +48,7 @@ public class InfSpawnControler implements ISpawnControler {
             return false;
         }
         int maxSpawnDistance = getMaxSpawnDistance(world);
-        Utils.getValidTargets(null, world.getNearbyEntities(location, maxSpawnDistance, maxSpawnDistance, maxSpawnDistance))
+        world.getNearbyEntities(location, maxSpawnDistance, maxSpawnDistance, maxSpawnDistance).stream()
                 .filter(entity -> entity instanceof Player)
                 .map(entity -> ((Player) entity))
                 .forEach(player -> {
