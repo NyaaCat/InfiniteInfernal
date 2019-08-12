@@ -16,6 +16,7 @@ import java.util.logging.Level;
 
 public class InfPlugin extends JavaPlugin {
     public static InfPlugin plugin;
+    public static boolean wgEnabled = false;
 
     Events events;
     Config config;
@@ -59,6 +60,7 @@ public class InfPlugin extends JavaPlugin {
 
         try {
             WorldGuardUtils.init();
+            wgEnabled = true;
         } catch (NoClassDefFoundError e) {
             Bukkit.getLogger().log(Level.WARNING, "WorldGuard didn't detected, support will be disabled");
         }

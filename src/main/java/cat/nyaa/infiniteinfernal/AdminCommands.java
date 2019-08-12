@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -152,7 +153,7 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand("killall")
+    @SubCommand(value = "killall", permission = "im.kill.all")
     public void onKillAll(CommandSender sender, Arguments arguments) {
         String top = arguments.top();
         Collection<IMob> toKill;
@@ -166,8 +167,29 @@ public class AdminCommands extends CommandReceiver {
                 return;
             }
         } else {
-             toKill = new LinkedList<>(MobManager.instance().getMobs());
+            toKill = new LinkedList<>(MobManager.instance().getMobs());
         }
         toKill.stream().forEach(iMob -> MobManager.instance().removeMob(iMob, false));
+    }
+
+    @SubCommand(value = "killDamages", permission = "im.kill.damages")
+    public void onKillDamages(CommandSender sender, Arguments arguments) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.getWorlds().stream().
+                        forEach(world -> world.getLivingEntities().stream()
+                                .forEach(entity -> {
+                                    if (entity.getScoreboardTags().contains("inf_damage_indicator")) {
+                                        new BukkitRunnable(){
+                                            @Override
+                                            public void run() {
+                                                entity.remove();
+                                            }
+                                        }.runTask(InfPlugin.plugin);
+                                    }
+                                }));
+            }
+        }.runTaskAsynchronously(InfPlugin.plugin);
     }
 }

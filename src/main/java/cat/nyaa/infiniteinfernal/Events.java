@@ -88,6 +88,8 @@ public class Events implements Listener {
                 callNearDeathEvent(event, iMob);
             }
             InfPlugin.plugin.bossbarManager.update(iMob);
+            double finalDamage = event.getFinalDamage();
+            Utils.spawnDamageIndicator(iMob.getEntity(), finalDamage, I18n.format("damage.mob_hurt"));
         }
     }
 
@@ -126,6 +128,8 @@ public class Events implements Listener {
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
                 callNearDeathEvent(event, iMob);
             }
+            double finalDamage = event.getFinalDamage();
+            Utils.spawnDamageIndicator(iMob.getEntity(), finalDamage, I18n.format("damage.mob_hurt"));
         } else if (entity instanceof Player) {
             Entity damager = event.getDamager();
             if (damager instanceof Player) {

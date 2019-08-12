@@ -13,16 +13,22 @@ import org.bukkit.entity.Player;
 
 public class WorldGuardUtils {
     public static boolean enabled = false;
-    private static RegionContainer regionContainer;
-    private static WorldGuardPlugin wgInst;
+    private RegionContainer regionContainer;
+    private WorldGuardPlugin wgInst;
+    private static WorldGuardUtils instance;
 
     public static void init() {
-        wgInst = WorldGuardPlugin.inst();
-        regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        instance = new WorldGuardUtils();
+        instance.wgInst = WorldGuardPlugin.inst();
+        instance.regionContainer = WorldGuard.getInstance().getPlatform().getRegionContainer();
         enabled = true;
     }
 
-    public static boolean isProtectedRegion(Location location, Player player) {
+    public static WorldGuardUtils instance(){
+        return instance;
+    }
+
+    public boolean isProtectedRegion(Location location, Player player) {
         if (!enabled) {
             return false;
         }
@@ -42,7 +48,7 @@ public class WorldGuardUtils {
         return !(spawnLocRegion.testState(localPlayer, Flags.MOB_SPAWNING));
     }
 
-    public static boolean isPlayerInProtectedRegion(Player player) {
+    public boolean isPlayerInProtectedRegion(Player player) {
         if (!enabled) {
             return false;
         }

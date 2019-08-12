@@ -106,8 +106,8 @@ public class MainLoopTask {
             }
             List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
             players.stream().forEach(player -> {
-                if (WorldGuardUtils.enabled){
-                    if(WorldGuardUtils.isPlayerInProtectedRegion(player)){
+                if (InfPlugin.wgEnabled){
+                    if(WorldGuardUtils.instance().isPlayerInProtectedRegion(player)){
                         return;
                     }
                 }

@@ -7,10 +7,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -318,4 +315,29 @@ public class Utils {
                 particleConfig.forced
         );
     }
+
+    public static void spawnDamageIndicator(LivingEntity entity, double damage, String format){
+            Location eyeLocation = entity.getEyeLocation();
+            World world = entity.getWorld();
+            Vector vector = new Vector(0, 0.5, 0.2).rotateAroundAxis(new Vector(0,1,0), Math.toRadians(Utils.random(0,360)));
+            ArmorStand spawn = world.spawn(eyeLocation, ArmorStand.class, item -> {
+                item.addScoreboardTag("inf_damage_indicator");
+                item.setVelocity(vector);
+                item.setPersistent(false);
+                item.setInvulnerable(true);
+                item.setSilent(true);
+                item.setMarker(true);
+                item.setVisible(false);
+                item.setSmall(true);
+                item.setCollidable(false);
+                item.setCustomName(ChatColor.translateAlternateColorCodes('&',String.format(format, damage)));
+                item.setCustomNameVisible(true);
+            });
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    spawn.remove();
+                }
+            }.runTaskLater(InfPlugin.plugin, 30);
+        }
 }

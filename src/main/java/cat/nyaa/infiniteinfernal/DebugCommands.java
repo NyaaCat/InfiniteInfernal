@@ -6,14 +6,15 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import com.google.common.util.concurrent.AtomicDouble;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -30,6 +31,38 @@ public class DebugCommands extends CommandReceiver {
     @Override
     public String getHelpPrefix() {
         return null;
+    }
+
+    @SubCommand("damageNum")
+    public void onDamageNum(CommandSender sender, Arguments arguments){
+        double v = arguments.nextDouble();
+        if (sender instanceof Player) {
+            LivingEntity entity = ((Player) sender).getNearbyEntities(5, 5, 5).stream()
+                    .filter(entity1 -> entity1 instanceof LivingEntity)
+                    .map(entity1 -> ((LivingEntity) entity1)).findAny().orElse(((Player) sender));
+            Location eyeLocation = entity.getEyeLocation();
+            World world = entity.getWorld();
+            ArmorStand spawn = world.spawn(eyeLocation, ArmorStand.class, item -> {
+                item.setVelocity(new Vector(0,0.2,0.1));
+                item.setPersistent(false);
+                item.setInvulnerable(true);
+                item.setSilent(true);
+                item.setMarker(true);
+                item.setVisible(false);
+                item.setSmall(true);
+                item.setCollidable(false);
+                item.setCustomName(ChatColor.translateAlternateColorCodes('&',String.format("&c&l%.2f", v)));
+                item.setCustomNameVisible(true);
+                item.addScoreboardTag("inf_damage_indicator");
+            });
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    spawn.remove();
+                }
+            }.runTaskLater(InfPlugin.plugin, 20);
+
+        }
     }
 
     @SubCommand("effectcloud")

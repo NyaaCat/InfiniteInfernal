@@ -112,6 +112,7 @@ public class MobManager {
             if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
                 if (level == null) {
                     level = randomLevel(location);
+                    if (level == null)return null;
                 }
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
