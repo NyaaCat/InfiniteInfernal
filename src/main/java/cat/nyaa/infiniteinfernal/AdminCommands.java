@@ -36,7 +36,7 @@ public class AdminCommands extends CommandReceiver {
         return null;
     }
 
-    @SubCommand(value = "reload", permission = "im.admin")
+    @SubCommand(value = "reload", permission = "im.reload")
     public void onReload(CommandSender sender, Arguments arguments) {
         plugin.onReload();
     }

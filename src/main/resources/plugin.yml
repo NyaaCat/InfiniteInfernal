@@ -13,7 +13,7 @@ commands:
   infiniteinfernal:
     description: "main command for infinite infernal plugin."
     aliases: [ii,im,inf]
-    permission: "im.admin"
+    permission: "im.command"
     permission-message: "You don't have required permission <permission>"
   imi:
     description: "controls message for infinite infernal plugin"
@@ -27,33 +27,36 @@ commands:
 
 
 permissions:
-  im.admin:
+  im.command:
     description: "main permissions for infinite infernal plugin."
-    default: op
+    default: true
   imi.command:
     description: "controls message for infinite infernal plugin"
     default: true
+  im.reload:
+    description: "reload command for infinite infernal plugin"
+    default: op
   im.debug:
     description: "debug command for infinite infernal plugin"
     default: op
   im.spawn:
-     description: "permission for \"im.spawn\""
-     default: op
+    description: "permission for \"im.spawn\""
+    default: op
   im.addloot:
-     description: "permission for \"im.addloot\""
-     default: op
+    description: "permission for \"im.addloot\""
+    default: op
   im.getloot:
-     description: "permission for \"im.getloot\""
-     default: op
+    description: "permission for \"im.getloot\""
+    default: op
   im.setdrop:
-     description: "permission for \"im.setdrop\""
-     default: op
+    description: "permission for \"im.setdrop\""
+    default: op
   im.inspect:
-     description: "permission for \"im.inspect\""
-     default: op
+    description: "permission for \"im.inspect\""
+    default: op
   im.kill.all:
-     description: "permission for \"im.kill.all\""
-     default: op
+    description: "permission for \"im.kill.all\""
+    default: op
   im.kill.damages:
-     description: "permission for \"im.kill.damages\""
-     default: op
+    description: "permission for \"im.kill.damages\""
+    default: op
