@@ -14,7 +14,9 @@ public class CommonLootItem implements ILootItem, ISerializable {
 
     @Serializable
     String name = "";
-    private boolean dynamic;
+
+    @Serializable
+    public boolean dynamic = false;
 
     public CommonLootItem(){
         plugin = InfPlugin.plugin;

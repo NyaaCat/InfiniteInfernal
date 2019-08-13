@@ -15,8 +15,8 @@ inspect:
     success: "{itemName} * {amount}, 动态掉落: %b"
     no_item: "没有名为\"%s\"的物品"
   level:
-    success: "查询成功"
-    info: "{itemName} &r* {amount}, 动态掉落: %b"
+    success: "查询成功, 等级 %d"
+    info: "{itemName} &r* {amount}, 权重: %d, 动态掉落: %b"
     no_level: "等级 %d 不存在或无掉落"
   error:
     invalid_action: "未知命令 %s"

@@ -36,3 +36,24 @@ permissions:
   im.debug:
     description: "debug command for infinite infernal plugin"
     default: op
+  im.spawnmob:
+     description: "permission for \"im.spawnmob\""
+     default: op
+  im.addloot:
+     description: "permission for \"im.addloot\""
+     default: op
+  im.getloot:
+     description: "permission for \"im.getloot\""
+     default: op
+  im.setdrop:
+     description: "permission for \"im.setdrop\""
+     default: op
+  im.inspect:
+     description: "permission for \"im.inspect\""
+     default: op
+  im.kill.all:
+     description: "permission for \"im.kill.all\""
+     default: op
+  im.kill.damages:
+     description: "permission for \"im.kill.damages\""
+     default: op

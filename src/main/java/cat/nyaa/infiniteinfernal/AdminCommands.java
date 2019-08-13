@@ -148,11 +148,11 @@ public class AdminCommands extends CommandReceiver {
                 int level = Integer.parseInt(id);
                 List<ILootItem> loots = LootManager.instance().getLoots(level);
                 if (!loots.isEmpty()) {
-                    new Message("").append(I18n.format("inspect.level.success"))
+                    new Message("").append(I18n.format("inspect.level.success", level))
                             .send(sender);
                     loots.forEach(lootItem -> {
                         int weight = lootItem.getWeight(level);
-                        new Message("").append(I18n.format("inspect.level.info", level, weight))
+                        new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()))
                                 .send(sender);
                     });
                 }else {
