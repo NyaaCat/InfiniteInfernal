@@ -111,12 +111,13 @@ public class LootManager {
     }
 
     public static ILootItem makeSpecialDrop(Player killer, IMob iMob) {
-        double specialChance = iMob.getSpecialChance();
+        World world = killer.getWorld();
+        LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
+        double overallShift = getShift(killer, lootCfg.overall);
+        double specialChance = iMob.getSpecialChance()+ overallShift;
         if (!Utils.possibility(specialChance/100d)) {
             return null;
         }
-        World world = killer.getWorld();
-        LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         Map<ILootItem, Integer> specialLoots = iMob.getSpecialLoots();
         double dynamicShift = getShift(killer, lootCfg.dynamic);
         Map<ILootItem, Integer> balanced = balance(specialLoots, 0, dynamicShift);
@@ -129,7 +130,7 @@ public class LootManager {
             return result;
         }
         loots.forEach((item, value) -> {
-            double weight = value + overallShift;
+            double weight = value;
             if (item.isDynamic()) {
                 double temp = weight;
                 temp *= ((dynamicShift / 100d) + 1);
