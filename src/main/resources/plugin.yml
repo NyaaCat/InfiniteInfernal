@@ -36,8 +36,8 @@ permissions:
   im.debug:
     description: "debug command for infinite infernal plugin"
     default: op
-  im.spawnmob:
-     description: "permission for \"im.spawnmob\""
+  im.spawn:
+     description: "permission for \"im.spawn\""
      default: op
   im.addloot:
      description: "permission for \"im.addloot\""

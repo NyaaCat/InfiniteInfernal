@@ -12,7 +12,7 @@ loot:
     no_item: "没有名为\"%s\"的物品"
 inspect:
   item:
-    success: "{itemName} * {amount}, 动态掉落: %b"
+    success: "{itemName} * {amount},id %s, 动态掉落: %b"
     no_item: "没有名为\"%s\"的物品"
   level:
     success: "查询成功, 等级 %d"
@@ -30,7 +30,7 @@ imi:
   state_self: "当前模式: 自我, 将接收自己的击杀信息"
   state_off: "当前模式: 关闭, 将不再接收击杀信息"
 damage:
-  mob_hurt: "&c&l伤害 -%%,2f"
+  mob_hurt: "&c&l伤害 -%%.2f"
 friendly_fire: "击中友军!"
 error:
   not_player: "只有玩家才能执行该命令"

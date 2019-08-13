@@ -129,8 +129,12 @@ public class InfSpawnControler implements ISpawnControler {
         Location location = player.getLocation();
         int maxSpawnDistance = getMaxSpawnDistance(world);
         int minSpawnDistance = getMinSpawnDistance(world);
-
-        Location spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+        Location spawnLocation;
+        if (Utils.possibility(0.7)){
+            spawnLocation = Utils.randomSpawnLocationInFront(location, maxSpawnDistance, maxSpawnDistance);
+        }else {
+            spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+        }
         if (spawnLocation== null)return null;
         if (canSpawn(world,spawnLocation) || force) {
             if (!force && InfPlugin.wgEnabled){

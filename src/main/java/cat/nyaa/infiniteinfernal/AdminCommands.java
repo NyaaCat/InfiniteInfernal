@@ -41,7 +41,7 @@ public class AdminCommands extends CommandReceiver {
         plugin.onReload();
     }
 
-    @SubCommand(value = "spawn", permission = "im.spawnmob")
+    @SubCommand(value = "spawn", permission = "im.spawn")
     public void onSpawn(CommandSender sender, Arguments arguments) {
         String mobName = arguments.nextString();
         if (arguments.top() == null) {
@@ -140,7 +140,7 @@ public class AdminCommands extends CommandReceiver {
                     new Message("").append(I18n.format("inspect.item.no_item"))
                             .send(sender);
                 } else {
-                    new Message("").append(I18n.format("inspect.item.success", id), loot.getItemStack())
+                    new Message("").append(I18n.format("inspect.item.success", id, loot.isDynamic()), loot.getItemStack())
                             .send(sender);
                 }
                 break;
@@ -152,7 +152,7 @@ public class AdminCommands extends CommandReceiver {
                             .send(sender);
                     loots.forEach(lootItem -> {
                         int weight = lootItem.getWeight(level);
-                        new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()))
+                        new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()), lootItem.getItemStack())
                                 .send(sender);
                     });
                 }else {

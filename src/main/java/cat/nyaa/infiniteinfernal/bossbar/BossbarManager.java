@@ -133,7 +133,7 @@ public class BossbarManager {
             }
 
             void commit(){
-                barPlayerMap.entrySet().parallelStream()
+                barPlayerMap.entrySet().stream()
                         .forEach(entry -> {
                             List<Player> watchers = entry.getValue();
                             KeyedBossBar bossBar = entry.getKey().getBossBar();
@@ -146,17 +146,17 @@ public class BossbarManager {
             }
         }
 
-        void add(List<Pair<BossBar, AngledEntity>> pairs, Pair<BossBar, AngledEntity> bar) {
-            bar.getKey().addPlayer(((Player) bar.getValue().livingEntity));
-            pairs.add(bar);
-        }
-
-        void replace(List<Pair<BossBar, AngledEntity>> pairs, int origin, Pair<BossBar, AngledEntity> replacement) {
-//            replacement.getKey().addPlayer(((Player) replacement.getValue().livingEntity));
-            pairs.add(origin, replacement);
-            Pair<BossBar, AngledEntity> remove = pairs.remove(pairs.size() - 1);
-//            remove.getKey().removePlayer(((Player) remove.getValue().livingEntity));
-        }
+//        void add(List<Pair<BossBar, AngledEntity>> pairs, Pair<BossBar, AngledEntity> bar) {
+//            bar.getKey().addPlayer(((Player) bar.getValue().livingEntity));
+//            pairs.add(bar);
+//        }
+//
+//        void replace(List<Pair<BossBar, AngledEntity>> pairs, int origin, Pair<BossBar, AngledEntity> replacement) {
+////            replacement.getKey().addPlayer(((Player) replacement.getValue().livingEntity));
+//            pairs.add(origin, replacement);
+//            Pair<BossBar, AngledEntity> remove = pairs.remove(pairs.size() - 1);
+////            remove.getKey().removePlayer(((Player) remove.getValue().livingEntity));
+//        }
     }
 
     static class AngledEntity implements Comparable<AngledEntity> {
