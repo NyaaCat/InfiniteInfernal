@@ -43,7 +43,7 @@ public class BossbarManager {
         double health = entity.getHealth();
         double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
         double progress = health / maxHealth;
-        bossBar.setProgress(progress);
+        bossBar.setProgress(Math.min(Math.max(0, progress), Math.min(progress, 1)));
         if (progress < 0.33) {
             bossBar.setColor(BarColor.RED);
         } else if (progress < 0.66) {
@@ -147,7 +147,7 @@ public class BossbarManager {
                     LivingEntity entity = iMob.getEntity();
                     List<AngledEntity> nearbyPlayers = MobManager.instance().getPlayersNearMob(iMob).stream()
                             .map(player -> AngledEntity.of(entity, player))
-                            .filter(angledEntity -> angledEntity.angle>=0)
+                            .filter(angledEntity -> angledEntity.angle >= 0)
                             .sorted(AngledEntity::compareTo)
                             .collect(Collectors.toList());
                     KeyedBossBar bossBar = iMob.getBossBar();

@@ -316,6 +316,7 @@ public class MobManager {
             KeyedBossBar bossBar = mob.getBossBar();
             if (bossBar != null) {
                 bossBar.removeAll();
+                bossBarIMobMap.remove(mob.getBossBar(), mob);
             }
             return;
         }
@@ -365,7 +366,7 @@ public class MobManager {
         return uuidMap.get(entity.getUniqueId());
     }
 
-    public void updateNearbyList(int nearbyDistance) {
+    public void updateNearbyList() {
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
         Map<Player, List<IMob>> asyncMobsList = new LinkedHashMap<>(players.size());
         Map<IMob, List<Player>> asyncPlayersList = new LinkedHashMap<>(uuidMap.size());
@@ -381,6 +382,12 @@ public class MobManager {
                     players.stream().forEach(player -> {
                         if (!iMob.getEntity().getWorld().equals(player.getWorld())) {
                             return;
+                        }
+                        World world = player.getWorld();
+                        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
+                        double nearbyDistance = 128;
+                        if (worldConfig!=null){
+                            nearbyDistance = Math.max(worldConfig.aggro.range.max * 1.5, worldConfig.spawnRangeMax * 2);
                         }
                         if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
                             List<IMob> mobList = asyncMobsList.computeIfAbsent(player, player1 -> new ArrayList<>());

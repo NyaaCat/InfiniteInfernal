@@ -180,21 +180,15 @@ public class CustomMob implements IMob {
         AttributeInstance followRangeAttr = entity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
         if(damageAttr != null){
             damageAttr.setBaseValue(getDamage());
-        }else {
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_ATTACK_DAMAGE");
-        }
+        }else { }
         if(maxHealthAttr != null){
             maxHealthAttr.setBaseValue(getMaxHealth());
-        }else{
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_MAX_HEALTH");
-        }
+        }else{ }
         if(followRangeAttr != null){
             World entityWorld = entity.getWorld();
             WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
             followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
-        }else{
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ entity.getName() +" type "+entity.getType()+ " don't have GENERIC_FOLLOW_RANGE");
-        }
+        }else{ }
         entity.setHealth(getMaxHealth());
         createBossbar(entity);
         InfernalSpawnEvent event = new InfernalSpawnEvent(this);

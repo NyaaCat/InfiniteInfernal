@@ -44,11 +44,11 @@ public class InfSpawnControler implements ISpawnControler {
         } catch (NoWorldConfigException ex) {
             return true;
         }
-        if (MobManager.instance().getMobsInWorld(world).size() > worldConfig.maxMobInWorld) {
+        if (MobManager.instance().getMobsInWorld(world).size() >= worldConfig.maxMobInWorld) {
             return false;
         }
         int maxSpawnDistance = getMaxSpawnDistance(world);
-        world.getNearbyEntities(location, maxSpawnDistance, maxSpawnDistance, maxSpawnDistance).stream()
+        world.getNearbyEntities(location, maxSpawnDistance*1.5, maxSpawnDistance*1.5, maxSpawnDistance*1.5).stream()
                 .filter(entity -> entity instanceof Player)
                 .map(entity -> ((Player) entity))
                 .forEach(player -> {
@@ -160,7 +160,7 @@ public class InfSpawnControler implements ISpawnControler {
         if (iMob == null) return;
         World world = iMob.getEntity().getWorld();
         int maxSpawnDistance = getMaxSpawnDistance(world);
-        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance);
+        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance*2);
     }
 
     @Override

@@ -65,21 +65,15 @@ public class AbilityClone extends ActiveAbility {
         AttributeInstance followRangeAttr = clonedEntity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
         if(damageAttr != null){
             damageAttr.setBaseValue(from.getDamage());
-        }else {
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_ATTACK_DAMAGE");
-        }
+        }else {}
         if(maxHealthAttr != null){
             maxHealthAttr.setBaseValue(from.getMaxHealth());
-        }else{
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_MAX_HEALTH");
-        }
+        }else{}
         if(followRangeAttr != null){
             World entityWorld = clonedEntity.getWorld();
             WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
             followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
-        }else{
-            Bukkit.getLogger().log(Level.WARNING, "entity "+ clonedEntity.getName() +" type "+clonedEntity.getType()+ " don't have GENERIC_FOLLOW_RANGE");
-        }
+        }else{}
         if (clonedEntity instanceof Mob && from.getEntity() instanceof Mob) {
             ((Mob) clonedEntity).setTarget(((Mob) from.getEntity()).getTarget());
         }

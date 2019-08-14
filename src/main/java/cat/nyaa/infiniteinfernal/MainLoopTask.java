@@ -43,7 +43,7 @@ public class MainLoopTask {
             @Override
             public void run() {
                 MobManager instance = MobManager.instance();
-                instance.updateNearbyList(256);
+                instance.updateNearbyList();
             }
         };
         nearbyRunnable.runTaskTimerAsynchronously(InfPlugin.plugin, 0, 10);
@@ -62,6 +62,7 @@ public class MainLoopTask {
         LivingEntity entity = iMob.getEntity();
         if (entity == null || entity.isDead()) {
             mobManager.removeMob(iMob, false);
+            return;
         }
         iMob.showParticleEffect();
         iMob.autoRetarget();
