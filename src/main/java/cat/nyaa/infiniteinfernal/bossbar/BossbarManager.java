@@ -85,7 +85,6 @@ public class BossbarManager {
             maps.entrySet().stream().forEach(playerListEntry -> {
                 AngledEntity angledEntity = playerListEntry.getValue().stream().min(AngledEntity::compareTo).orElse(null);
                 if (angledEntity != null) {
-                    angledEntity.livingEntity.addPotionEffect(PotionEffectType.GLOWING.createEffect(10, 10));
                     IMob iMob = MobManager.instance().toIMob(angledEntity.livingEntity);
                     if (iMob != null) {
                         List<Player> players = barMap.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
