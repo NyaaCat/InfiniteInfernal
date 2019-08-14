@@ -30,7 +30,7 @@ public class MobManager {
     public static final UUID MOB_SPAWN_CONTEXT = UUID.randomUUID();
     public static final String IS_IMOB = "isIMob";
 
-    Map<UUID, IMob> uuidMap = new LinkedHashMap<>();
+    final Map<UUID, IMob> uuidMap = new LinkedHashMap<>();
     Map<World, List<IMob>> worldMobMap = new LinkedHashMap<>();
     Map<Player, List<IMob>> playerNearbyList = new LinkedHashMap<>();
     Map<IMob, List<Player>> mobNearbyList = new LinkedHashMap<>();
@@ -351,8 +351,11 @@ public class MobManager {
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
         Map<Player, List<IMob>> asyncMobsList = new LinkedHashMap<>(players.size());
         Map<IMob, List<Player>> asyncPlayersList = new LinkedHashMap<>(uuidMap.size());
-
-        new ArrayList<>(uuidMap.values()).stream()
+        ArrayList<IMob> iMobs;
+        synchronized (uuidMap) {
+            iMobs = new ArrayList<>(uuidMap.values());
+        }
+        iMobs.stream()
                 .forEach(iMob -> {
                     if (iMob.getEntity().isDead()) {
                         return;
