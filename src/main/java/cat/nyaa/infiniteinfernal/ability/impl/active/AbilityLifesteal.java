@@ -18,16 +18,22 @@ import org.bukkit.util.Vector;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class AbilityLifesteal extends ActiveAbility {
     @Serializable
     public double suck = 10;
     @Serializable
     public double gain = 10;
+    @Serializable
+    public double range = 20;
 
     @Override
     public void active(IMob iMob) {
-        LivingEntity target = iMob.getTarget();
+        LivingEntity target = Utils.randomPick(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
+                .filter(entity -> entity.getEyeLocation().distance(iMob.getEntity().getEyeLocation()) < range)
+                .collect(Collectors.toList())
+        );
         if (target != null) {
             fire(iMob, target);
         }
@@ -112,7 +118,7 @@ public class AbilityLifesteal extends ActiveAbility {
                             return;
                         }
                         double x = distance / totalLength;
-                        double lengthInTick =( speedShift(x) / 20) + remains.getAndSet(0);
+                        double lengthInTick = (speedShift(x) / 20) + remains.getAndSet(0);
                         while ((lengthInTick -= stepLength) >= 0) {
                             distance = end.distance(current);
                             if (distance < 0.5) {
@@ -136,10 +142,10 @@ public class AbilityLifesteal extends ActiveAbility {
             }
         }
 
-        Vector yAxies = new Vector(0,1,0);
-        Vector xAxies = new Vector(1,0,0);
+        Vector yAxies = new Vector(0, 1, 0);
+        Vector xAxies = new Vector(1, 0, 0);
 
-        private void spawnStarParticle(Location location, Vector towards, double x){
+        private void spawnStarParticle(Location location, Vector towards, double x) {
             Vector nonLinerVec;
             if (towards.getX() != 0 || towards.getZ() != 0) {
                 nonLinerVec = yAxies;
@@ -147,7 +153,7 @@ public class AbilityLifesteal extends ActiveAbility {
                 nonLinerVec = xAxies;
             } else throw new IllegalArgumentException("towards 0");
             Vector crossProduct = towards.getCrossProduct(nonLinerVec);
-            Vector v1 = crossProduct.getCrossProduct(towards).normalize().multiply(3*(distanceShift(x)));
+            Vector v1 = crossProduct.getCrossProduct(towards).normalize().multiply(3 * (distanceShift(x)));
             Vector v2 = v1.clone().rotateAroundAxis(towards, Math.toRadians(72));
             Vector v3 = v2.clone().rotateAroundAxis(towards, Math.toRadians(72));
             Vector v4 = v3.clone().rotateAroundAxis(towards, Math.toRadians(72));
@@ -165,7 +171,7 @@ public class AbilityLifesteal extends ActiveAbility {
         }
 
         private double speedShift(double x) {
-            return Math.pow(x,4) * (-15) + 30;
+            return Math.pow(x, 4) * (-15) + 30;
         }
     }
 }

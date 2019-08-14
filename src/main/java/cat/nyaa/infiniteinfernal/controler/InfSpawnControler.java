@@ -7,12 +7,14 @@ import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -51,6 +53,7 @@ public class InfSpawnControler implements ISpawnControler {
         world.getNearbyEntities(location, maxSpawnDistance*1.5, maxSpawnDistance*1.5, maxSpawnDistance*1.5).stream()
                 .filter(entity -> entity instanceof Player)
                 .map(entity -> ((Player) entity))
+                .filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR))
                 .forEach(player -> {
                     boolean tempB = canSpawn.get();
                     if (!tempB) return;
@@ -66,7 +69,7 @@ public class InfSpawnControler implements ISpawnControler {
     @Override
     public boolean canSpawnNearPlayer(Player player) {
         int nearbyMobs = MobManager.instance().getMobsNearPlayer(player).size();
-        return Utils.validGamemode(player) && nearbyMobs < getMaxSpawnAmount(player);
+        return !player.getGameMode().equals(GameMode.SPECTATOR) && nearbyMobs < getMaxSpawnAmount(player);
     }
 
     @Override
