@@ -31,7 +31,11 @@ imi:
   state_off: "当前模式: 关闭, 将不再接收击杀信息"
 damage:
   mob_hurt: "&c&l伤害 -%%.2f"
-friendly_fire: "击中友军!"
+friendly_fire:
+  hint: "击中友军!"
+  lv1: "你轻微伤害了你的友军，受到了惩罚"
+  lv2: "你伤害了你的友军，受到了惩罚"
+  lv3: "你严重伤害了你的友军，受到了惩罚"
 error:
   not_player: "只有玩家才能执行该命令"
   permission: "你没有足够的权限"

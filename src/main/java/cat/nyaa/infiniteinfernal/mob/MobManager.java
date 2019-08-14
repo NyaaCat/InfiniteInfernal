@@ -301,7 +301,25 @@ public class MobManager {
     }
 
     public void removeMob(IMob mob, boolean isKilled) {
-        World world = mob.getEntity().getWorld();
+        LivingEntity entity = mob.getEntity();
+        if (entity == null){
+            worldMobMap.values().stream().forEach(iMobs -> {
+                iMobs.remove(mob);
+            });
+            List<UUID> invalidIds = new ArrayList<>();
+            uuidMap.forEach((uuid, iMob) -> {
+                if (iMob.getEntity() == null){
+                    invalidIds.add(uuid);
+                }
+            });
+            invalidIds.stream().forEach(uuidMap::remove);
+            KeyedBossBar bossBar = mob.getBossBar();
+            if (bossBar != null) {
+                bossBar.removeAll();
+            }
+            return;
+        }
+        World world = entity.getWorld();
         uuidMap.remove(mob.getEntity().getUniqueId());
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.remove(mob);

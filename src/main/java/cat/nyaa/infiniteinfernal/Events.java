@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.*;
 import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityProjectile;
+import cat.nyaa.infiniteinfernal.controler.FirenlyFireControler;
 import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.LootDropEvent;
@@ -30,6 +31,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -140,22 +142,13 @@ public class Events implements Listener {
             Utils.spawnDamageIndicator(iMob.getEntity(), finalDamage, I18n.format("damage.mob_hurt"));
         } else if (entity instanceof Player) {
             Entity damager = event.getDamager();
+            if ((damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player)){
+                damager = (Entity) ((Projectile) damager).getShooter();
+            }
             if (damager instanceof Player) {
                 if (!event.isCancelled()) {
                     if (event.getFinalDamage() > 0) {
-                        String effect = InfPlugin.plugin.config().worlds.get(damager.getWorld().getName())
-                                .friendlyFireConfig.effect;
-                        String[] split = effect.split(":");
-                        try {
-                            String effectName = split[0].toUpperCase();
-                            int amplifier = Integer.parseInt(split[1]);
-                            int duration = Integer.parseInt(split[2]);
-                            Utils.doEffect(effectName, ((Player) damager), duration, amplifier, "friendly fire");
-                            new Message(I18n.format("friendly_fire"))
-                                    .send(damager);
-                        } catch (Exception e) {
-                            Bukkit.getLogger().log(Level.WARNING, "invalid friendly fire config: \"" + effect + "\"");
-                        }
+                        FirenlyFireControler.instance().onFriendlyFire(((Player) damager), ((Player) entity), event.getFinalDamage());
                     }
                 }
             }

@@ -11,6 +11,7 @@ import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -56,14 +57,15 @@ public class MainLoopTask {
     }
 
     private static void mobEffect(IMob iMob) {
-        iMob.showParticleEffect();
-        iMob.autoRetarget();
         MobManager mobManager = MobManager.instance();
-        List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
-        if (playersNearMob.size() == 0 ) {
+        LivingEntity entity = iMob.getEntity();
+        if (entity == null || entity.isDead()) {
             mobManager.removeMob(iMob, false);
         }
-        if (iMob.getEntity().isDead()) {
+        iMob.showParticleEffect();
+        iMob.autoRetarget();
+        List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
+        if (playersNearMob.size() == 0 ) {
             mobManager.removeMob(iMob, false);
         }
         List<IAbilitySet> abilities = iMob.getAbilities().stream()
@@ -150,7 +152,12 @@ public class MainLoopTask {
             for (int i = 0; i < nextTickTasks; i++) {
                 if (mobEffectQueue.isEmpty()) return;
                 IMob iMob = mobEffectQueue.poll();
-                mobEffect(iMob);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        mobEffect(iMob);
+                    }
+                }.runTask(InfPlugin.plugin);
             }
             end();
         }
