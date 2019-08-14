@@ -11,28 +11,30 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BossbarManager {
-    BossbarRefreshTask task;
+    SingleBarRefreshTask task;
 
     public void start(int interval) {
-        if (task != null){
+        if (task != null) {
             if (!task.isCancelled()) {
                 task.cancel();
             }
         }
-        task = new BossbarRefreshTask();
+        task = new SingleBarRefreshTask();
         task.runTaskTimer(InfPlugin.plugin, 0, interval);
     }
 
     public void update(IMob iMob) {
         KeyedBossBar bossBar = iMob.getBossBar();
         updateProgress(bossBar, iMob.getEntity());
-        if (iMob.getEntity().isDead()){
+        if (iMob.getEntity().isDead()) {
             bossBar.removeAll();
         }
     }
@@ -51,6 +53,78 @@ public class BossbarManager {
         }
     }
 
+    private class SingleBarRefreshTask extends BukkitRunnable {
+        @Override
+        public synchronized void cancel() throws IllegalStateException {
+            super.cancel();
+            Collection<IMob> mobs = MobManager.instance().getMobs();
+            mobs.parallelStream().forEach(iMob -> iMob.getBossBar().removeAll());
+        }
+
+        @Override
+        public void run() {
+            Collection<IMob> mobs = MobManager.instance().getMobs();
+            Iterator<KeyedBossBar> bossBars = Bukkit.getBossBars();
+            bossBars.forEachRemaining(keyedBossBar -> {
+                if (!MobManager.instance().isMobBar(keyedBossBar)) {
+                    keyedBossBar.removeAll();
+                    Bukkit.removeBossBar(keyedBossBar.getKey());
+                }
+            });
+            Map<Player, List<AngledEntity>> maps = new LinkedHashMap<>();
+            mobs.stream().forEach(iMob -> {
+                LivingEntity entity = iMob.getEntity();
+                List<Player> playersNearMob = MobManager.instance().getPlayersNearMob(iMob);
+                playersNearMob.stream().forEach(player -> {
+                    AngledEntity of = AngledEntity.of(entity, player);
+                    List<AngledEntity> angledEntities = maps.computeIfAbsent(player, player1 -> new ArrayList<>());
+                    angledEntities.add(of);
+                });
+            });
+            Map<IMob, List<Player>> barMap = new LinkedHashMap<>();
+            maps.entrySet().stream().forEach(playerListEntry -> {
+                AngledEntity angledEntity = playerListEntry.getValue().stream().min(AngledEntity::compareTo).orElse(null);
+                if (angledEntity != null) {
+                    angledEntity.livingEntity.addPotionEffect(PotionEffectType.GLOWING.createEffect(10, 10));
+                    IMob iMob = MobManager.instance().toIMob(angledEntity.livingEntity);
+                    if (iMob != null) {
+                        List<Player> players = barMap.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
+                        players.add(playerListEntry.getKey());
+                    }
+                }
+            });
+            commit(barMap);
+        }
+
+        private void commit(Map<IMob, List<Player>> barMap) {
+            Collection<IMob> mobs = MobManager.instance().getMobs();
+            mobs.stream().forEach(iMob -> {
+                List<Player> players = barMap.get(iMob);
+                KeyedBossBar bossBar = iMob.getBossBar();
+                if (bossBar == null) {
+                    return;
+                }
+                update(iMob);
+                if (players == null) {
+                    bossBar.removeAll();
+                    return;
+                }
+                List<Player> watchers = bossBar.getPlayers();
+                watchers.stream().forEach(player -> {
+                    if (!players.contains(player)) {
+                        bossBar.removePlayer(player);
+                    }
+                });
+                players.stream().forEach(player -> {
+                    if (!watchers.contains(player)) {
+                        bossBar.addPlayer(player);
+                    }
+                });
+            });
+
+        }
+    }
+
     private class BossbarRefreshTask extends BukkitRunnable {
         @Override
         public synchronized void cancel() throws IllegalStateException {
@@ -64,7 +138,7 @@ public class BossbarManager {
             Collection<IMob> mobs = MobManager.instance().getMobs();
             Iterator<KeyedBossBar> bossBars = Bukkit.getBossBars();
             bossBars.forEachRemaining(keyedBossBar -> {
-                if (!MobManager.instance().isMobBar(keyedBossBar)){
+                if (!MobManager.instance().isMobBar(keyedBossBar)) {
                     Bukkit.removeBossBar(keyedBossBar.getKey());
                 }
             });
@@ -74,10 +148,11 @@ public class BossbarManager {
                     LivingEntity entity = iMob.getEntity();
                     List<AngledEntity> nearbyPlayers = MobManager.instance().getPlayersNearMob(iMob).stream()
                             .map(player -> AngledEntity.of(entity, player))
+                            .filter(angledEntity -> angledEntity.angle>=0)
                             .sorted(AngledEntity::compareTo)
                             .collect(Collectors.toList());
                     KeyedBossBar bossBar = iMob.getBossBar();
-                    if (bossBar == null)return;
+                    if (bossBar == null) return;
                     if (!nearbyPlayers.isEmpty()) {
                         updater.registerIMob(iMob, nearbyPlayers);
                     }
@@ -87,28 +162,28 @@ public class BossbarManager {
             }
         }
 
-        class BarUpdater{
+        class BarUpdater {
             List<IMob> iMobs;
             private Map<Player, List<Pair<IMob, AngledEntity>>> playerCounter;
             private Map<IMob, List<Player>> barPlayerMap;
 
-            BarUpdater(){
+            BarUpdater() {
                 this.playerCounter = new LinkedHashMap<>();
                 barPlayerMap = new LinkedHashMap<>();
                 iMobs = new ArrayList<>();
             }
 
-            void registerIMob(IMob iMob, List<AngledEntity> nearbyPlayers){
+            void registerIMob(IMob iMob, List<AngledEntity> nearbyPlayers) {
                 iMobs.add(iMob);
                 nearbyPlayers.stream()
                         .forEach(angledEntity -> {
                             LivingEntity livingEntity = angledEntity.livingEntity;
-                            if (!(livingEntity instanceof Player))return;
+                            if (!(livingEntity instanceof Player)) return;
                             this.add(iMob, (Player) livingEntity);
                         });
             }
 
-            void add(IMob iMob, Player player){
+            void add(IMob iMob, Player player) {
                 List<Player> players = barPlayerMap.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
                 List<Pair<IMob, AngledEntity>> pairs = playerCounter.computeIfAbsent(player, player1 -> new ArrayList<>());
                 Pair<IMob, AngledEntity> bar = new Pair<>(iMob, AngledEntity.of(iMob.getEntity(), player));
@@ -132,7 +207,7 @@ public class BossbarManager {
                 }
             }
 
-            void commit(){
+            void commit() {
                 barPlayerMap.entrySet().stream()
                         .forEach(entry -> {
                             List<Player> watchers = entry.getValue();
@@ -172,9 +247,11 @@ public class BossbarManager {
         }
 
         public static AngledEntity of(LivingEntity entity, LivingEntity player) {
-            double angle = player.getEyeLocation().getDirection().angle(entity.getLocation().toVector().subtract(player.getLocation().toVector()));
+            Vector direction = player.getEyeLocation().getDirection();
+            Vector entityDirection = entity.getEyeLocation().toVector().subtract(player.getEyeLocation().toVector());
+            double angle = direction.angle(entityDirection);
             double distance = player.getLocation().distance(entity.getLocation());
-            return new AngledEntity(angle, distance, player);
+            return new AngledEntity(angle, distance, entity);
         }
 
         @Override
