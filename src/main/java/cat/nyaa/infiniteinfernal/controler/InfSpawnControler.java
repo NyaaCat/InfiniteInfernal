@@ -131,7 +131,7 @@ public class InfSpawnControler implements ISpawnControler {
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
         if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomSpawnLocationInFront(location, maxSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
         }else {
             spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
         }

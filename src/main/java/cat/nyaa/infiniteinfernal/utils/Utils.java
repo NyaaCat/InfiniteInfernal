@@ -127,7 +127,7 @@ public class Utils {
             for (int i = 0; i < 20; i++) {
                 Location targetLocation = location.clone().add(direction.normalize().multiply(random(minSpawnDistance, maxSpawnDistance)));
                 Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-                if (!validSpawnLocationInY.equals(targetLocation)) return validSpawnLocationInY;
+                if (validSpawnLocationInY!=null) return validSpawnLocationInY;
             }
         }
         return randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
@@ -137,7 +137,7 @@ public class Utils {
         for (int i = 0; i < 20; i++) {
             Location targetLocation = randomLocation(center, innerRange, outerRange);
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (!validSpawnLocationInY.equals(center)) return validSpawnLocationInY;
+            if (validSpawnLocationInY!=null) return validSpawnLocationInY;
         }
         return null;
     }
@@ -146,13 +146,13 @@ public class Utils {
         for (int i = 0; i < 30; i++) {
             Location targetLocation = randomLocation(center, innerRange, outerRange);
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (!validSpawnLocationInY.equals(center)) return validSpawnLocationInY;
+            if (validSpawnLocationInY!=null) return validSpawnLocationInY;
         }
         return center;
     }
 
     private static Location findValidSpawnLocationInY(Location targetLocation) {
-        for (int j = 0; j > -20; j--) {
+        for (int j = 0; j > -15; j--) {
             Location clone = targetLocation.clone().add(0, j, 0);
             if (isValidLocation(clone)) {
                 return clone;
@@ -164,7 +164,7 @@ public class Utils {
                 return clone;
             }
         }
-        return targetLocation;
+        return null;
     }
 
     private static Location randomLocation(Location center, double innerRange, double outerRange) {
