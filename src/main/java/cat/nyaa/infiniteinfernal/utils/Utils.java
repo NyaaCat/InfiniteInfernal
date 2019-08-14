@@ -134,12 +134,25 @@ public class Utils {
     }
 
     public static Location randomSpawnLocation(Location center, double innerRange, double outerRange) {
+        Location targetLocation = center;
         for (int i = 0; i < 20; i++) {
-            Location targetLocation = randomLocation(center, innerRange, outerRange);
+            targetLocation = randomLocation(center, innerRange, outerRange);
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
             if (validSpawnLocationInY!=null) return validSpawnLocationInY;
         }
+        if (isSky(targetLocation)){
+            return targetLocation;
+        }
         return null;
+    }
+
+    private static boolean isSky(Location center) {
+        Block block = center.getBlock();
+        Block up = block.getRelative(BlockFace.UP);
+        Block upup = up.getRelative(BlockFace.UP);
+        Block down = block.getRelative(BlockFace.DOWN);
+
+        return block.getType().equals(Material.AIR) && up.getType().equals(Material.AIR) && upup.getType().equals(Material.AIR) && down.getType().equals(Material.AIR);
     }
 
     public static Location randomNonNullLocation(Location center, double innerRange, double outerRange) {

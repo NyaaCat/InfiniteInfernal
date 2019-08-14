@@ -28,6 +28,8 @@ public class AbilityClone extends ActiveAbility {
 
     private static Map<IMob, Integer> clonedTimesMap = new LinkedHashMap<>();
 
+    private boolean canClone = true;
+
     @Override
     public void active(IMob iMob) {
         cloneMob(iMob);
@@ -37,7 +39,12 @@ public class AbilityClone extends ActiveAbility {
         MobConfig config = iMob.getConfig();
         LivingEntity mobEntity = iMob.getEntity();
         Integer timesRemains = clonedTimesMap.computeIfAbsent(iMob, iMob1 -> cloneTimes);
-        if (timesRemains-- < 0) return;
+        if (--timesRemains < 0){
+            clonedTimesMap.remove(iMob);
+            canClone = false;
+            return;
+        }
+        if (!canClone)return;
         clonedTimesMap.put(iMob, timesRemains);
         for (int i = 0; i < amount; i++) {
             Location location = mobEntity.getLocation();

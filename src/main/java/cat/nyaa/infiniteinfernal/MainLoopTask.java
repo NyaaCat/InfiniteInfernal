@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -113,7 +114,20 @@ public class MainLoopTask {
                         return;
                     }
                 }
-                InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+                AtomicInteger tried = new AtomicInteger(0);
+                class SpawnTask extends BukkitRunnable{
+                    @Override
+                    public void run() {
+                        IMob iMob = InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+                        if (iMob == null){
+                            if ((tried.getAndAdd(1) >= 20)) {
+                                return;
+                            }
+                            new SpawnTask().runTaskLater(InfPlugin.plugin, 1);
+                        }
+                    }
+                }
+                new SpawnTask().runTask(InfPlugin.plugin);
             });
         }
 
