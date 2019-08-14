@@ -114,8 +114,8 @@ public class LootManager {
         World world = killer.getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         double overallShift = getShift(killer, lootCfg.overall);
-        double specialChance = iMob.getSpecialChance()+ overallShift;
-        if (!Utils.possibility(specialChance/100d)) {
+        double specialChance = iMob.getSpecialChance() + overallShift;
+        if (!Utils.possibility(specialChance / 100d)) {
             return null;
         }
         Map<ILootItem, Integer> specialLoots = iMob.getSpecialLoots();
@@ -153,12 +153,18 @@ public class LootManager {
             AtomicDouble weightShift = new AtomicDouble(0);
             if (!incs.isEmpty()) {
                 incs.forEach(iCorrection -> {
-                    weightShift.getAndAdd(iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand()));
+                    double correction = iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand());
+                    if (correction > 0) {
+                        weightShift.getAndAdd(correction);
+                    }
                 });
             }
             if (!decs.isEmpty()) {
                 decs.forEach(iCorrection -> {
-                    weightShift.getAndAdd(iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand()));
+                    double correction = iCorrection.getCorrection(killer, killer.getInventory().getItemInMainHand());
+                    if (correction > 0) {
+                        weightShift.getAndAdd(-correction);
+                    }
                 });
             }
 //            Collection<PotionEffect> activePotionEffects = killer.getActivePotionEffects();
@@ -209,7 +215,7 @@ public class LootManager {
     }
 
     public static void serializeDrops(Map<String, ILootItem> lootItemMap, Map<String, LootConfig.LootWeight> lootMap) {
-        if (instance == null)return;
+        if (instance == null) return;
         if (!instance.lootItemMap.isEmpty()) {
             lootItemMap.clear();
             lootItemMap.putAll(instance.lootItemMap);
