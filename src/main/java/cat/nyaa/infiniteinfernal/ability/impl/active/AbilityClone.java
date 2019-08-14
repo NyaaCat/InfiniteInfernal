@@ -24,7 +24,7 @@ public class AbilityClone extends ActiveAbility {
     public int amount = 1;
 
     @Serializable
-    public int cloneTimes = 3;
+    public int cloneTimes = 2;
 
     private static Map<IMob, Integer> clonedTimesMap = new LinkedHashMap<>();
 
@@ -36,7 +36,7 @@ public class AbilityClone extends ActiveAbility {
     private void cloneMob(IMob iMob) {
         MobConfig config = iMob.getConfig();
         LivingEntity mobEntity = iMob.getEntity();
-        Integer timesRemains = clonedTimesMap.computeIfAbsent(iMob, iMob1 -> 3);
+        Integer timesRemains = clonedTimesMap.computeIfAbsent(iMob, iMob1 -> cloneTimes);
         if (timesRemains-- < 0) return;
         clonedTimesMap.put(iMob, timesRemains);
         for (int i = 0; i < amount; i++) {

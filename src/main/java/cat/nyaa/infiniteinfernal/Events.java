@@ -211,6 +211,10 @@ public class Events implements Listener {
             event.setCancelled(true);
             return;
         }
+        if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.SLIME_SPLIT)) {
+            event.setCancelled(true);
+            return;
+        }
         InfPlugin.plugin.getSpawnControler().handleSpawnEvent(event);
     }
 

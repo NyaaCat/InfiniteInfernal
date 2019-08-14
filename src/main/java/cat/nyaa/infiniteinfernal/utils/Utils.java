@@ -321,9 +321,9 @@ public class Utils {
                 particleConfig.type,
                 location,
                 particleConfig.amount,
-                particleConfig.delta.get(0),
-                particleConfig.delta.get(1),
-                particleConfig.delta.get(2),
+                particleConfig.getOffsetX(),
+                particleConfig.getOffsetY(),
+                particleConfig.getOffsetZ(),
                 particleConfig.speed,
                 parseExtraData(particleConfig.extraData),
                 particleConfig.forced

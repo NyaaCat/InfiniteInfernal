@@ -97,9 +97,9 @@ public class AbilityBeam extends ActiveAbility {
         private Vector direction;
         private int length = AbilityBeam.this.length;
         private Particle particleType = AbilityBeam.this.particle.type;
-        private double offsetX = AbilityBeam.this.particle.delta.get(0);
-        private double offsetY = AbilityBeam.this.particle.delta.get(1);
-        private double offsetZ = AbilityBeam.this.particle.delta.get(2);
+        private double offsetX = AbilityBeam.this.particle.getOffsetX();
+        private double offsetY = AbilityBeam.this.particle.getOffsetY();
+        private double offsetZ = AbilityBeam.this.particle.getOffsetZ();
         private double particleSpeedExtra = AbilityBeam.this.particle.speed;
         private double speed = AbilityBeam.this.speed;
         private double spawnsPerBlock = AbilityBeam.this.spawnsPerBlock;

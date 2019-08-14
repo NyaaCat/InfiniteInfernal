@@ -97,7 +97,7 @@ public class LootManager {
         World world = killer.getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         double overallShift = getShift(killer, lootCfg.overall);
-        double global = lootCfg.global + overallShift;
+        double global = lootCfg.global * (1+ (overallShift/100d));
         if (!Utils.possibility(global / 100d)) {
             return null;
         }
@@ -114,7 +114,7 @@ public class LootManager {
         World world = killer.getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         double overallShift = getShift(killer, lootCfg.overall);
-        double specialChance = iMob.getSpecialChance() + overallShift;
+        double specialChance = iMob.getSpecialChance() * (1+ (overallShift/100d));
         if (!Utils.possibility(specialChance / 100d)) {
             return null;
         }
