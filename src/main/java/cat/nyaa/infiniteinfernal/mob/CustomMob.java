@@ -35,7 +35,7 @@ public class CustomMob implements IMob {
     public static final NamespacedKey CUSTOM_MOB_BOSSBAR = new NamespacedKey(InfPlugin.plugin, "bossbar");
     private final MobConfig config;
     private List<ILootItem> commonLoots;
-    private List<ILootItem> specialLoots;
+    private Map<ILootItem, Integer> specialLoots;
     private List<IAbilitySet> abilities;
     private Map<LivingEntity, Aggro> nonPlayerTargets = new LinkedHashMap<>();
     private int level;
@@ -74,21 +74,19 @@ public class CustomMob implements IMob {
             commonLoots = LootManager.instance().getLevelDrops(level);
         }
         //special loots
-        specialLoots = config.loot.special.list.stream()
-                .map(s -> {
+        specialLoots = new LinkedHashMap<>();
+        config.loot.special.list.stream()
+                .forEach(s -> {
                     String[] split = s.split(":", 2);
                     String loot = split[0];
                     int weight = Integer.parseInt(split[1]);
                     ILootItem iLoot = LootManager.instance().getLoot(loot);
                     if (iLoot != null){
-                        return iLoot;
+                        specialLoots.put(iLoot, weight);
                     }else {
                         Bukkit.getLogger().log(Level.WARNING, I18n.format("error.custom_mob.no_loot", s));
                     }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                });
         //abilities
         abilities = new ArrayList<>();
         if (!config.abilities.isEmpty()) {
@@ -125,9 +123,7 @@ public class CustomMob implements IMob {
 
     @Override
     public Map<ILootItem, Integer> getSpecialLoots() {
-        Map<ILootItem, Integer> result = new LinkedHashMap<>(commonLoots.size());
-        specialLoots.forEach(iLootItem -> result.put(iLootItem, iLootItem.getWeight(this.level)));
-        return result;
+        return new LinkedHashMap<>(specialLoots);
     }
 
     @Override
