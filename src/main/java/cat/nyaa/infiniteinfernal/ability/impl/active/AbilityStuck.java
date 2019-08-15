@@ -37,6 +37,7 @@ public class AbilityStuck extends ActiveAbility {
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidates);
         if (victim == null)return;
+        victim.removePotionEffect(PotionEffectType.SLOW);
         victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
         stucked.add(victim.getUniqueId());
         new BukkitRunnable(){
@@ -55,7 +56,9 @@ public class AbilityStuck extends ActiveAbility {
                 if (stucked.contains(e.getPlayer().getUniqueId())){
                     Location to = e.getTo();
                     if (to != null){
-                        e.setTo(e.getFrom().setDirection(to.getDirection()));
+                        e.getPlayer().removePotionEffect(PotionEffectType.LEVITATION);
+                        e.getPlayer().addPotionEffect(PotionEffectType.LEVITATION.createEffect(10, -1), true);
+                        e.setCancelled(true);
                     }
                 }
             }

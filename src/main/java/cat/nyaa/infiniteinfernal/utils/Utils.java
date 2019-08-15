@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -198,6 +199,11 @@ public class Utils {
     public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {
         PotionEffectType eff = PotionEffectType.getByName(effect);
         if (eff != null) {
+            PotionEffect potionEffect = target.getPotionEffect(eff);
+            if (potionEffect!=null && potionEffect.getAmplifier()>amplifier){
+                return;
+            }
+            target.removePotionEffect(eff);
             target.addPotionEffect(eff.createEffect(duration, amplifier), true);
         } else {
             throw new IllegalConfigException("effect " + effect + " in ability " + ability + " don't exists");
