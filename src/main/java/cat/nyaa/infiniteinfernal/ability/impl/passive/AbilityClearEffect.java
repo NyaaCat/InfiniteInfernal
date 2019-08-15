@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -117,9 +118,15 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
             public void onPotion(EntityPotionEffectEvent ev) {
                 List<PotionEffectType> potions = cache.getIfPresent(CACHE_EFFECT);
                 if(!affected.contains(ev.getEntity().getUniqueId()))return;
+                PotionEffect newEffect = ev.getNewEffect();
+                PotionEffect oldEffect = ev.getOldEffect();
                 if (potions != null && !potions.isEmpty()) {
-                    if (potions.contains(ev.getModifiedType()))
+                    if (potions.contains(ev.getModifiedType())){
+                        if (newEffect == null){
+                            return;
+                        }
                         ev.setCancelled(true);
+                    }
                 } else {
                     Entity entity = ev.getEntity();
                     if (entity instanceof LivingEntity) {
