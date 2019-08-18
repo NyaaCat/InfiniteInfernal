@@ -8,7 +8,7 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
+import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 

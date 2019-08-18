@@ -23,6 +23,10 @@ repositories {
         name 'sk89q'
         url "http://maven.sk89q.com/repo/"
     }
+    maven {
+        name 'ProtocolLib'
+        url "http://repo.dmulloy2.net/nexus/repository/public/"
+    }
 }
 
 dependencies {
@@ -37,4 +41,5 @@ dependencies {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
     }
+    compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.4.0"
 }

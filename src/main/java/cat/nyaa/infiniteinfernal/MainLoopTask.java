@@ -2,12 +2,11 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.AbilityActive;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
+import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;

@@ -6,24 +6,17 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import cat.nyaa.infiniteinfernal.utils.WorldGuardUtils;
+import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 

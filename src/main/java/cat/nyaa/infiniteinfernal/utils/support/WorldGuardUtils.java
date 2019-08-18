@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.support;
 
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.LocalPlayer;
