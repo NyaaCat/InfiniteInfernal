@@ -1,7 +1,15 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityAoePotion;
+import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityPotionSelf;
 import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityShingeki;
+import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityStuck;
+import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHit;
+import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHurt;
+import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.utils.NmsUtils;
@@ -11,6 +19,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -20,6 +30,8 @@ import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public class DebugCommands extends CommandReceiver {
@@ -34,7 +46,7 @@ public class DebugCommands extends CommandReceiver {
     }
 
     @SubCommand("damageNum")
-    public void onDamageNum(CommandSender sender, Arguments arguments){
+    public void onDamageNum(CommandSender sender, Arguments arguments) {
         double v = arguments.nextDouble();
         if (sender instanceof Player) {
             LivingEntity entity = ((Player) sender).getNearbyEntities(5, 5, 5).stream()
@@ -43,7 +55,7 @@ public class DebugCommands extends CommandReceiver {
             Location eyeLocation = entity.getEyeLocation();
             World world = entity.getWorld();
             ArmorStand spawn = world.spawn(eyeLocation, ArmorStand.class, item -> {
-                item.setVelocity(new Vector(0,0.2,0.1));
+                item.setVelocity(new Vector(0, 0.2, 0.1));
                 item.setPersistent(false);
                 item.setInvulnerable(true);
                 item.setSilent(true);
@@ -51,11 +63,11 @@ public class DebugCommands extends CommandReceiver {
                 item.setVisible(false);
                 item.setSmall(true);
                 item.setCollidable(false);
-                item.setCustomName(ChatColor.translateAlternateColorCodes('&',String.format("&c&l%.2f", v)));
+                item.setCustomName(ChatColor.translateAlternateColorCodes('&', String.format("&c&l%.2f", v)));
                 item.setCustomNameVisible(true);
                 item.addScoreboardTag("inf_damage_indicator");
             });
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     spawn.remove();
@@ -224,7 +236,7 @@ public class DebugCommands extends CommandReceiver {
                             return;
                         }
                         double x = distance / totalLength;
-                        double lengthInTick =( speedShift(x) / 20) + remains.getAndSet(0);
+                        double lengthInTick = (speedShift(x) / 20) + remains.getAndSet(0);
                         while ((lengthInTick -= 0.25) >= 0) {
                             distance = end.distance(current);
                             if (distance < 0.5) {
@@ -259,7 +271,7 @@ public class DebugCommands extends CommandReceiver {
                 nonLinerVec = xAxies;
             } else throw new IllegalArgumentException("towards 0");
             Vector crossProduct = towards.getCrossProduct(nonLinerVec);
-            Vector v1 = crossProduct.getCrossProduct(towards).normalize().multiply(3*(distanceShift(x)));
+            Vector v1 = crossProduct.getCrossProduct(towards).normalize().multiply(3 * (distanceShift(x)));
             Vector v2 = v1.clone().rotateAroundAxis(towards, Math.toRadians(72));
             Vector v3 = v2.clone().rotateAroundAxis(towards, Math.toRadians(72));
             Vector v4 = v3.clone().rotateAroundAxis(towards, Math.toRadians(72));
@@ -278,20 +290,20 @@ public class DebugCommands extends CommandReceiver {
         }
 
         private double speedShift(double x) {
-            return Math.pow(x,6) * (4.5) + 0.5;
+            return Math.pow(x, 6) * (4.5) + 0.5;
         }
     }
 
     @SubCommand("shingeki")
-    public void onShingeki(CommandSender sender, Arguments arguments){
+    public void onShingeki(CommandSender sender, Arguments arguments) {
         if (sender instanceof Player) {
             Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-            if(targetBlock.getType().isSolid()){
+            if (targetBlock.getType().isSolid()) {
                 Block relative = targetBlock.getRelative(BlockFace.UP);
-                if (!relative.getType().isSolid()){
+                if (!relative.getType().isSolid()) {
                     strikeShingeki(relative.getLocation());
                     return;
-                }else {
+                } else {
                     for (BlockFace value : BlockFace.values()) {
                         Block relative1 = targetBlock.getRelative(value);
                         if (!relative1.getType().isSolid()) {
@@ -317,6 +329,81 @@ public class DebugCommands extends CommandReceiver {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        }
+    }
+
+    @SubCommand("testStuck")
+    public void testStuck(CommandSender sender, Arguments arguments) {
+        if (sender instanceof Player) {
+            List<IMob> mobsNearPlayer = MobManager.instance().getMobsNearPlayer((Player) sender);
+            IMob iMob = mobsNearPlayer.stream().min((o1, o2) -> {
+                double d1 = o1.getEntity().getLocation().distance(((Player) sender).getLocation());
+                double d2 = o2.getEntity().getLocation().distance(((Player) sender).getLocation());
+                return d1 - d2 > 0 ? 1 : d1 - d2 < 0 ? -1 : 0;
+            }).orElse(null);
+            ((Player) sender).teleport(((Player) sender).getEyeLocation());
+            AbilityStuck abilityStuck = new AbilityStuck();
+            abilityStuck.duration = 60;
+            abilityStuck.active(iMob);
+        }
+    }
+
+    @SubCommand("testPotion")
+    public void testPotion(CommandSender sender, Arguments arguments) {
+        if (sender instanceof Player) {
+            List<IMob> mobsNearPlayer = MobManager.instance().getMobsNearPlayer((Player) sender);
+            IMob iMob = mobsNearPlayer.stream().min((o1, o2) -> {
+                double d1 = o1.getEntity().getLocation().distance(((Player) sender).getLocation());
+                double d2 = o2.getEntity().getLocation().distance(((Player) sender).getLocation());
+                return d1 - d2 > 0 ? 1 : d1 - d2 < 0 ? -1 : 0;
+            }).orElse(null);
+            if (iMob == null) return;
+            AbilityAoePotion abilityAoePotion = new AbilityAoePotion();
+            abilityAoePotion.amplifier = 10;
+            abilityAoePotion.duration = 20;
+            abilityAoePotion.effect = "GLOWING";
+            abilityAoePotion.radius = 10;
+            abilityAoePotion.active(iMob);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    AbilityPotionHit abilityPotionHit = new AbilityPotionHit();
+                    abilityPotionHit.amplifier = 1;
+                    abilityPotionHit.duration = 20;
+                    abilityPotionHit.effect = "BLINDNESS";
+                    abilityPotionHit.onAttack(iMob, ((Player) sender));
+                }
+            }.runTaskLater(InfPlugin.plugin, 20);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    AbilityPotionHurt abilityPotionHurt = new AbilityPotionHurt();
+                    abilityPotionHurt.amplifier = 10;
+                    abilityPotionHurt.duration = 20;
+                    abilityPotionHurt.effect = "GLOWING";
+                    abilityPotionHurt.onHurtByPlayer(iMob, new EntityDamageByEntityEvent((Player) sender, iMob.getEntity(), EntityDamageEvent.DamageCause.CUSTOM, 10));
+                }
+            }.runTaskLater(InfPlugin.plugin, 40);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    AbilityPotionSelf abilityPotionSelf = new AbilityPotionSelf();
+                    abilityPotionSelf.amplifier = 1;
+                    abilityPotionSelf.duration = 20;
+                    abilityPotionSelf.effect = "GLOWING";
+                    abilityPotionSelf.active(iMob);
+                }
+            }.runTaskLater(InfPlugin.plugin, 60);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    AbilityAoePotion abilityPotionSelf = new AbilityAoePotion();
+                    abilityPotionSelf.amplifier = 10;
+                    abilityPotionSelf.duration = 20;
+                    abilityPotionSelf.effect = "GLOWING";
+                    abilityPotionSelf.active(iMob);
+                }
+            }.runTaskLater(InfPlugin.plugin, 80);
         }
     }
 }
