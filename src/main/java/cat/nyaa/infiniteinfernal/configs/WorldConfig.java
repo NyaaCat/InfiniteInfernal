@@ -11,9 +11,10 @@ import java.util.List;
 public class WorldConfig implements ISerializable {
     private InfPlugin plugin;
 
-    public WorldConfig(){}
+    public WorldConfig() {
+    }
 
-    public WorldConfig(InfPlugin plugin){
+    public WorldConfig(InfPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -47,7 +48,7 @@ public class WorldConfig implements ISerializable {
     @Serializable(name = "broadcast")
     public BroadcastConfig broadcastConfig = new BroadcastConfig();
 
-    public static class AggroConfig implements ISerializable{
+    public static class AggroConfig implements ISerializable {
         @Serializable
         public RangeConfig range = new RangeConfig();
         @Serializable
@@ -57,18 +58,27 @@ public class WorldConfig implements ISerializable {
         @Serializable
         String inc = "attribute:GENERIC_LUCK:-2";
 
-        ICorrector incCorrector = CorrectionParser.parseStr(inc);
-        ICorrector decCorrector = CorrectionParser.parseStr(dec);
+        private String decWatcher = dec;
+        private String incWatcher = inc;
+        ICorrector incCorrector;
+        ICorrector decCorrector;
 
         public ICorrector getInc() {
+            if (!incWatcher.equals(inc) || incCorrector == null) {
+
+                incCorrector = CorrectionParser.parseStr(inc);
+            }
             return incCorrector;
         }
 
         public ICorrector getDec() {
+            if (!decWatcher.equals(dec) || decCorrector == null) {
+                decCorrector = CorrectionParser.parseStr(dec);
+            }
             return decCorrector;
         }
 
-        public static class RangeConfig implements ISerializable{
+        public static class RangeConfig implements ISerializable {
             @Serializable
             public int min = 20;
             @Serializable
@@ -76,7 +86,7 @@ public class WorldConfig implements ISerializable {
         }
     }
 
-    public static class LootingConfig implements ISerializable{
+    public static class LootingConfig implements ISerializable {
         @Serializable
         public int global = 70;
         @Serializable
@@ -84,22 +94,22 @@ public class WorldConfig implements ISerializable {
         @Serializable
         public LootingModifiers dynamic = new LootingModifiers();
 
-        public static class LootingModifiers implements ISerializable{
-           @Serializable
+        public static class LootingModifiers implements ISerializable {
+            @Serializable
             public List<String> inc = new ArrayList<>();
             @Serializable
             public List<String> dec = new ArrayList<>();
         }
     }
 
-    public static class FriendlyFireConfig implements ISerializable{
+    public static class FriendlyFireConfig implements ISerializable {
         @Serializable
         public boolean enable = true;
         @Serializable
         public String effect = "UNLUCK:4:600";
     }
 
-    public static class BroadcastConfig implements ISerializable{
+    public static class BroadcastConfig implements ISerializable {
         @Serializable(name = "default")
         public BroadcastMode defaultMode = BroadcastMode.NEARBY;
         @Serializable
