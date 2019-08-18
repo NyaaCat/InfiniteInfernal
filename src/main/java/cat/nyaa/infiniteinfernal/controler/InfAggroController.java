@@ -27,14 +27,14 @@ public class InfAggroController implements IAggroControler {
             List<Player> players = world.getPlayers();
             if (!players.isEmpty()) {
                 Comparator<LivingEntity> comparator = Comparator.comparing(player -> {
-                    double correctFactor = (1 + inc.getCorrection(player, null) - dec.getCorrection(player, null));
+                    double correctFactor = (100 + inc.getCorrection(player, null) - dec.getCorrection(player, null))/100d;
                     double aggroBase = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
                     return aggroBase * correctFactor;
                 });
                 Stream<LivingEntity> livingEntityStream = players.stream()
                         .filter(player -> {
                             if(!Utils.validGamemode(player))return false;
-                            double correctFactor = (1 + inc.getCorrection(player, null) - dec.getCorrection(player, null));
+                            double correctFactor = (100 + inc.getCorrection(player, null) - dec.getCorrection(player, null))/100d;
                             double maxRange = range.max * correctFactor;
                             double minRange = range.min * correctFactor;
                             double distance = player.getLocation().distance(iMob.getEntity().getLocation());

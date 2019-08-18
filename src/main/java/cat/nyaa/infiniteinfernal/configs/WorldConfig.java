@@ -65,7 +65,6 @@ public class WorldConfig implements ISerializable {
 
         public ICorrector getInc() {
             if (!incWatcher.equals(inc) || incCorrector == null) {
-
                 incCorrector = CorrectionParser.parseStr(inc);
             }
             return incCorrector;
