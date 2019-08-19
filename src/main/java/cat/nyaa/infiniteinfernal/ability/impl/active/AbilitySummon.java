@@ -21,7 +21,16 @@ public class AbilitySummon extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         for (int i = 0; i < amount; i++) {
-            Location location = Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
+            Location location = null;
+            for (int j = 0; j < 20; j++) {
+                location = Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
+                if (location!=null){
+                    break;
+                }
+            }
+            if (location == null) {
+                return;
+            }
             Entity entity = location.getWorld().spawnEntity(location, type);
             if (!nbt.equals("")){
                 NmsUtils.setEntityTag(entity,nbt);
