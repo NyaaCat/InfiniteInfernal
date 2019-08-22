@@ -25,7 +25,8 @@ public class CommonLootItem implements ILootItem, ISerializable {
     public CommonLootItem(InfPlugin plugin, String name, ItemStack item){
         this.plugin = plugin;
         this.name = name;
-        this.item = item;
+        this.nbt = ItemStackUtils.itemToBase64(item);
+        this.item = ItemStackUtils.itemFromBase64(nbt);
         updateNbt();
     }
 
