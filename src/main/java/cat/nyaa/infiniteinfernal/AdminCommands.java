@@ -113,20 +113,34 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "setdrop", permission = "im.setdrop")
-    public void onSetDrop(CommandSender sender, Arguments arguments) {
-        String itemName = arguments.nextString();
-        int level = arguments.nextInt();
-        int weight = arguments.nextInt();
-        ILootItem lootItem = LootManager.instance().getLoot(itemName);
-        if (lootItem == null) {
-            new Message(I18n.format("loot.set.no_item", itemName))
-                    .send(sender);
-            return;
+    @SubCommand(value = "modify", permission = "im.modify")
+    public void onModify(CommandSender sender, Arguments arguments) {
+        String target = arguments.nextString();
+        switch (target){
+            case "loot":
+                String name = arguments.nextString();
+                ILootItem iLootItem = LootManager.instance().getLoot(name);
+                if (iLootItem == null){
+                    new Message(I18n.format("loot.get.no_item"))
+                            .send(sender);
+                    return;
+                }
+                if (sender instanceof Player){
+                    ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
+                    if (itemInMainHand.getType().equals(Material.AIR)){
+                        new Message(I18n.format("loot.add.error.no_item"))
+                                .send(sender);
+                        return;
+                    }
+                    LootManager.instance().addLoot(name, iLootItem.isDynamic(), itemInMainHand);
+                    new Message("").append(I18n.format("loot.add.success"), itemInMainHand)
+                            .send(sender);
+                }else {
+                    new Message(I18n.format("error.not_player"))
+                            .send(sender);
+                }
+                break;
         }
-        LootManager.instance().addCommonLoot(lootItem, level, weight);
-        new Message("").append(I18n.format("loot.set.success", level, weight), lootItem.getItemStack())
-                .send(sender);
     }
 
     @SubCommand(value = "inspect", permission = "im.inspect")
@@ -165,6 +179,22 @@ public class AdminCommands extends CommandReceiver {
                         .send(sender);
                 break;
         }
+    }
+
+    @SubCommand(value = "setdrop", permission = "im.setdrop")
+    public void onSetDrop(CommandSender sender, Arguments arguments) {
+        String itemName = arguments.nextString();
+        int level = arguments.nextInt();
+        int weight = arguments.nextInt();
+        ILootItem lootItem = LootManager.instance().getLoot(itemName);
+        if (lootItem == null) {
+            new Message(I18n.format("loot.set.no_item", itemName))
+                    .send(sender);
+            return;
+        }
+        LootManager.instance().addCommonLoot(lootItem, level, weight);
+        new Message("").append(I18n.format("loot.set.success", level, weight), lootItem.getItemStack())
+                .send(sender);
     }
 
     @SubCommand(value = "killall", permission = "im.kill.all")
