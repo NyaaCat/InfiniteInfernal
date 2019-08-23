@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 
 public class CommonLootItem implements ILootItem, ISerializable {
     private final InfPlugin plugin;
-    private ItemStack item;
 
     @Serializable
     String nbt = "";
@@ -26,16 +25,11 @@ public class CommonLootItem implements ILootItem, ISerializable {
         this.plugin = plugin;
         this.name = name;
         this.nbt = ItemStackUtils.itemToBase64(item);
-        this.item = ItemStackUtils.itemFromBase64(nbt);
-        updateNbt();
     }
 
     @Override
     public ItemStack getItemStack() {
-        if (item == null && nbt != null && !nbt.equals("")){
-            item = ItemStackUtils.itemFromBase64(nbt);
-        }
-        return item;
+        return ItemStackUtils.itemFromBase64(nbt);
     }
 
     @Override
@@ -45,13 +39,9 @@ public class CommonLootItem implements ILootItem, ISerializable {
 
     @Override
     public String toNbt() {
-        updateNbt();
         return nbt;
     }
 
-    private void updateNbt() {
-        nbt = ItemStackUtils.itemToBase64(item);
-    }
 
     @Override
     public int getWeight(int level) {

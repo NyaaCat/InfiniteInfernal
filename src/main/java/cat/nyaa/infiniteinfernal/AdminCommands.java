@@ -121,7 +121,7 @@ public class AdminCommands extends CommandReceiver {
                 String name = arguments.nextString();
                 ILootItem iLootItem = LootManager.instance().getLoot(name);
                 if (iLootItem == null){
-                    new Message(I18n.format("loot.get.no_item"))
+                    new Message(I18n.format("loot.get.no_item", name))
                             .send(sender);
                     return;
                 }
@@ -133,7 +133,7 @@ public class AdminCommands extends CommandReceiver {
                         return;
                     }
                     LootManager.instance().addLoot(name, iLootItem.isDynamic(), itemInMainHand);
-                    new Message("").append(I18n.format("loot.add.success"), itemInMainHand)
+                    new Message("").append(I18n.format("loot.add.success", name, iLootItem.isDynamic()), itemInMainHand)
                             .send(sender);
                 }else {
                     new Message(I18n.format("error.not_player"))
