@@ -8,6 +8,8 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -380,4 +382,13 @@ public class Utils {
     }
 
 
+    public static double getCorrection(ICorrector targetLost, IMob iMob) {
+        LivingEntity entity = iMob.getEntity();
+        EntityEquipment equipment = entity.getEquipment();
+        ItemStack itemInMainHand = null;
+        if (equipment != null){
+            itemInMainHand = equipment.getItemInMainHand();
+        }
+        return targetLost.getCorrection(entity, itemInMainHand);
+    }
 }

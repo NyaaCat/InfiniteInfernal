@@ -14,25 +14,23 @@ import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class Events implements Listener {
@@ -264,5 +262,19 @@ public class Events implements Listener {
         if (drops.isEmpty()) {
             drops.add(new ItemStack(Material.AIR));
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPotion(EntityPotionEffectEvent ev){
+        Entity entity = ev.getEntity();
+        IMob iMob = MobManager.instance().toIMob(entity);
+        if (iMob == null) {
+            return;
+        }
+        PotionEffect oldEffect = ev.getOldEffect();
+        PotionEffect newEffect = ev.getNewEffect();
+        if (newEffect == null || oldEffect == null)return;
+        if (newEffect.getAmplifier() < oldEffect.getAmplifier()) return;
+        iMob.autoRetarget();
     }
 }

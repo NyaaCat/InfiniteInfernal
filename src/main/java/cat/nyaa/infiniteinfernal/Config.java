@@ -4,6 +4,8 @@ import cat.nyaa.infiniteinfernal.ability.AbilityDummy;
 import cat.nyaa.infiniteinfernal.ability.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import org.bukkit.Bukkit;
@@ -63,6 +65,9 @@ public class Config extends PluginConfigure {
     @Serializable(name = "GetDropMessageFeedback")
     public boolean isGetDropMessageEnabled = false;
 
+    @Serializable
+    public Map<String, String> addEffects = new LinkedHashMap<>();
+
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
     public DirConfigs<LevelConfig> levelConfigs;
@@ -93,6 +98,7 @@ public class Config extends PluginConfigure {
         levelConfigs.clear();
         mobConfigs.clear();
         regionConfigs.clear();
+        addEffectInstance = null;
 
         if (worlds.size() == 0) {
             Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
@@ -137,8 +143,11 @@ public class Config extends PluginConfigure {
             config.attr.damageResist = 0;
             config.attr.exp = 10 * i;
             config.attr.health = 20 * i;
-            config.prefix = "level "+i;
+            config.prefix = "level " + i;
         }
+        addEffects.put("target_lost", "effect:BLINDNESS:10");
+        addEffects.put("disorder", "effect:CONFUSION:10");
+        addEffects.put("dementia", "effect:SLOW_DIGGING:10");
         AbilitySetConfig actives = new AbilitySetConfig("a");
         AbilitySetConfig passives = new AbilitySetConfig("b");
         AbilitySetConfig dummies = new AbilitySetConfig("c");
@@ -152,7 +161,7 @@ public class Config extends PluginConfigure {
         abilityConfigs.add(dummies);
         ItemStack sampleItem = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta = sampleItem.getItemMeta();
-        if (itemMeta!=null){
+        if (itemMeta != null) {
             itemMeta.setDisplayName("inf-sample");
             ArrayList<String> lore = new ArrayList<>();
             lore.add("inf-sample");
@@ -163,7 +172,7 @@ public class Config extends PluginConfigure {
         }
         ItemStack extraSampleItem = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta1 = sampleItem.getItemMeta();
-        if (itemMeta1!=null){
+        if (itemMeta1 != null) {
             itemMeta1.setDisplayName("inf-extra-sample");
             ArrayList<String> lore = new ArrayList<>();
             lore.add("inf-extra-sample");
@@ -174,7 +183,7 @@ public class Config extends PluginConfigure {
         }
         ItemStack sampleItem5 = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta2 = sampleItem.getItemMeta();
-        if (itemMeta2!=null){
+        if (itemMeta2 != null) {
             itemMeta2.setDisplayName("inf-sample-5");
             ArrayList<String> lore = new ArrayList<>();
             lore.add("inf-sample-5");
@@ -185,7 +194,7 @@ public class Config extends PluginConfigure {
         }
         ItemStack sampleItem10 = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta3 = sampleItem.getItemMeta();
-        if (itemMeta3!=null){
+        if (itemMeta3 != null) {
             itemMeta3.setDisplayName("inf-sample-10");
             ArrayList<String> lore = new ArrayList<>();
             lore.add("inf-sample-10");
@@ -196,7 +205,7 @@ public class Config extends PluginConfigure {
         }
         ItemStack sampleItem20 = new ItemStack(Material.ACACIA_BUTTON);
         ItemMeta itemMeta4 = sampleItem.getItemMeta();
-        if (itemMeta4!=null){
+        if (itemMeta4 != null) {
             itemMeta4.setDisplayName("inf-sample-20");
             ArrayList<String> lore = new ArrayList<>();
             lore.add("inf-sample-20");
@@ -220,8 +229,8 @@ public class Config extends PluginConfigure {
         LootManager.instance().addLoot("inf-extra-sample", true, extraSampleItem);
         MobConfig mobConfig = new MobConfig("sample");
         mobConfig.type = EntityType.ZOMBIE;
-        mobConfig.abilities.add(actives.getPrefix()+"-"+actives.getName());
-        mobConfig.abilities.add(passives.getPrefix()+"-"+passives.getName());
+        mobConfig.abilities.add(actives.getPrefix() + "-" + actives.getName());
+        mobConfig.abilities.add(passives.getPrefix() + "-" + passives.getName());
         mobConfig.abilities.add("set-2");
         mobConfig.name = "Zombie-King";
         for (Biome value : Biome.values()) {
@@ -269,7 +278,33 @@ public class Config extends PluginConfigure {
 
     public List<RegionConfig> getRegionsForLocation(Location location) {
         return regionConfigs.values().stream()
-                .filter(regionConfig1 -> regionConfig1.region!=null && regionConfig1.region.contains(location))
+                .filter(regionConfig1 -> regionConfig1.region != null && regionConfig1.region.contains(location))
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, ICorrector> addEffectInstance = null;
+
+    public Map<String, ICorrector> getAddEffects() {
+        if (addEffectInstance == null) {
+            initAddEffectInstance();
+        }
+        return addEffectInstance;
+    }
+
+    public ICorrector getAddEffect(String name) {
+        if (addEffectInstance == null) {
+            initAddEffectInstance();
+        }
+        return addEffectInstance.get(name);
+    }
+
+    private void initAddEffectInstance() {
+        addEffectInstance = new LinkedHashMap<>();
+        addEffects.forEach(((s, s2) -> {
+            ICorrector iCorrector = CorrectionParser.parseStr(s);
+            if (iCorrector != null) {
+                addEffectInstance.put(s, iCorrector);
+            }
+        }));
     }
 }

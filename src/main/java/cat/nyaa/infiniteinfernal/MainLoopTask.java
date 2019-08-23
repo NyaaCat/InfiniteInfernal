@@ -5,6 +5,8 @@ import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
 import org.bukkit.Bukkit;
@@ -12,6 +14,8 @@ import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -25,6 +29,10 @@ public class MainLoopTask {
 
     public static void start() {
         stop();
+        String dementia = InfPlugin.plugin.config.addEffects.get("dementia");
+        if (dementia != null) {
+            iCorrector = CorrectionParser.parseStr(dementia);
+        }
         Map<String, WorldConfig> worlds = InfPlugin.plugin.config.worlds;
         worlds.forEach((wn, value) -> {
             World world = Bukkit.getWorld(wn);
@@ -56,6 +64,8 @@ public class MainLoopTask {
         }
     }
 
+    private static ICorrector iCorrector = null;
+
     private static void mobEffect(IMob iMob) {
         MobManager mobManager = MobManager.instance();
         LivingEntity entity = iMob.getEntity();
@@ -66,7 +76,18 @@ public class MainLoopTask {
         iMob.showParticleEffect();
         iMob.autoRetarget();
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
-        if (playersNearMob.size() == 0 ) {
+        if (iCorrector != null) {
+            EntityEquipment equipment = iMob.getEntity().getEquipment();
+            ItemStack itemInMainHand = null;
+            if (equipment != null) {
+                itemInMainHand = equipment.getItemInMainHand();
+            }
+            double correction = iCorrector.getCorrection(iMob.getEntity(), itemInMainHand);
+            if (Utils.possibility(correction / 100d)) {
+                return;
+            }
+        }
+        if (playersNearMob.size() == 0) {
             mobManager.removeMob(iMob, false);
         }
         List<IAbilitySet> abilities = iMob.getAbilities().stream()
@@ -109,17 +130,17 @@ public class MainLoopTask {
             }
             List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
             players.stream().forEach(player -> {
-                if (InfPlugin.wgEnabled){
-                    if(WorldGuardUtils.instance().isPlayerInProtectedRegion(player)){
+                if (InfPlugin.wgEnabled) {
+                    if (WorldGuardUtils.instance().isPlayerInProtectedRegion(player)) {
                         return;
                     }
                 }
                 AtomicInteger tried = new AtomicInteger(0);
-                class SpawnTask extends BukkitRunnable{
+                class SpawnTask extends BukkitRunnable {
                     @Override
                     public void run() {
                         IMob iMob = InfPlugin.plugin.spawnControler.spawnIMob(player, false);
-                        if (iMob == null){
+                        if (iMob == null) {
                             if ((tried.getAndAdd(1) >= 20)) {
                                 return;
                             }
@@ -166,7 +187,7 @@ public class MainLoopTask {
             for (int i = 0; i < nextTickTasks; i++) {
                 if (mobEffectQueue.isEmpty()) return;
                 IMob iMob = mobEffectQueue.poll();
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                     @Override
                     public void run() {
                         mobEffect(iMob);
