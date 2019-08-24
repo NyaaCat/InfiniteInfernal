@@ -45,10 +45,11 @@ public class CustomMob implements IMob {
     private EntityType entityType;
     private LivingEntity entity;
     private KeyedBossBar bossBar;
+    private LivingEntity currentTarget = null;
     private String name;
     private String taggedName;
 
-    public CustomMob(MobConfig config, int level){
+    public CustomMob(MobConfig config, int level) {
         this.config = config;
         generateFromConfig(config, level);
     }
@@ -70,7 +71,7 @@ public class CustomMob implements IMob {
         Config pluginConfig = InfPlugin.plugin.config();
         //common loots
         commonLoots = new ArrayList<>();
-        if (config.loot.imLoot){
+        if (config.loot.imLoot) {
             commonLoots = LootManager.instance().getLevelDrops(level);
         }
         //special loots
@@ -81,9 +82,9 @@ public class CustomMob implements IMob {
                     String loot = split[0];
                     int weight = Integer.parseInt(split[1]);
                     ILootItem iLoot = LootManager.instance().getLoot(loot);
-                    if (iLoot != null){
+                    if (iLoot != null) {
                         specialLoots.put(iLoot, weight);
-                    }else {
+                    } else {
                         Bukkit.getLogger().log(Level.WARNING, I18n.format("error.custom_mob.no_loot", s));
                     }
                 });
@@ -93,12 +94,12 @@ public class CustomMob implements IMob {
             config.abilities.forEach(s -> {
                 try {
                     AbilitySetConfig abilitySetConfig = pluginConfig.abilityConfigs.get(s);
-                    if (abilitySetConfig == null){
-                        Bukkit.getLogger().log(Level.WARNING, "no ability config for "+s);
+                    if (abilitySetConfig == null) {
+                        Bukkit.getLogger().log(Level.WARNING, "no ability config for " + s);
                         return;
                     }
                     this.abilities.add(new AbilitySet(abilitySetConfig));
-                }catch (IllegalArgumentException e){
+                } catch (IllegalArgumentException e) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("error.abilities.bad_config", s));
                 }
             });
@@ -169,7 +170,7 @@ public class CustomMob implements IMob {
     @Override
     public void makeInfernal(LivingEntity entity) {
         this.entity = entity;
-        if (entity.isDead()){
+        if (entity.isDead()) {
             MobManager.instance().removeMob(this, false);
             return;
         }
@@ -178,17 +179,22 @@ public class CustomMob implements IMob {
         AttributeInstance damageAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
         AttributeInstance maxHealthAttr = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
         AttributeInstance followRangeAttr = entity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
-        if(damageAttr != null){
+        if (damageAttr != null) {
             damageAttr.setBaseValue(getDamage());
-        }else { }
-        if(maxHealthAttr != null){
+        } else {
+        }
+        if (maxHealthAttr != null) {
             maxHealthAttr.setBaseValue(getMaxHealth());
-        }else{ }
-        if(followRangeAttr != null){
-            World entityWorld = entity.getWorld();
-            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
-            followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
-        }else{ }
+        } else {
+        }
+        if (followRangeAttr != null) {
+            if (!entityType.equals(EntityType.GUARDIAN) && !entityType.equals(EntityType.ELDER_GUARDIAN)) {
+                World entityWorld = entity.getWorld();
+                WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+                followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
+            }
+        } else {
+        }
         entity.setHealth(getMaxHealth());
         createBossbar(entity);
         InfernalSpawnEvent event = new InfernalSpawnEvent(this);
@@ -198,7 +204,7 @@ public class CustomMob implements IMob {
             entity.remove();
             return;
         }
-        if (config.nbtTags!=null && !config.nbtTags.equals("")) {
+        if (config.nbtTags != null && !config.nbtTags.equals("")) {
             NmsUtils.setEntityTag(entity, config.nbtTags);
         }
     }
@@ -233,23 +239,23 @@ public class CustomMob implements IMob {
         LivingEntity entity = getEntity();
         World world = entity.getWorld();
         Location location = entity.getLocation();
-        world.spawnParticle(Particle.LAVA, location, 10, 0,0,0,1,null,true);
+        world.spawnParticle(Particle.LAVA, location, 10, 0, 0, 0, 1, null, true);
     }
 
     @Override
     public void autoRetarget() {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 LivingEntity aggroTarget = new InfAggroController().findAggroTarget(CustomMob.this);
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                     @Override
                     public void run() {
                         retarget(aggroTarget);
                     }
                 }.runTask(InfPlugin.plugin);
             }
-        }.runTaskAsynchronously(InfPlugin.plugin);
+        }.runTask(InfPlugin.plugin);
     }
 
     @Override
@@ -257,21 +263,24 @@ public class CustomMob implements IMob {
         LivingEntity mobEntity = getEntity();
         if (mobEntity instanceof Mob) {
             LivingEntity target = ((Mob) mobEntity).getTarget();
-            if (target == null){
-                if (entity==null)return;
+            if (target == null) {
+                if (entity == null) return;
                 ((Mob) mobEntity).setTarget(entity);
+                this.currentTarget = entity;
                 return;
             }
-            if (target.equals(entity)){
+            if (target.equals(entity)) {
                 return;
             }
             ((Mob) mobEntity).setTarget(entity);
+            this.currentTarget = entity;
         }
     }
 
     @Override
     public LivingEntity getTarget() {
-        return entity instanceof Mob ? ((Mob) entity).getTarget() : null;
+//        return entity instanceof Mob ? ((Mob) entity).getTarget() : null;
+        return currentTarget;
     }
 
     @Override
@@ -282,7 +291,7 @@ public class CustomMob implements IMob {
     @Override
     public boolean isTarget(LivingEntity target) {
         LivingEntity mobTarget = getTarget();
-        if (mobTarget == null)return false;
+        if (mobTarget == null) return false;
         return target.equals(mobTarget);
     }
 
@@ -299,12 +308,12 @@ public class CustomMob implements IMob {
     @Override
     public int getExp() {
         int exp = config.loot.expOverride;
-        if (exp==-1){
+        if (exp == -1) {
             LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
-            if (levelConfig == null){
-                Bukkit.getLogger().log(Level.WARNING, "no level config for \""+getLevel()   +"\"");
+            if (levelConfig == null) {
+                Bukkit.getLogger().log(Level.WARNING, "no level config for \"" + getLevel() + "\"");
                 exp = 0;
-            }else {
+            } else {
                 exp = levelConfig.attr.exp;
             }
         }

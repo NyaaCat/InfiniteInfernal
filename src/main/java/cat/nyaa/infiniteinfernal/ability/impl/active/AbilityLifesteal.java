@@ -30,13 +30,11 @@ public class AbilityLifesteal extends ActiveAbility {
 
     @Override
     public void active(IMob iMob) {
-        LivingEntity target = Utils.randomPick(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
-                .filter(entity -> entity.getEyeLocation().distance(iMob.getEntity().getEyeLocation()) < range)
-                .collect(Collectors.toList())
-        );
-        if (target != null) {
-            fire(iMob, target);
+        LivingEntity target = iMob.getTarget();
+        if (target == null || !target.getWorld().equals(iMob.getEntity().getWorld()) || iMob.getEntity().getEyeLocation().distance(target.getEyeLocation()) > range){
+            return;
         }
+        fire(iMob, target);
     }
 
     private void fire(IMob mob, LivingEntity target) {

@@ -19,6 +19,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,9 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
     private static Listener listener;
 
     private void createCacheAndClearEffect(LivingEntity target) {
-        cache = cacheBuilder.expireAfterAccess(60, TimeUnit.SECONDS).build();
+        if (cache == null) {
+            cache = cacheBuilder.build();
+        }
         List<PotionEffectType> peT;
         peT = cache.getIfPresent(CACHE_EFFECT);
         if (peT == null) {
@@ -52,9 +55,8 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
                 });
             }
             cache.put(CACHE_EFFECT, peT);
-        }else {
-            peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
         }
+        peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
     }
 
     CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder()
@@ -88,7 +90,7 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
                 } else {
                     Entity entity = ev.getEntity();
                     if (entity instanceof LivingEntity) {
-                        createCacheAndClearEffect((LivingEntity) entity);
+                       createCacheAndClearEffect((LivingEntity) entity);
                     }
                 }
             }
@@ -112,13 +114,19 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
             inited = true;
         }
         affected.add(iMob);
-        List<IMob> invalids = new ArrayList<>();
-        affected.forEach(iMob1 -> {
-            if (!MobManager.instance().isIMob(iMob1.getEntity())){
-                invalids.add(iMob1);
+        createCacheAndClearEffect(iMob.getEntity());
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                List<IMob> invalids = new ArrayList<>();
+                affected.forEach(iMob1 -> {
+                    if (!MobManager.instance().isIMob(iMob1.getEntity())){
+                        invalids.add(iMob1);
+                    }
+                });
+                invalids.stream().forEach(iMob1 -> affected.remove(iMob1));
             }
-        });
-        invalids.stream().forEach(iMob1 -> affected.remove(iMob1));
+        }.runTaskLater(InfPlugin.plugin, 1);
     }
 
     @Override

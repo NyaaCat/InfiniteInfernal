@@ -40,6 +40,7 @@ public class CorrectionParser {
     }
 
     public static ICorrector parseStr(String str) {
+        if (str == null)return null;
         String[] split = str.split(":", 2);
         try {
             switch (split[0]) {

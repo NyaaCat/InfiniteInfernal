@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AbilityProjectile extends ActiveAbility{
+public class AbilityProjectile extends ActiveAbility {
     public static String INF_PROJECTILE_KEY = "inf_projectile";
     @Serializable
     public int range = 30;
@@ -40,25 +40,19 @@ public class AbilityProjectile extends ActiveAbility{
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        Stream<LivingEntity> validTarget = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range));
-        LivingEntity target = Utils.randomPick(validTarget.collect(Collectors.toList()));
-        if (target == null) return;
-        if (!mobEntity.hasLineOfSight(target)) return;
-        Vector vector = Utils.unitDirectionVector(mobEntity.getEyeLocation().toVector(), target.getEyeLocation().toVector())
-                .multiply(speed);
         int i = 0;
         AtomicInteger burstCounter = new AtomicInteger(0);
-            class Task extends BukkitRunnable{
-                @Override
-                public void run() {
-                    if (iMob.getEntity().isDead())return;
-                    if (burstCounter.getAndAdd(1) < burstCount){
-                        launch(mobEntity, vector, damageAmplifier*iMob.getDamage());
-                        new Task().runTaskLater(InfPlugin.plugin, burstInterval);
-                    }
+        class Task extends BukkitRunnable {
+            @Override
+            public void run() {
+                if (iMob.getEntity().isDead()) return;
+                if (burstCounter.getAndAdd(1) < burstCount) {
+                    launch(mobEntity, iMob.getEntity().getEyeLocation().getDirection(), damageAmplifier * iMob.getDamage());
+                    new Task().runTaskLater(InfPlugin.plugin, burstInterval);
                 }
             }
-            new Task().runTask(InfPlugin.plugin);
+        }
+        new Task().runTask(InfPlugin.plugin);
     }
 
     private Projectile launch(LivingEntity mobEntity, Vector vector, double damage) {
@@ -66,16 +60,16 @@ public class AbilityProjectile extends ActiveAbility{
         Class<?> aClass = null;
         try {
             aClass = Class.forName("org.bukkit.entity." + this.projectile);
-            if (Projectile.class.isAssignableFrom(aClass)){
+            if (Projectile.class.isAssignableFrom(aClass)) {
                 Projectile projectile = mobEntity.launchProjectile(((Class<? extends Projectile>) aClass), vector);
                 projectile.setGravity(gravity);
-                projectile.setMetadata(INF_PROJECTILE_KEY, new LazyMetadataValue(InfPlugin.plugin, ()-> damage));
+                projectile.setMetadata(INF_PROJECTILE_KEY, new LazyMetadataValue(InfPlugin.plugin, () -> damage));
                 Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
                 return projectile;
             }
-            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName "+projectile);
+            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName " + projectile);
         } catch (ClassNotFoundException e) {
-            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName "+projectile);
+            Bukkit.getLogger().log(Level.WARNING, "no projectile fileName " + projectile);
         }
         return null;
     }

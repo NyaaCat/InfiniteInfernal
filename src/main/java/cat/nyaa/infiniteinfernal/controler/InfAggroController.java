@@ -60,7 +60,8 @@ public class InfAggroController implements IAggroControler {
                             double maxRange = range.max * correctFactor;
                             double minRange = range.min * correctFactor;
                             double distance = player.getLocation().distance(iMob.getEntity().getLocation());
-                            double baseAggro = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
+//                            double baseAggro = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
+                            double baseAggro = finalAggroBase;
                             double aggroDistance = baseAggro * correctFactor;
                             return distance < Math.min(Math.min(maxRange, aggroDistance), Math.max(minRange, aggroDistance));
                         }).map(player -> player);

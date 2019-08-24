@@ -65,7 +65,10 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
 
     private void createCacheAndClearEffect(LivingEntity target) {
         if (duration != durationWatcher) {
-            cache = cacheBuilder.expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS).build();
+            cache = CacheBuilder.newBuilder()
+                    .concurrencyLevel(2)
+                    .initialCapacity(100)
+                    .expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS).build();
         }
         List<PotionEffectType> peT;
         peT = cache.getIfPresent(CACHE_EFFECT);
@@ -82,6 +85,7 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
                 });
             }
             cache.put(CACHE_EFFECT, peT);
+            peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
         }else {
             List<PotionEffectType> finalPeT1 = peT;
             class ClearTask extends BukkitRunnable{

@@ -90,6 +90,7 @@ public class AbilityShingeki extends ActiveAbility {
         new BukkitRunnable() {
             @Override
             public void run() {
+                location.add(0,0.5,0);
                 World world = location.getWorld();
                 if (world == null) return;
                 List<Location> roundLocationList = Utils.getRoundLocations(location, radius);
@@ -110,7 +111,7 @@ public class AbilityShingeki extends ActiveAbility {
                 List<Location> r2 = roundLocationList.subList(sizePerTask, 2 * sizePerTask);
                 List<Location> r3 = roundLocationList.subList(2 * sizePerTask, roundLocationList.size());
 
-                draw(hexStar, delay);
+                draw(hexStar, delay/2);
                 draw(r1, delay);
                 draw(r2, delay);
                 draw(r3, delay);

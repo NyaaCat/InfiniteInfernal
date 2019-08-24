@@ -29,8 +29,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Events implements Listener {
@@ -273,8 +275,25 @@ public class Events implements Listener {
         }
         PotionEffect oldEffect = ev.getOldEffect();
         PotionEffect newEffect = ev.getNewEffect();
-        if (newEffect == null || oldEffect == null)return;
-        if (newEffect.getAmplifier() < oldEffect.getAmplifier()) return;
-        iMob.autoRetarget();
+        if (newEffect == null)return;
+        if (oldEffect != null && newEffect.getAmplifier() < oldEffect.getAmplifier()) return;
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                iMob.autoRetarget();
+            }
+        }.runTaskLater(InfPlugin.plugin, 1);
+    }
+
+    @EventHandler
+    private void onTarget(EntityTargetEvent ev){
+        Entity entity = ev.getEntity();
+        IMob iMob = MobManager.instance().toIMob(entity);
+        if (iMob == null)return;
+        Entity target = ev.getTarget();
+        LivingEntity currentTarget = iMob.getTarget();
+        if (!Objects.equals(target, currentTarget)){
+            ev.setCancelled(true);
+        }
     }
 }
