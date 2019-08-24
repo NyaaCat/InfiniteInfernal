@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +56,16 @@ public class AbilityStuck extends ActiveAbility {
             void onEntityMove(PlayerMoveEvent e){
                 if (stucked.contains(e.getPlayer().getUniqueId())){
                     Location to = e.getTo();
+                    Location from = e.getFrom();
                     if (to != null){
+                        to.setX(from.getX());
+//                        to.setY(from.getY());
+                        to.setZ(from.getZ());
                         e.getPlayer().removePotionEffect(PotionEffectType.LEVITATION);
                         e.getPlayer().addPotionEffect(PotionEffectType.LEVITATION.createEffect(10, -1), true);
-                        e.setCancelled(true);
+                        e.setTo(to);
+                        Vector velocity = e.getPlayer().getVelocity();
+                        e.getPlayer().setVelocity(new Vector(0, velocity.getY(), 0));
                     }
                 }
             }
