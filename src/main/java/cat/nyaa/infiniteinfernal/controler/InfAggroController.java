@@ -10,10 +10,7 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import com.google.common.collect.Streams;
 import jdk.nashorn.internal.ir.CallNode;
 import org.bukkit.World;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
@@ -44,6 +41,9 @@ public class InfAggroController implements IAggroControler {
 
             if (targetLostCorrection!=null){
                 aggroBase *= (1-(Utils.getCorrection(targetLostCorrection,iMob)/100d));
+            }
+            if (iMob.getEntityType().equals(EntityType.GUARDIAN) || iMob.getEntityType().equals(EntityType.ELDER_GUARDIAN)){
+                aggroBase *= 0.6667;
             }
             List<Player> players = world.getPlayers();
             if (!players.isEmpty()) {

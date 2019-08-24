@@ -17,10 +17,7 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -291,6 +288,9 @@ public class Events implements Listener {
         IMob iMob = MobManager.instance().toIMob(entity);
         if (iMob == null)return;
         Entity target = ev.getTarget();
+        if (iMob.getEntityType().equals(EntityType.GUARDIAN) || iMob.getEntityType().equals(EntityType.ELDER_GUARDIAN)){
+            return;
+        }
         LivingEntity currentTarget = iMob.getTarget();
         if (!Objects.equals(target, currentTarget)){
             ev.setCancelled(true);

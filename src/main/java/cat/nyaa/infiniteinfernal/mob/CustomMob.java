@@ -188,9 +188,13 @@ public class CustomMob implements IMob {
         } else {
         }
         if (followRangeAttr != null) {
-            if (!entityType.equals(EntityType.GUARDIAN) && !entityType.equals(EntityType.ELDER_GUARDIAN)) {
-                World entityWorld = entity.getWorld();
-                WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            World entityWorld = entity.getWorld();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
+            double aggro = levelConfig.attr.aggro;
+            if (entityType.equals(EntityType.GUARDIAN) || entityType.equals(EntityType.ELDER_GUARDIAN)) {
+                followRangeAttr.setBaseValue(aggro * 0.60);
+            }else {
                 followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
             }
         } else {
