@@ -94,7 +94,7 @@ public class LootManager {
     }
 
     public static ILootItem makeDrop(Player killer, IMob iMob) {
-        World world = killer.getWorld();
+        World world = iMob.getEntity().getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         double overallShift = getShift(killer, lootCfg.overall);
         double global = lootCfg.global * (1+ (overallShift/100d));
@@ -111,7 +111,7 @@ public class LootManager {
     }
 
     public static ILootItem makeSpecialDrop(Player killer, IMob iMob) {
-        World world = killer.getWorld();
+        World world = iMob.getEntity().getWorld();
         LootingConfig lootCfg = InfPlugin.plugin.config().worlds.get(world.getName()).looting;
         double overallShift = getShift(killer, lootCfg.overall);
         double specialChance = iMob.getSpecialChance() * (1+ (overallShift/100d));
@@ -145,6 +145,7 @@ public class LootManager {
     private static List<ICorrector> decs;
 
     private static double getShift(Player killer, LootingModifiers overall) {
+        if (killer == null)return 0;
         try {
             if (incs == null || decs == null) {
                 incs = CorrectionParser.parseStrs(overall.inc);

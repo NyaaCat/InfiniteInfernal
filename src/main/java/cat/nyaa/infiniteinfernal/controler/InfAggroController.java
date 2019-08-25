@@ -72,7 +72,7 @@ public class InfAggroController implements IAggroControler {
                         Stream<LivingEntity> nearbyStream = nearbyEntities.stream()
                                 .filter(entity1 -> entity1 instanceof LivingEntity && !(entity1 instanceof ArmorStand) && !(entity1 instanceof Player))
                                 .map(entity1 -> ((LivingEntity) entity1));
-                        livingEntityStream = Stream.concat(livingEntityStream,nearbyStream);
+                        livingEntityStream = nearbyStream;
                         return Utils.randomPick(livingEntityStream.collect(Collectors.toList()));
                     }
                 }

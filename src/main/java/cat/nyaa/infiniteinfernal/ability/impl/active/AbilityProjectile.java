@@ -8,8 +8,10 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Shulker;
 import org.bukkit.metadata.LazyMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +49,11 @@ public class AbilityProjectile extends ActiveAbility {
             public void run() {
                 if (iMob.getEntity().isDead()) return;
                 if (burstCounter.getAndAdd(1) < burstCount) {
-                    launch(mobEntity, iMob.getEntity().getEyeLocation().getDirection(), damageAmplifier * iMob.getDamage());
+                    Vector direction = iMob.getEntity().getEyeLocation().getDirection();
+                    direction.normalize().multiply(speed);
+                    double length = direction.length();
+                    if (Double.isInfinite(length) || Double.isNaN(length)) return;
+                    launch(mobEntity, direction, damageAmplifier * iMob.getDamage());
                     new Task().runTaskLater(InfPlugin.plugin, burstInterval);
                 }
             }
@@ -62,9 +68,12 @@ public class AbilityProjectile extends ActiveAbility {
             aClass = Class.forName("org.bukkit.entity." + this.projectile);
             if (Projectile.class.isAssignableFrom(aClass)) {
                 Projectile projectile = mobEntity.launchProjectile(((Class<? extends Projectile>) aClass), vector);
+                if (mobEntity instanceof Shulker) {
+                    projectile.teleport(projectile.getLocation().add(vector.normalize().multiply(0.5)));
+                }
                 projectile.setGravity(gravity);
                 projectile.setMetadata(INF_PROJECTILE_KEY, new LazyMetadataValue(InfPlugin.plugin, () -> damage));
-                Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.min(0.01, speed)) * 20));
+                Utils.removeEntityLater(projectile, (int) Math.ceil((range / Math.max(0.01, speed)) * 20));
                 return projectile;
             }
             Bukkit.getLogger().log(Level.WARNING, "no projectile fileName " + projectile);

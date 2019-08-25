@@ -11,6 +11,7 @@ import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
@@ -40,7 +41,8 @@ public class InfMessager implements IMessager {
     }
 
     @Override
-    public void broadcastToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
+    public void broadcastToWorld(IMob deadMob, Entity killer, ILootItem item) {
+        if (killer == null)return;
         buildMessage(MessageType.MOB_KILLED, deadMob, killer, item)
                 .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
         if (item != null) {
@@ -52,7 +54,7 @@ public class InfMessager implements IMessager {
         }
     }
 
-    private boolean shouldReceiveMessage(LivingEntity killer, Player player) {
+    private boolean shouldReceiveMessage(Entity killer, Player player) {
         BroadcastManager broadcastManager = InfPlugin.plugin.getBroadcastManager();
         BroadcastMode receiveType = broadcastManager.getReceiveType(player.getWorld(), player.getUniqueId().toString());
         switch (receiveType) {
@@ -61,14 +63,14 @@ public class InfMessager implements IMessager {
             case NEARBY:
                 return player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld());
             case SELF_ONLY:
-                return killer.equals(player);
+                return killer.equals(player) || (!(killer instanceof Player) && player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld()));
             case OFF:
                 return false;
         }
         return true;
     }
 
-    private Message buildMessage(MessageType messageType, IMob deadMob, LivingEntity killer, ILootItem lootItem) {
+    private Message buildMessage(MessageType messageType, IMob deadMob, Entity killer, ILootItem lootItem) {
         BroadcastMessage message = new BroadcastMessage("");
         String str = "";
         EntityEquipment equipment;
@@ -108,12 +110,15 @@ public class InfMessager implements IMessager {
                 message.append(ChatColor.translateAlternateColorCodes('&', str));
                 break;
             case MOB_KILLED:
+                if (!(killer instanceof LivingEntity)){
+                    break;
+                }
                 str = Utils.randomPick(playerKill);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.drop"));
                     return new Message(I18n.format("message.error.drop"));
                 }
-                equipment = killer.getEquipment();
+                equipment = ((LivingEntity) killer).getEquipment();
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{player\\.item}", "{itemName}");
@@ -136,7 +141,8 @@ public class InfMessager implements IMessager {
     }
 
     @Override
-    public void broadcastExtraToWorld(IMob deadMob, LivingEntity killer, ILootItem item) {
+    public void broadcastExtraToWorld(IMob deadMob, Entity killer, ILootItem item) {
+        if (killer == null)return;
         if (item != null) {
             buildMessage(MessageType.SPETIAL_DROP, deadMob, killer, item)
                     .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));

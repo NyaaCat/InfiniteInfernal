@@ -25,11 +25,11 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class CustomMob implements IMob {
     public static final NamespacedKey CUSTOM_MOB_BOSSBAR = new NamespacedKey(InfPlugin.plugin, "bossbar");
@@ -48,6 +48,7 @@ public class CustomMob implements IMob {
     private LivingEntity currentTarget = null;
     private String name;
     private String taggedName;
+    private EntityDamageEvent LastDamageCause = null;
 
     public CustomMob(MobConfig config, int level) {
         this.config = config;
@@ -322,5 +323,15 @@ public class CustomMob implements IMob {
             }
         }
         return exp;
+    }
+
+    @Override
+    public EntityDamageEvent getLastDamageCause() {
+        return LastDamageCause;
+    }
+
+    @Override
+    public void setLastDamageCause(EntityDamageEvent event) {
+        LastDamageCause = event;
     }
 }

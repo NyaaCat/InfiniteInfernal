@@ -55,21 +55,22 @@ public class Events implements Listener {
                     });
             InfPlugin.plugin.getSpawnControler().handleMobDeath(ev);
             Player killer = ev.getEntity().getKiller();
-            if (killer == null) return;
+//            if (killer == null) return;
             ILootItem loot = LootManager.makeDrop(killer, iMob);
             ILootItem specialLoot = LootManager.makeSpecialDrop(killer, iMob);
             ev.setDroppedExp(iMob.getExp());
-            LootDropEvent lootDropEvent = new LootDropEvent(killer, iMob, loot, specialLoot, ev);
+            EntityDamageEvent lastDamageSource = iMob.getLastDamageCause();
+            LootDropEvent lootDropEvent = new LootDropEvent(lastDamageSource, iMob, loot, specialLoot, ev);
             Bukkit.getPluginManager().callEvent(lootDropEvent);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onArmorStandHurt(EntityDamageEvent event){
+    public void onArmorStandHurt(EntityDamageEvent event) {
         Entity entity = event.getEntity();
-            if (entity.getScoreboardTags().contains("inf_damage_indicator")){
-                event.setCancelled(true);
-            }
+        if (entity.getScoreboardTags().contains("inf_damage_indicator")) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -78,6 +79,7 @@ public class Events implements Listener {
         if (event instanceof EntityDamageByEntityEvent) return;
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
+            iMob.setLastDamageCause(event);
             List<IAbilitySet> abilities = iMob.getAbilities();
 
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
@@ -108,11 +110,12 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST,ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurtByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
+            iMob.setLastDamageCause(event);
             List<IAbilitySet> abilities = iMob.getAbilities();
 
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
@@ -139,7 +142,7 @@ public class Events implements Listener {
             Utils.spawnDamageIndicator(iMob.getEntity(), finalDamage, I18n.format("damage.mob_hurt"));
         } else if (entity instanceof Player) {
             Entity damager = event.getDamager();
-            if ((damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player)){
+            if ((damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player)) {
                 damager = (Entity) ((Projectile) damager).getShooter();
             }
             if (damager instanceof Player) {
@@ -166,13 +169,13 @@ public class Events implements Listener {
                 ProjectileSource shooter = ((Projectile) damager).getShooter();
                 if (shooter == null) return;
                 iMob = MobManager.instance().toIMob((Entity) shooter);
-            }else {
+            } else {
                 ProjectileSource shooter = ((Projectile) damager).getShooter();
-                if (!(shooter instanceof LivingEntity))return;
+                if (!(shooter instanceof LivingEntity)) return;
                 iMob = MobManager.instance().toIMob((Entity) shooter);
-                if (iMob!=null){
+                if (iMob != null) {
                     ev.setDamage(iMob.getDamage());
-                }else{
+                } else {
                     return;
                 }
             }
@@ -187,7 +190,7 @@ public class Events implements Listener {
 
         if (iAbilitySet == null) return;
         if (iAbilitySet.containsDummy()) return;
-        if (Context.instance().getDouble(iMob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY)!=null){
+        if (Context.instance().getDouble(iMob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY) != null) {
             return;
         }
         List<AbilityAttack> attackAbilities = iAbilitySet.getAbilitiesInSet(AbilityAttack.class);
@@ -247,15 +250,16 @@ public class Events implements Listener {
         IMessager iMessager = InfPlugin.plugin.getMessager();
         ILootItem normalLoot = ev.getLoot();
         ILootItem specialLoot = ev.getSpecialLoot();
+        Entity killer = ev.getKiller();
         if (normalLoot != null) {
-            iMessager.broadcastToWorld(ev.getiMob(), ev.getKiller(), normalLoot);
+            iMessager.broadcastToWorld(ev.getiMob(), killer, normalLoot);
             drops.add(normalLoot.getItemStack());
         } else {
-            iMessager.broadcastToWorld(ev.getiMob(), ev.getKiller(), null);
+            iMessager.broadcastToWorld(ev.getiMob(), killer, null);
         }
 
         if (specialLoot != null) {
-            iMessager.broadcastExtraToWorld(ev.getiMob(), ev.getKiller(), specialLoot);
+            iMessager.broadcastExtraToWorld(ev.getiMob(), killer, specialLoot);
             drops.add(specialLoot.getItemStack());
         }
         if (drops.isEmpty()) {
@@ -264,7 +268,7 @@ public class Events implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPotion(EntityPotionEffectEvent ev){
+    public void onPotion(EntityPotionEffectEvent ev) {
         Entity entity = ev.getEntity();
         IMob iMob = MobManager.instance().toIMob(entity);
         if (iMob == null) {
@@ -272,9 +276,9 @@ public class Events implements Listener {
         }
         PotionEffect oldEffect = ev.getOldEffect();
         PotionEffect newEffect = ev.getNewEffect();
-        if (newEffect == null)return;
+        if (newEffect == null) return;
         if (oldEffect != null && newEffect.getAmplifier() < oldEffect.getAmplifier()) return;
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 iMob.autoRetarget();
@@ -283,16 +287,16 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    private void onTarget(EntityTargetEvent ev){
+    private void onTarget(EntityTargetEvent ev) {
         Entity entity = ev.getEntity();
         IMob iMob = MobManager.instance().toIMob(entity);
-        if (iMob == null)return;
+        if (iMob == null) return;
         Entity target = ev.getTarget();
-        if (iMob.getEntityType().equals(EntityType.GUARDIAN) || iMob.getEntityType().equals(EntityType.ELDER_GUARDIAN)){
+        if (iMob.getEntityType().equals(EntityType.GUARDIAN) || iMob.getEntityType().equals(EntityType.ELDER_GUARDIAN)) {
             return;
         }
         LivingEntity currentTarget = iMob.getTarget();
-        if (!Objects.equals(target, currentTarget)){
+        if (!Objects.equals(target, currentTarget)) {
             ev.setCancelled(true);
         }
     }

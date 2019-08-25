@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -41,4 +42,8 @@ public interface IMob {
     void onDeath();
 
     int getExp();
+
+    EntityDamageEvent getLastDamageCause();
+
+    void setLastDamageCause(EntityDamageEvent event);
 }
