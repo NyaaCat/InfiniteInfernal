@@ -32,7 +32,7 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
     @Serializable
     public List<String> effects = new ArrayList<>();
 
-    private boolean inited = false;
+    private static boolean inited = false;
 
     private static Listener listener;
 

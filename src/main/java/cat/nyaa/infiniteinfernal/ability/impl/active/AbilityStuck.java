@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -28,7 +29,7 @@ public class AbilityStuck extends ActiveAbility {
 
     private static Listener listener;
     private static List<UUID> stucked = new ArrayList<>();
-    private boolean inited = false;
+    private static boolean inited = false;
 
     @Override
     public void active(IMob iMob) {
@@ -40,6 +41,8 @@ public class AbilityStuck extends ActiveAbility {
         if (victim == null)return;
         victim.removePotionEffect(PotionEffectType.SLOW);
         victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
+        victim.removePotionEffect(PotionEffectType.LEVITATION);
+        victim.addPotionEffect(PotionEffectType.LEVITATION.createEffect(duration, -1), true);
         stucked.add(victim.getUniqueId());
         new BukkitRunnable(){
             @Override
@@ -58,11 +61,13 @@ public class AbilityStuck extends ActiveAbility {
                     Location to = e.getTo();
                     Location from = e.getFrom();
                     if (to != null){
+                        PotionEffect potionEffect = e.getPlayer().getPotionEffect(PotionEffectType.LEVITATION);
+                        if (potionEffect != null && potionEffect.getAmplifier() == -1 && potionEffect.getDuration() < 20){
+                            e.getPlayer().addPotionEffect(PotionEffectType.LEVITATION.createEffect(20, -1), true);
+                        }
                         to.setX(from.getX());
 //                        to.setY(from.getY());
                         to.setZ(from.getZ());
-                        e.getPlayer().removePotionEffect(PotionEffectType.LEVITATION);
-                        e.getPlayer().addPotionEffect(PotionEffectType.LEVITATION.createEffect(10, -1), true);
                         e.setTo(to);
                         Vector velocity = e.getPlayer().getVelocity();
                         e.getPlayer().setVelocity(new Vector(0, velocity.getY(), 0));

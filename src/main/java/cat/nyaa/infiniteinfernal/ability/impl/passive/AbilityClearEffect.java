@@ -35,7 +35,7 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
     public int duration = 60;
     @Serializable
     public List<String> effects = new ArrayList<>();
-    private boolean inited = false;
+    private static boolean inited = false;
 
     private static Listener listener;
     private int durationWatcher = duration;
