@@ -34,7 +34,7 @@ public class MobManager {
     Map<World, List<IMob>> worldMobMap = new LinkedHashMap<>();
     Map<Player, List<IMob>> playerNearbyList = new LinkedHashMap<>();
     Map<IMob, List<Player>> mobNearbyList = new LinkedHashMap<>();
-    Map<BossBar, IMob> bossBarIMobMap= new LinkedHashMap<>();
+    Map<BossBar, IMob> bossBarIMobMap = new LinkedHashMap<>();
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
     Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
@@ -112,7 +112,7 @@ public class MobManager {
             if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
                 if (level == null) {
                     level = randomLevel(location);
-                    if (level == null)return null;
+                    if (level == null) return null;
                 }
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
@@ -144,6 +144,38 @@ public class MobManager {
         return mobConfigs.keys();
     }
 
+    public List<WeightedPair<MobConfig, Integer>> getSpawnableMob(Location location) {
+        World world = location.getWorld();
+        if (world == null) return new ArrayList<>();
+        Biome biome = location.getBlock().getBiome();
+        Config config = InfPlugin.plugin.config();
+        List<RegionConfig> regions = config.getRegionsForLocation(location);
+        if (!regions.isEmpty()) {
+            return getSpawnConfigsForRegion(regions, location);
+        }
+        List<WeightedPair<Integer, Integer>> validLevels = getValidLevels(location);
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        validLevels.stream().forEach(pair -> {
+            Integer level = pair.getKey();
+            if (level != null) {
+                List<MobConfig> collect = natualSpawnLists.get(level);
+                FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
+                if (!collect.isEmpty()) {
+                    collect.stream()
+                            .filter(config1 -> {
+                                List<String> biomes = config1.spawn.biomes;
+                                List<String> worlds = config1.spawn.worlds;
+                                return biomes != null && worlds != null
+                                        && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                            })
+                            .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
+                            .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, mobConfig.getWeight(), mobConfig.getWeight())));
+                }
+            }
+        });
+        return spawnConfs;
+    }
+
     static class FluidLocationWrapper {
         private static final List<EntityType> skyEntities = Arrays.asList(
                 EntityType.PHANTOM,
@@ -167,6 +199,7 @@ public class MobManager {
                 EntityType.SQUID,
                 EntityType.TURTLE);
         private final Location location;
+
         FluidLocationWrapper(Location location) {
             this.location = location;
         }
@@ -230,6 +263,12 @@ public class MobManager {
     }
 
     private Integer randomLevel(Location location) {
+        List<WeightedPair<Integer, Integer>> levelCandidates = getValidLevels(location);
+        WeightedPair<Integer, Integer> integerIntegerWeightedPair = Utils.weightedRandomPick(levelCandidates);
+        return integerIntegerWeightedPair == null ? null : integerIntegerWeightedPair.getKey();
+    }
+
+    private List<WeightedPair<Integer, Integer>> getValidLevels(Location location) {
         Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
         List<WeightedPair<Integer, Integer>> levelCandidates = new ArrayList<>();
         values.forEach(levelConfig -> {
@@ -247,13 +286,23 @@ public class MobManager {
             }
             levelCandidates.add(new WeightedPair<>(level, level, weight));
         });
-        WeightedPair<Integer, Integer> integerIntegerWeightedPair = Utils.weightedRandomPick(levelCandidates);
-        return integerIntegerWeightedPair == null ? null : integerIntegerWeightedPair.getKey();
+        return levelCandidates;
     }
 
     private IMob spawnInRegion(List<RegionConfig> regions, Location location) {
-        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, location);
+        if (!spawnConfs.isEmpty()) {
+            WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
+            if (selected == null) return null;
+            MobConfig mobConfig = selected.getKey();
+            return spawnMobByConfig(mobConfig, location, selected.getValue());
+        }
+        return null;
+    }
+
+    private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
         regions.forEach(regionConfig -> {
             if (regionConfig.mobs.isEmpty()) {
                 return;
@@ -288,13 +337,7 @@ public class MobManager {
                 }
             });
         });
-        if (!spawnConfs.isEmpty()) {
-            WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
-            if (selected == null) return null;
-            MobConfig mobConfig = selected.getKey();
-            return spawnMobByConfig(mobConfig, location, selected.getValue());
-        }
-        return null;
+        return spawnConfs;
     }
 
     public void registerMob(IMob mob) {
@@ -307,13 +350,13 @@ public class MobManager {
 
     public void removeMob(IMob mob, boolean isKilled) {
         LivingEntity entity = mob.getEntity();
-        if (entity == null){
+        if (entity == null) {
             worldMobMap.values().stream().forEach(iMobs -> {
                 iMobs.remove(mob);
             });
             List<UUID> invalidIds = new ArrayList<>();
             uuidMap.forEach((uuid, iMob) -> {
-                if (iMob.getEntity() == null){
+                if (iMob.getEntity() == null) {
                     invalidIds.add(uuid);
                 }
             });
@@ -391,7 +434,7 @@ public class MobManager {
                         World world = player.getWorld();
                         WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
                         double nearbyDistance = 128;
-                        if (worldConfig!=null){
+                        if (worldConfig != null) {
                             nearbyDistance = Math.max(worldConfig.aggro.range.max * 1.5, worldConfig.spawnRangeMax * 2);
                         }
                         if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
