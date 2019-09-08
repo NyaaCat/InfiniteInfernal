@@ -139,6 +139,11 @@ public class MobManager {
         return bossBarIMobMap.containsKey(keyedBossBar);
     }
 
+    public Set<String> getMobConfigNames() {
+        NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+        return mobConfigs.keys();
+    }
+
     static class FluidLocationWrapper {
         private static final List<EntityType> skyEntities = Arrays.asList(
                 EntityType.PHANTOM,

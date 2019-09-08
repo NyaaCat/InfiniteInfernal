@@ -231,7 +231,7 @@ public class CustomMob implements IMob {
 
     @Override
     public String getName() {
-        return ChatColor.translateAlternateColorCodes('&', taggedName);
+        return config.name;
     }
 
     @Override

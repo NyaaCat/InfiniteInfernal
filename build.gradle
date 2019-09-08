@@ -2,8 +2,6 @@ plugins {
     id 'java'
 }
 
-String minecraftVersion = "1.13.2"
-
 group 'NyaaCat'
 version '1.0-SNAPSHOT'
 
@@ -14,6 +12,10 @@ repositories {
     maven {
         name 'Spigot'
         url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+    maven {
+        name 'NyaaCat'
+        url 'https://ci.nyaacat.com/maven/'
     }
     maven {
         name 'NyaaCentral'
@@ -31,8 +33,8 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    implementation 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
+    compile('cat.nyaa:nyaacore:7.0-SNAPSHOT')
+    compileOnly "org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT"
 
     implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')

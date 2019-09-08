@@ -1,8 +1,10 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,16 +18,24 @@ public class ImiCommands extends CommandReceiver {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) return false;
-        if (args.length == 0) {
-            if (sender.hasPermission("infernal_mobs.imi")) {
-                toggleState(((Player) sender));
-                return true;
-            }
+//    @Override
+//    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+//        if (!(sender instanceof Player)) return false;
+//        if (args.length == 0) {
+//            if (sender.hasPermission("infernal_mobs.imi")) {
+//                toggleState(((Player) sender));
+//                return true;
+//            }
+//        }
+//        return super.onCommand(sender, command, label, args);
+//    }
+
+    @SubCommand(isDefaultCommand = true)
+    public void onImi(CommandSender sender, Arguments arguments) {
+        if (!(sender instanceof Player)) return;
+        if (sender.hasPermission("infernal_mobs.imi")) {
+            toggleState(((Player) sender));
         }
-        return super.onCommand(sender, command, label, args);
     }
 
     @SubCommand(value = "all", permission = "imi.command")
@@ -35,21 +45,21 @@ public class ImiCommands extends CommandReceiver {
         setState(((Player) sender), BroadcastMode.ALL);
     }
 
-    @SubCommand(value = "me",permission = "imi.command")
+    @SubCommand(value = "me", permission = "imi.command")
     public void onSelfOnly(CommandSender sender, Arguments arguments) {
         if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.SELF_ONLY);
     }
 
-    @SubCommand(value = "near",permission = "imi.command")
+    @SubCommand(value = "near", permission = "imi.command")
     public void onNearby(CommandSender sender, Arguments arguments) {
         if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.NEARBY);
     }
 
-    @SubCommand(value = "off",permission = "imi.command")
+    @SubCommand(value = "off", permission = "imi.command")
     public void onOff(CommandSender sender, Arguments arguments) {
         if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;

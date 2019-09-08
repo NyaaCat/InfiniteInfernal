@@ -5,23 +5,25 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AdminCommands extends CommandReceiver {
     private InfPlugin plugin;
@@ -41,7 +43,7 @@ public class AdminCommands extends CommandReceiver {
         plugin.onReload();
     }
 
-    @SubCommand(value = "spawn", permission = "im.spawn")
+    @SubCommand(value = "spawn", permission = "im.spawn", tabCompleter = "spawnCompleter")
     public void onSpawn(CommandSender sender, Arguments arguments) {
         String mobName = arguments.nextString();
         if (arguments.top() == null) {
@@ -64,7 +66,7 @@ public class AdminCommands extends CommandReceiver {
         MobManager.instance().spawnMobByName(mobName, new Location(world, x, y, z), level);
     }
 
-    @SubCommand(value = "addloot", permission = "im.addloot")
+    @SubCommand(value = "addloot", permission = "im.addloot", tabCompleter = "addLootCompleter")
     public void onAddLoot(CommandSender sender, Arguments arguments) {
         LootManager lootManager = plugin.getLootManager();
         String itemName = arguments.nextString();
@@ -93,7 +95,7 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "getloot", permission = "im.getloot")
+    @SubCommand(value = "getloot", permission = "im.getloot", tabCompleter = "getLootCompleter")
     public void onGetLoot(CommandSender sender, Arguments arguments) {
         String lootName = arguments.nextString();
         ILootItem loot = plugin.getLootManager().getLoot(lootName);
@@ -113,21 +115,21 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "modify", permission = "im.modify")
+    @SubCommand(value = "modify", permission = "im.modify", tabCompleter = "modifyCompleter")
     public void onModify(CommandSender sender, Arguments arguments) {
         String target = arguments.nextString();
-        switch (target){
+        switch (target) {
             case "loot":
                 String name = arguments.nextString();
                 ILootItem iLootItem = LootManager.instance().getLoot(name);
-                if (iLootItem == null){
+                if (iLootItem == null) {
                     new Message(I18n.format("loot.get.no_item", name))
                             .send(sender);
                     return;
                 }
-                if (sender instanceof Player){
+                if (sender instanceof Player) {
                     ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
-                    if (itemInMainHand.getType().equals(Material.AIR)){
+                    if (itemInMainHand.getType().equals(Material.AIR)) {
                         new Message(I18n.format("loot.add.error.no_item"))
                                 .send(sender);
                         return;
@@ -135,7 +137,7 @@ public class AdminCommands extends CommandReceiver {
                     LootManager.instance().addLoot(name, iLootItem.isDynamic(), itemInMainHand);
                     new Message("").append(I18n.format("loot.add.success", name, iLootItem.isDynamic()), itemInMainHand)
                             .send(sender);
-                }else {
+                } else {
                     new Message(I18n.format("error.not_player"))
                             .send(sender);
                 }
@@ -143,7 +145,7 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "inspect", permission = "im.inspect")
+    @SubCommand(value = "inspect", permission = "im.inspect", tabCompleter = "inspectCompleter")
     public void onInspect(CommandSender sender, Arguments arguments) {
         String target = arguments.nextString();
         String id = arguments.nextString();
@@ -169,7 +171,7 @@ public class AdminCommands extends CommandReceiver {
                         new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()), lootItem.getItemStack())
                                 .send(sender);
                     });
-                }else {
+                } else {
                     new Message("").append(I18n.format("inspect.level.no_level", level))
                             .send(sender);
                 }
@@ -181,7 +183,7 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "setdrop", permission = "im.setdrop")
+    @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
         String itemName = arguments.nextString();
         int level = arguments.nextInt();
@@ -238,4 +240,148 @@ public class AdminCommands extends CommandReceiver {
             }
         }.runTaskAsynchronously(InfPlugin.plugin);
     }
+
+    public List<String> addLootCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                completeStr.add("loot name");
+                break;
+            case 3:
+                completeStr.add("true");
+                completeStr.add("false");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> spawnCompleter(CommandSender sender, Arguments arguments) {
+        int length = arguments.length();
+        List<String> completeStr = new ArrayList<>();
+        switch (length) {
+            case 2:
+                completeStr.addAll(getMobNames());
+                break;
+            case 3:
+                completeStr.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                break;
+            case 4:
+                completeStr.add("x");
+                if (sender instanceof Player) {
+                    completeStr.add(String.valueOf(((Player) sender).getLocation().getX()));
+                } else if (sender instanceof BlockCommandSender) {
+                    completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getX()));
+                }
+                break;
+            case 5:
+                completeStr.add("y");
+                if (sender instanceof Player) {
+                    completeStr.add(String.valueOf(((Player) sender).getLocation().getY()));
+                } else if (sender instanceof BlockCommandSender) {
+                    completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getY()));
+                }
+                break;
+            case 6:
+                completeStr.add("z");
+                if (sender instanceof Player) {
+                    completeStr.add(String.valueOf(((Player) sender).getLocation().getZ()));
+                } else if (sender instanceof BlockCommandSender) {
+                    completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getZ()));
+                }
+                break;
+            case 7:
+                completeStr.add("level");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> getLootCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                completeStr.addAll(LootManager.instance().getLootNames());
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> modifyCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                completeStr.add("loot");
+                break;
+            case 3:
+                completeStr.addAll(LootManager.instance().getLootNames());
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> inspectCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                completeStr.add("item");
+                completeStr.add("level");
+                break;
+            case 3:
+                String target = arguments.nextString();
+                switch (target){
+                    case "item":
+                        completeStr.addAll(LootManager.instance().getLootNames());
+                        break;
+                    case "level":
+                        completeStr.add("level");
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> setDropCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                completeStr.addAll(LootManager.instance().getLootNames());
+                break;
+            case 3:
+                completeStr.add("level");
+                break;
+            case 4:
+                completeStr.add("weight");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+
+    public List<String> sampleCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()){
+            case 2:
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    private Set<String> getMobNames() {
+        return MobManager.instance().getMobConfigNames();
+    }
+
+    private List<String> filtered(Arguments arguments, List<String> completeStr) {
+        String next = "";
+        int remains = arguments.remains();
+        for (int i = 0; i < remains; i++) {
+            String next1 = arguments.next();
+            next = next1 == null ? next : next1;
+        }
+        String finalNext = next;
+        return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
+    }
+
+
 }

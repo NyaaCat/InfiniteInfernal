@@ -6,31 +6,35 @@ import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityShingeki;
 import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityStuck;
 import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHit;
 import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHurt;
-import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.utils.Utils;
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
+import cat.nyaa.nyaacore.utils.InventoryUtils;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import com.google.common.util.concurrent.AtomicDouble;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.CommandBlock;
+import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -404,6 +408,20 @@ public class DebugCommands extends CommandReceiver {
                     abilityPotionSelf.active(iMob);
                 }
             }.runTaskLater(InfPlugin.plugin, 80);
+        }
+    }
+
+    @SubCommand("getNBT")
+    public void getNBT(CommandSender sender, Arguments arguments) {
+        String s = arguments.nextString();
+        ItemStack itemStack = ItemStackUtils.itemFromBase64(s);
+        if (sender instanceof Player) {
+            InventoryUtils.addItem(((Player) sender),itemStack);
+        }
+        if (sender instanceof BlockCommandSender){
+            Block block = ((BlockCommandSender) sender).getBlock();
+            Location add = block.getLocation().add(0.5, 1, 0.5);
+            block.getWorld().dropItem(add, itemStack);
         }
     }
 }

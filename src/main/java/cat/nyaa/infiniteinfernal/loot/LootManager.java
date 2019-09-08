@@ -275,4 +275,8 @@ public class LootManager {
     public List<ILootItem> getLoots(int id) {
         return commonDrops.computeIfAbsent(id, integer -> new ArrayList<>());
     }
+
+    public Collection<String> getLootNames() {
+        return lootItemMap.keySet();
+    }
 }

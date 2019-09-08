@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class NamedDirConfigs<T extends NamedFileConfig> implements ISerializable {
     private Map<String, T> configs = new LinkedHashMap<>();
@@ -38,6 +39,10 @@ public class NamedDirConfigs<T extends NamedFileConfig> implements ISerializable
 
     public T remove(String id) {
         return configs.remove(id);
+    }
+
+    public Set<String> keys() {
+        return configs.keySet();
     }
 
     public Collection<T> values() {

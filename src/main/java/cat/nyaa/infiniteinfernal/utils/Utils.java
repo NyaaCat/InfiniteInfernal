@@ -354,11 +354,14 @@ public class Utils {
     public static void spawnDamageIndicator(LivingEntity entity, double damage, String format) {
         Location eyeLocation = entity.getEyeLocation();
         World world = entity.getWorld();
-        Vector vector = new Vector(0, 0.5, 0.2).rotateAroundAxis(new Vector(0, 1, 0), Math.toRadians(Utils.random(0, 360)));
-        ArmorStand spawn = world.spawn(eyeLocation, ArmorStand.class, item -> {
+        Double x = Utils.random(-1, 1);
+        Double y = Utils.random(-1, 1);
+        Double z = Utils.random(-1, 1);
+        Vector vector = new Vector(x, y, z);
+//        Vector vector = new Vector(0, 0.5, 0.2).rotateAroundAxis(new Vector(0, 1, 0), Math.toRadians(Utils.random(0, 360)));
+        ArmorStand spawn = world.spawn(eyeLocation.add(vector), ArmorStand.class, item -> {
             item.addScoreboardTag("inf_damage_indicator");
-            item.setVelocity(vector);
-            item.setPersistent(false);
+//            item.setVelocity(vector);
             item.setInvulnerable(true);
             item.setSilent(true);
             item.setMarker(true);
