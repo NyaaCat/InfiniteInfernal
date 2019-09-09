@@ -103,4 +103,8 @@ public class DirConfigs<T extends IdFileConfig> implements ISerializable {
     public T get(int id) {
         return configures.get(id);
     }
+
+    public Collection<Integer> keys() {
+        return configures.keySet();
+    }
 }

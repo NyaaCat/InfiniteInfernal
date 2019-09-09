@@ -176,6 +176,14 @@ public class MobManager {
         return spawnConfs;
     }
 
+    public Collection<MobConfig> getMobConfigs() {
+        return InfPlugin.plugin.config().mobConfigs.values();
+    }
+
+    public List<MobConfig> getMobsForLevel(int level) {
+        return natualSpawnLists.get(level);
+    }
+
     static class FluidLocationWrapper {
         private static final List<EntityType> skyEntities = Arrays.asList(
                 EntityType.PHANTOM,

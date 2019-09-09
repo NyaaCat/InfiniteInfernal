@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.ability.IAbility;
+import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -17,9 +18,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -156,6 +159,7 @@ public class AdminCommands extends CommandReceiver {
     public class InspectCommand extends CommandReceiver {
         //todo: add language information in this section
         //<editor-fold>
+
         /**
          * @param plugin for logging purpose only
          * @param _i18n
@@ -180,40 +184,243 @@ public class AdminCommands extends CommandReceiver {
             if (location == null) {
                 return;
             }
-            List<WeightedPair<MobConfig, Integer>> spawnableMob = MobManager.instance().getSpawnableMob(location);
+            List<MobConfig> spawnableMob = MobManager.instance().getSpawnableMob(location).stream()
+                    .map(WeightedPair::getKey)
+                    .collect(Collectors.toList());
             if (spawnableMob.size() == 0) {
                 new Message(I18n.format("inspect.error.no_spawnable_mob"))
                         .send(sender);
                 return;
             }
+            sendMobInfo(sender, spawnableMob, sender.isOp());
+        }
+
+        @SubCommand(value = "biome", permission = "im.inspect.biome", tabCompleter = "biomeCompleter")
+        public void biomeCommand(CommandSender sender, Arguments arguments) {
+            Biome biome = arguments.nextEnum(Biome.class);
+            boolean detailed = isDetailed(arguments);
+
+            List<MobConfig> collect = MobManager.instance().getMobConfigs().stream()
+                    .filter(mobConfig -> mobConfig.spawn.biomes.contains(biome))
+                    .collect(Collectors.toList());
+            sendMobInfo(sender, collect, detailed);
+        }
+
+        public List<String> biomeCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
+                    break;
+                case 3:
+                    completeStr.add("detailed");
+                    completeStr.add("true");
+                    completeStr.add("false");
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "region", permission = "im.inspect.region", tabCompleter = "regionCompleter")
+        public void regionCommand(CommandSender sender, Arguments arguments) {
+            String regionStr = arguments.nextString();
+            boolean detailed = isDetailed(arguments);
+
+            RegionConfig region = InfPlugin.plugin.config().regionConfigs.get(regionStr);
+            if (region == null) throw new IllegalArgumentException();
+            NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+            List<MobConfig> collect = region.mobs.stream()
+                    .map(s -> s.substring(0, s.indexOf(":")))
+                    .map(mobConfigs::get).collect(Collectors.toList());
+            sendMobInfo(sender, collect, detailed);
+        }
+
+        public List<String> regionCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(InfPlugin.plugin.config().regionConfigs.keys());
+                    break;
+                case 3:
+                    completeStr.add("detailed");
+                    completeStr.add("true");
+                    completeStr.add("false");
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "mob", permission = "im.inspect.mob", tabCompleter = "mobCompleter")
+        public void mobCommand(CommandSender sender, Arguments arguments) {
+            String mobName = arguments.nextString();
+
+            MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(mobName);
+            NamedDirConfigs<RegionConfig> regionConfigs = InfPlugin.plugin.config.regionConfigs;
+            if (mobConfig == null) throw new IllegalArgumentException();
+            List<RegionConfig> regionsContainsMob = regionConfigs.values().stream()
+                    .filter(regionConfig ->
+                            regionConfig.mobs.stream().map(s -> s.substring(0, s.indexOf(":")))
+                                    .anyMatch(s -> s.equals(mobName)))
+                    .collect(Collectors.toList());
+            sendMobInfo(sender, Arrays.asList(mobConfig), true);
+            regionsContainsMob.stream()
+                    .forEach(regionConfig -> {
+                        new Message(I18n.format("inspect.info.region_spawn_name", regionConfig.name)).send(sender);
+                        regionConfig.mobs.stream().filter(s -> s.startsWith(mobName))
+                                .forEach(s -> new Message(I18n.format("inspect.info.region_spawn_info", s)).send(sender));
+                    });
+        }
+
+        public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(MobManager.instance().getMobConfigNames());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "ability", permission = "im.inspect.ability", tabCompleter = "abilityCompleter")
+        public void abilityCommand(CommandSender sender, Arguments arguments) {
+            String ability = arguments.nextString();
+
+            AbilitySetConfig abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(ability);
+            if (abilitySetConfig == null) throw new IllegalArgumentException();
+            new Message(I18n.format("inspect.info.ability_set_name", ability)).send(sender);
+            new Message(I18n.format("inspect.info.ability_set_weight", abilitySetConfig.weight)).send(sender);
+            abilitySetConfig.abilities.entrySet().stream().forEach(entry -> {
+                String name = entry.getKey();
+                IAbility value = entry.getValue();
+                YamlConfiguration section = new YamlConfiguration();
+                value.serialize(section);
+                new Message(String.format("%s\n%s",name, section.saveToString())).send(sender);
+            });
+        }
+
+        public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "level", permission = "im.inspect.level", tabCompleter = "levelCompleter")
+        public void levelCommand(CommandSender sender, Arguments arguments) {
+            int level = arguments.nextInt();
+
+            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(level);
+            List<MobConfig> mobsForLevel = MobManager.instance().getMobsForLevel(level);
+            if (levelConfig == null || mobsForLevel == null) throw new IllegalArgumentException();
+            sendLevelConfig(sender, level, levelConfig, mobsForLevel);
+        }
+
+        public List<String> levelCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(InfPlugin.plugin.config().levelConfigs.keys().stream().map(String::valueOf).collect(Collectors.toList()));
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "item", permission = "im.inspect.item", tabCompleter = "itemCompleter")
+        public void itemCommand(CommandSender sender, Arguments arguments) {
+            String id = arguments.nextString();
+            ILootItem loot = LootManager.instance().getLoot(id);
+            if (loot == null) {
+                new Message("").append(I18n.format("inspect.item.no_item"))
+                        .send(sender);
+            } else {
+                new Message("").append(I18n.format("inspect.item.success", id, loot.isDynamic()), loot.getItemStack())
+                        .send(sender);
+            }
+        }
+        public List<String> itemCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(LootManager.instance().getLootNames());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "loot", permission = "im.inspect.loot", tabCompleter = "lootCompleter")
+        public void lootCommand(CommandSender sender, Arguments arguments) {
+            String id = arguments.nextString();
+            int level = Integer.parseInt(id);
+            List<ILootItem> loots = LootManager.instance().getLoots(level);
+            if (!loots.isEmpty()) {
+                new Message("").append(I18n.format("inspect.level.success", level))
+                        .send(sender);
+                loots.forEach(lootItem -> {
+                    int weight = lootItem.getWeight(level);
+                    new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()), lootItem.getItemStack())
+                            .send(sender);
+                });
+            } else {
+                new Message("").append(I18n.format("inspect.level.no_level", level))
+                        .send(sender);
+            }
+        }
+        public List<String> lootCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.addAll(InfPlugin.plugin.config().levelConfigs.keys().stream().map(String::valueOf).collect(Collectors.toList()));
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+//      @SubCommand(value = "sample", permission = "im.inspect.", tabCompleter = "sampleCompleter")
+        public void sampleCommand(CommandSender sender, Arguments arguments) {
+
+        }
+        public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        private void sendMobInfo(CommandSender sender, List<MobConfig> spawnableMob, boolean detailed) {
             new Message("inspect.success").send(sender);
-            final boolean op = sender.isOp();
-            spawnableMob.forEach(pair -> {
-                MobConfig config = pair.getKey();
+            spawnableMob.forEach(config -> {
                 String name = config.getName();
                 new Message(I18n.format("inspect.info.normal", name)).send(sender);
-                if (op) {
-                    MobConfig.MobLootConfig.SpecialConfig specialLoots = config.loot.special;
-                    List<String> abilities = config.abilities;
-                    sendSpecialLoot(sender, specialLoots);
-                    sendAbilities(sender, abilities);
+                if (detailed) {
+                    YamlConfiguration section = new YamlConfiguration();
+                    config.serialize(section);
+                    new Message(section.saveToString()).send(sender);
                 }
             });
         }
 
-        private void sendAbilities(CommandSender sender, List<String> abilities) {
-            new Message(I18n.format("inspect.info.ability")).send(sender);
-            abilities.stream().forEach(s -> {
-                new Message(s).send(sender);
+        private void sendLevelConfig(CommandSender sender, int level, LevelConfig levelConfig, List<MobConfig> mobsForLevel) {
+            new Message(I18n.format("inspect.info.level", level)).send(sender);
+            YamlConfiguration section = new YamlConfiguration();
+            levelConfig.serialize(section);
+            new Message(section.saveToString()).send(sender);
+            mobsForLevel.stream().forEach(mobConfig -> {
+                new Message(I18n.format("inspect.info.level_mob", mobConfig)).send(sender);
             });
         }
 
-        private void sendSpecialLoot(CommandSender sender, MobConfig.MobLootConfig.SpecialConfig specialLoots) {
-            new Message(I18n.format("inspect.info.special.chance", specialLoots.chance)).send(sender);
-            specialLoots.list.stream().forEach(s -> {
-                String[] split = s.split(":");
-                new Message(I18n.format("inspect.info.special.info", split[0], split[1])).send(sender);
-            });
+        private boolean isDetailed(Arguments arguments) {
+            boolean detailed = false;
+            String top = arguments.top();
+            if (top != null) {
+                detailed = Boolean.parseBoolean(top);
+            }
+            return detailed;
         }
         //</editor-fold>
     }
@@ -223,30 +430,10 @@ public class AdminCommands extends CommandReceiver {
         String id = arguments.nextString();
         switch (target) {
             case "item":
-                ILootItem loot = LootManager.instance().getLoot(id);
-                if (loot == null) {
-                    new Message("").append(I18n.format("inspect.item.no_item"))
-                            .send(sender);
-                } else {
-                    new Message("").append(I18n.format("inspect.item.success", id, loot.isDynamic()), loot.getItemStack())
-                            .send(sender);
-                }
+
                 break;
             case "level":
-                int level = Integer.parseInt(id);
-                List<ILootItem> loots = LootManager.instance().getLoots(level);
-                if (!loots.isEmpty()) {
-                    new Message("").append(I18n.format("inspect.level.success", level))
-                            .send(sender);
-                    loots.forEach(lootItem -> {
-                        int weight = lootItem.getWeight(level);
-                        new Message("").append(I18n.format("inspect.level.info", weight, lootItem.isDynamic()), lootItem.getItemStack())
-                                .send(sender);
-                    });
-                } else {
-                    new Message("").append(I18n.format("inspect.level.no_level", level))
-                            .send(sender);
-                }
+
                 break;
             default:
                 new Message("").append(I18n.format("inspect.error.invalid_action", target))
