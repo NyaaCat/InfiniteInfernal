@@ -23,9 +23,12 @@ import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -153,8 +156,11 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "inspect", permission = "im.inspect", tabCompleter = "inspectCompleter")
+    @SubCommand(value = "inspect", permission = "im.inspect")
     public InspectCommand inspectCommand = new InspectCommand(plugin, i18n);
+
+    @SubCommand(value = "create", permission = "im.create")
+    public CreateCommand createCommand = new CreateCommand(plugin, i18n);
 
     @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
@@ -321,7 +327,7 @@ public class AdminCommands extends CommandReceiver {
         return MobManager.instance().getMobConfigNames();
     }
 
-    private List<String> filtered(Arguments arguments, List<String> completeStr) {
+    private static List<String> filtered(Arguments arguments, List<String> completeStr) {
         String next = "";
         int remains = arguments.remains();
         for (int i = 0; i < remains; i++) {
@@ -332,7 +338,7 @@ public class AdminCommands extends CommandReceiver {
         return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
     }
 
-    public class InspectCommand extends CommandReceiver {
+    public static class InspectCommand extends CommandReceiver {
         //todo: add language information in this section
         //<editor-fold>
 
@@ -598,6 +604,98 @@ public class AdminCommands extends CommandReceiver {
             }
             return detailed;
         }
+    }
+
+    public static class CreateCommand extends CommandReceiver{
+        public CreateCommand(JavaPlugin plugin, ILocalizer i18n) {
+            super(plugin, i18n);
+        }
+
+        @Override
+        public String getHelpPrefix() {
+            return "";
+        }
+
+
+        @SubCommand(value = "mob", permission = "im.create.mob", tabCompleter = "mobCompleter")
+        public void mobCommand(CommandSender sender, Arguments arguments){
+            String id = arguments.nextString();
+            EntityType entityType = arguments.nextEnum(EntityType.class);
+            String displayName = arguments.nextString();
+            boolean autoSpawn = arguments.nextBoolean();
+            int remains = arguments.remains();
+            List<String> abilities = new ArrayList<>();
+            for (int i = 0; i < remains; i++) {
+                String ability = arguments.nextString();
+                AbilitySetConfig abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(ability);
+                if (abilitySetConfig == null) {
+                    new Message(I18n.format("create.error.invalid_ability", ability)).send(sender);
+                    return;
+                }
+                abilities.add(ability);
+            }
+            MobConfig mobConfig = new MobConfig(id);
+            mobConfig.abilities = abilities;
+            mobConfig.type = entityType;
+            mobConfig.spawn.autoSpawn = autoSpawn;
+            mobConfig.name = displayName;
+            mobConfig.spawn.biomes = Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList());
+            mobConfig.spawn.worlds = Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList());
+            int max = MobManager.instance().getLevels().stream().mapToInt(Integer::intValue)
+                    .max().orElse(1);
+            ArrayList<String> levels = new ArrayList<>();
+            if (max == 1){
+                levels.add("1");
+            }else {
+                levels.add("1-"+max);
+            }
+            mobConfig.spawn.levels = levels;
+            InfPlugin.plugin.config().mobConfigs.add(id, mobConfig);
+        }
+
+        public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    completeStr.add("id");
+                    break;
+                case 3:
+                    completeStr.addAll(getMobs());
+                    break;
+                case 4:
+                    completeStr.add("displayName");
+                    break;
+                case 5:
+                    completeStr.add("autoSpawn");
+                    completeStr.add("true");
+                    completeStr.add("false");
+                    break;
+                default:
+                    if (arguments.length()>6){
+                        completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
+                    }
+
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        //        @SubCommand(value = "", permission = "im.create.", tabCompleter = "Completer")
+        public void sampleCommand(CommandSender sender, Arguments arguments){}
+        public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.length()) {
+                case 2:
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        private Collection<? extends String> getMobs() {
+            return Arrays.stream(EntityType.values()).filter(entityType -> entityType.getEntityClass().isAssignableFrom(Mob.class))
+                    .map(Enum::name)
+                    .collect(Collectors.toList());
+        }
+
         //</editor-fold>
     }
 }

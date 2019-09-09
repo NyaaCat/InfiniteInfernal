@@ -184,6 +184,10 @@ public class MobManager {
         return natualSpawnLists.get(level);
     }
 
+    public Set<Integer> getLevels() {
+        return natualSpawnLists.keySet();
+    }
+
     static class FluidLocationWrapper {
         private static final List<EntityType> skyEntities = Arrays.asList(
                 EntityType.PHANTOM,
