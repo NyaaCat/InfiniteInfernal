@@ -14,6 +14,12 @@ import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,6 +29,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -31,6 +38,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.management.ReflectionException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +50,8 @@ public class AdminCommands extends CommandReceiver {
         super(plugin, _i18n);
         this.plugin = plugin;
         this.i18n = _i18n;
+        inspectCommand = new InspectCommand(plugin, i18n);
+        createCommand = new CreateCommand(plugin, i18n);
     }
 
     @Override
@@ -157,10 +167,10 @@ public class AdminCommands extends CommandReceiver {
     }
 
     @SubCommand(value = "inspect", permission = "im.inspect")
-    public InspectCommand inspectCommand = new InspectCommand(plugin, i18n);
+    public InspectCommand inspectCommand ;
 
     @SubCommand(value = "create", permission = "im.create")
-    public CreateCommand createCommand = new CreateCommand(plugin, i18n);
+    public CreateCommand createCommand;
 
     @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
@@ -222,11 +232,11 @@ public class AdminCommands extends CommandReceiver {
 
     public List<String> addLootCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        switch (arguments.length()) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.add("loot name");
                 break;
-            case 3:
+            case 2:
                 completeStr.add("true");
                 completeStr.add("false");
                 break;
@@ -235,16 +245,15 @@ public class AdminCommands extends CommandReceiver {
     }
 
     public List<String> spawnCompleter(CommandSender sender, Arguments arguments) {
-        int length = arguments.length();
         List<String> completeStr = new ArrayList<>();
-        switch (length) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.addAll(getMobNames());
                 break;
-            case 3:
+            case 2:
                 completeStr.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
                 break;
-            case 4:
+            case 3:
                 completeStr.add("x");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getX()));
@@ -252,7 +261,7 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getX()));
                 }
                 break;
-            case 5:
+            case 4:
                 completeStr.add("y");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getY()));
@@ -260,7 +269,7 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getY()));
                 }
                 break;
-            case 6:
+            case 5:
                 completeStr.add("z");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getZ()));
@@ -268,7 +277,7 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getZ()));
                 }
                 break;
-            case 7:
+            case 6:
                 completeStr.add("level");
                 break;
         }
@@ -277,8 +286,8 @@ public class AdminCommands extends CommandReceiver {
 
     public List<String> getLootCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        switch (arguments.length()) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.addAll(LootManager.instance().getLootNames());
                 break;
         }
@@ -287,11 +296,11 @@ public class AdminCommands extends CommandReceiver {
 
     public List<String> modifyCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        switch (arguments.length()) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.add("loot");
                 break;
-            case 3:
+            case 2:
                 completeStr.addAll(LootManager.instance().getLootNames());
                 break;
         }
@@ -300,14 +309,14 @@ public class AdminCommands extends CommandReceiver {
 
     public List<String> setDropCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        switch (arguments.length()) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.addAll(LootManager.instance().getLootNames());
                 break;
-            case 3:
+            case 2:
                 completeStr.add("level");
                 break;
-            case 4:
+            case 3:
                 completeStr.add("weight");
                 break;
         }
@@ -316,8 +325,8 @@ public class AdminCommands extends CommandReceiver {
 
     public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        switch (arguments.length()) {
-            case 2:
+        switch (arguments.remains()) {
+            case 1:
                 break;
         }
         return filtered(arguments, completeStr);
@@ -338,9 +347,9 @@ public class AdminCommands extends CommandReceiver {
         return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
     }
 
+    //todo: add language information in this section
+    //<editor-fold>
     public static class InspectCommand extends CommandReceiver {
-        //todo: add language information in this section
-        //<editor-fold>
 
         /**
          * @param plugin for logging purpose only
@@ -390,11 +399,11 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> biomeCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
                     break;
-                case 3:
+                case 2:
                     completeStr.add("detailed");
                     completeStr.add("true");
                     completeStr.add("false");
@@ -419,11 +428,11 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> regionCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(InfPlugin.plugin.config().regionConfigs.keys());
                     break;
-                case 3:
+                case 2:
                     completeStr.add("detailed");
                     completeStr.add("true");
                     completeStr.add("false");
@@ -455,8 +464,8 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(MobManager.instance().getMobConfigNames());
                     break;
             }
@@ -482,8 +491,8 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
                     break;
             }
@@ -502,8 +511,8 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> levelCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(InfPlugin.plugin.config().levelConfigs.keys().stream().map(String::valueOf).collect(Collectors.toList()));
                     break;
             }
@@ -524,8 +533,8 @@ public class AdminCommands extends CommandReceiver {
         }
         public List<String> itemCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(LootManager.instance().getLootNames());
                     break;
             }
@@ -552,8 +561,8 @@ public class AdminCommands extends CommandReceiver {
         }
         public List<String> lootCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.addAll(InfPlugin.plugin.config().levelConfigs.keys().stream().map(String::valueOf).collect(Collectors.toList()));
                     break;
             }
@@ -566,8 +575,8 @@ public class AdminCommands extends CommandReceiver {
         }
         public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     break;
             }
             return filtered(arguments, completeStr);
@@ -606,7 +615,7 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    public static class CreateCommand extends CommandReceiver{
+    public static class CreateCommand extends CommandReceiver {
         public CreateCommand(JavaPlugin plugin, ILocalizer i18n) {
             super(plugin, i18n);
         }
@@ -618,7 +627,7 @@ public class AdminCommands extends CommandReceiver {
 
 
         @SubCommand(value = "mob", permission = "im.create.mob", tabCompleter = "mobCompleter")
-        public void mobCommand(CommandSender sender, Arguments arguments){
+        public void mobCommand(CommandSender sender, Arguments arguments) {
             String id = arguments.nextString();
             EntityType entityType = arguments.nextEnum(EntityType.class);
             String displayName = arguments.nextString();
@@ -644,10 +653,10 @@ public class AdminCommands extends CommandReceiver {
             int max = MobManager.instance().getLevels().stream().mapToInt(Integer::intValue)
                     .max().orElse(1);
             ArrayList<String> levels = new ArrayList<>();
-            if (max == 1){
+            if (max == 1) {
                 levels.add("1");
-            }else {
-                levels.add("1-"+max);
+            } else {
+                levels.add("1-" + max);
             }
             mobConfig.spawn.levels = levels;
             InfPlugin.plugin.config().mobConfigs.add(id, mobConfig);
@@ -655,23 +664,23 @@ public class AdminCommands extends CommandReceiver {
 
         public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
                     completeStr.add("id");
                     break;
-                case 3:
+                case 2:
                     completeStr.addAll(getMobs());
                     break;
-                case 4:
+                case 3:
                     completeStr.add("displayName");
                     break;
-                case 5:
+                case 4:
                     completeStr.add("autoSpawn");
                     completeStr.add("true");
                     completeStr.add("false");
                     break;
                 default:
-                    if (arguments.length()>6){
+                    if (arguments.length() > 6) {
                         completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
                     }
 
@@ -679,23 +688,194 @@ public class AdminCommands extends CommandReceiver {
             return filtered(arguments, completeStr);
         }
 
-        //        @SubCommand(value = "", permission = "im.create.", tabCompleter = "Completer")
-        public void sampleCommand(CommandSender sender, Arguments arguments){}
-        public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+        @SubCommand(value = "ability", permission = "im.create.ability", tabCompleter = "abilityCompleter")
+        public void abilityCommand(CommandSender sender, Arguments arguments) {
+            String s = arguments.nextString();
+
+            NamedDirConfigs<AbilitySetConfig> abilityConfigs = InfPlugin.plugin.config().abilityConfigs;
+            AbilitySetConfig config1 = abilityConfigs.get(s);
+            if(config1 != null){
+                new Message(I18n.format("create.error.ability_exists", s)).send(sender);
+                return;
+            }
+            AbilitySetConfig config = new AbilitySetConfig(s);
+            abilityConfigs.add(s, config);
+            new Message(I18n.format("create.error.ability_exists", s)).send(sender);
+        }
+
+        public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
-            switch (arguments.length()) {
-                case 2:
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.add("id");
                     break;
             }
             return filtered(arguments, completeStr);
         }
 
-        private Collection<? extends String> getMobs() {
-            return Arrays.stream(EntityType.values()).filter(entityType -> entityType.getEntityClass().isAssignableFrom(Mob.class))
+        @SubCommand(value = "region", permission = "im.create.region", tabCompleter = "regionCompleter")
+        public void regionCommand(CommandSender sender, Arguments arguments) {
+            String s = arguments.nextString();
+
+            NamedDirConfigs<RegionConfig> regionConfigs = InfPlugin.plugin.config().regionConfigs;
+            RegionConfig config1 = regionConfigs.get(s);
+            if(config1 != null){
+                new Message(I18n.format("create.error.ability_exists", s)).send(sender);
+                return;
+            }
+            if (!(sender instanceof Player)){
+                new Message(I18n.format("error.not_player", s)).send(sender);
+                return;
+            }
+            try {
+                WorldEditPlugin worldEditPlugin = WorldEditPlugin.getPlugin(WorldEditPlugin.class);
+                if (!worldEditPlugin.isEnabled()) {
+                    new Message(I18n.format("error.we_not_enabled", s)).send(sender);
+                    return;
+                }
+                LocalSession session = worldEditPlugin.getSession((Player) sender);
+                World world = ((Player) sender).getWorld();
+                Region selection = session.getSelection(new BukkitWorld(world));
+                BlockVector3 minimumPoint = selection.getMinimumPoint();
+                BlockVector3 maximumPoint = selection.getMaximumPoint();
+                RegionConfig.Region region = new RegionConfig.Region(world,
+                        minimumPoint.getX(), maximumPoint.getX(),
+                        minimumPoint.getY(), maximumPoint.getY(),
+                        minimumPoint.getZ(), maximumPoint.getZ());
+                RegionConfig config = new RegionConfig(s, region);
+                regionConfigs.add(s, config);
+                new Message(I18n.format("create.success", s)).send(sender);
+            }catch (LinkageError e){
+                new Message(I18n.format("error.we_not_enabled", s)).send(sender);
+            } catch (IncompleteRegionException e) {
+                new Message(I18n.format("create.error.no_selection")).send(sender);
+            }
+        }
+
+        public List<String> regionCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.add("id");
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+        private Collection<String> getMobs() {
+            return Arrays.stream(EntityType.values()).filter(entityType -> {
+                Class<? extends Entity> entityClass = entityType.getEntityClass();
+                return entityClass!=null && Mob.class.isAssignableFrom(entityClass);
+            })
                     .map(Enum::name)
                     .collect(Collectors.toList());
         }
 
-        //</editor-fold>
     }
+
+     public static class ModifyCommand extends CommandReceiver{
+
+         /**
+          * @param plugin for logging purpose only
+          * @param _i18n
+          */
+         public ModifyCommand(Plugin plugin, ILocalizer _i18n) {
+             super(plugin, _i18n);
+         }
+
+         @Override
+         public String getHelpPrefix() {
+             return "";
+         }
+
+         List<String> mobAction = Arrays.asList(
+                 "type",
+                 "name",
+                 "nbt",
+                 "ability",
+                 "spawn",
+                 "loot"
+                 );
+
+         @SubCommand(value = "mob", permission = "im.modify.", tabCompleter = "mobCompleter")
+         public void mobCommand(CommandSender sender, Arguments arguments) {
+             String id = arguments.nextString();
+             NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+             MobConfig mobConfig = mobConfigs.get(id);
+             boolean modified = false;
+             if (mobConfig == null) {
+                 new Message(I18n.format("modify.mob.dont_exist", id)).send(sender);
+                 return;
+             }
+             String action = arguments.nextString();
+             switch (action){
+                 case "type":
+                     EntityType entityType = arguments.nextEnum(EntityType.class);
+                     mobConfig.type = entityType;
+                     modified = true;
+                     break;
+                 case "name":
+                     String name = arguments.nextString();
+                     mobConfig.name = name;
+                     modified = true;
+                     break;
+                 case "nbt":
+                     String nbt = arguments.nextString();
+                     mobConfig.nbtTags = nbt;
+                     modified = true;
+                     break;
+                 case "ability":
+                     modified = mobCommandAbility(sender, arguments, mobConfig);
+                     break;
+                 case "spawn":
+
+                     break;
+                 case "loot":
+
+                     break;
+             }
+             if (modified){
+                 mobConfig.save();
+             }
+         }
+
+         private boolean mobCommandAbility(CommandSender sender, Arguments arguments, MobConfig mobConfig) {
+             boolean modified = false;
+             String action = arguments.nextString();
+             switch (action){
+                 case "list":
+                     List<String> abilities = mobConfig.abilities;
+                     abilities.stream().forEach(s -> new Message(I18n.format("modify.mob.list_info", s)).send(sender));
+                     break;
+                 case "add":
+                     //todo from here
+                     break;
+                 case "remove":
+             }
+         }
+
+         public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
+             List<String> completeStr = new ArrayList<>();
+             switch (arguments.remains()) {
+                 case 1:
+
+                    break;
+             }
+             return filtered(arguments, completeStr);
+         }
+
+ //      @SubCommand(value = "", permission = "im.modify.", tabCompleter = "Completer")
+         public void sampleCommand(CommandSender sender, Arguments arguments) {
+         }
+
+         public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+             List<String> completeStr = new ArrayList<>();
+             switch (arguments.remains()) {
+                 case 1:
+                     break;
+             }
+             return filtered(arguments, completeStr);
+         }
+
+     }
+    //</editor-fold>
 }
