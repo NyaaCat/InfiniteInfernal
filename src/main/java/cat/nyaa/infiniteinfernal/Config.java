@@ -7,7 +7,6 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
-import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import static cat.nyaa.infiniteinfernal.ability.AbilityCollection.ACTIVE_CLASSES;
+import static cat.nyaa.infiniteinfernal.ability.AbilityCollection.PASSIVE_CLASSES;
 
 public class Config extends PluginConfigure {
     InfPlugin plugin;
@@ -151,10 +153,8 @@ public class Config extends PluginConfigure {
         AbilitySetConfig actives = new AbilitySetConfig("a");
         AbilitySetConfig passives = new AbilitySetConfig("b");
         AbilitySetConfig dummies = new AbilitySetConfig("c");
-        Class<? extends IAbility>[] activeClasses = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.active", IAbility.class);
-        Class<? extends IAbility>[] passiveClasses = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.passive", IAbility.class);
-        addAbilities(actives, activeClasses);
-        addAbilities(passives, passiveClasses);
+        addAbilities(actives, ACTIVE_CLASSES);
+        addAbilities(passives, PASSIVE_CLASSES);
         dummies.abilities.put("dummy", new AbilityDummy());
         abilityConfigs.add(actives);
         abilityConfigs.add(passives);
