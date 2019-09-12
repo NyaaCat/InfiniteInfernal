@@ -12,10 +12,13 @@ import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
@@ -42,6 +45,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class AdminCommands extends CommandReceiver {
@@ -61,6 +67,7 @@ public class AdminCommands extends CommandReceiver {
         this.i18n = _i18n;
         inspectCommand = new InspectCommand(plugin, i18n);
         createCommand = new CreateCommand(plugin, i18n);
+        modifyCommand = new ModifyCommand(plugin, i18n);
     }
 
     @Override
@@ -145,7 +152,6 @@ public class AdminCommands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "modify", permission = "im.modify", tabCompleter = "modifyCompleter")
     public void onModify(CommandSender sender, Arguments arguments) {
         String target = arguments.nextString();
         switch (target) {
@@ -180,6 +186,9 @@ public class AdminCommands extends CommandReceiver {
 
     @SubCommand(value = "create", permission = "im.create")
     public CreateCommand createCommand;
+
+    @SubCommand(value = "modify", permission = "im.modify")
+    public ModifyCommand modifyCommand;
 
     @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
@@ -683,6 +692,8 @@ public class AdminCommands extends CommandReceiver {
             }
             mobConfig.spawn.levels = levels;
             InfPlugin.plugin.config().mobConfigs.add(id, mobConfig);
+            mobConfig.save();
+            MobManager.instance().load();
         }
 
         public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
@@ -723,7 +734,8 @@ public class AdminCommands extends CommandReceiver {
             }
             AbilitySetConfig config = new AbilitySetConfig(s);
             abilityConfigs.add(s, config);
-            new Message(I18n.format("create.error.ability_exists", s)).send(sender);
+            abilityConfigs.saveToDir();
+            new Message(I18n.format("create.error.success", s)).send(sender);
         }
 
         public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
@@ -767,6 +779,7 @@ public class AdminCommands extends CommandReceiver {
                         minimumPoint.getZ(), maximumPoint.getZ());
                 RegionConfig config = new RegionConfig(s, region);
                 regionConfigs.add(s, config);
+                regionConfigs.saveToDir();
                 new Message(I18n.format("create.success", s)).send(sender);
             } catch (LinkageError e) {
                 new Message(I18n.format("error.we_not_enabled", s)).send(sender);
@@ -1006,17 +1019,20 @@ public class AdminCommands extends CommandReceiver {
             switch (action) {
                 case "vanilla":
                     boolean isVanilla = arguments.nextBoolean();
+                    new Message(I18n.format("modify.mob.loot.vanilla", isVanilla)).send(sender);
                     mobConfig.loot.vanilla = isVanilla;
                     modified = true;
                     break;
                 case "imloot":
                     boolean isImLoot = arguments.nextBoolean();
                     mobConfig.loot.imLoot = isImLoot;
+                    new Message(I18n.format("modify.mob.loot.imLoot", isImLoot)).send(sender);
                     modified = true;
                     break;
                 case "expOverride":
                     int expOverride = arguments.nextInt();
                     mobConfig.loot.expOverride = expOverride;
+                    new Message(I18n.format("modify.mob.loot.expOverride", expOverride)).send(sender);
                     modified = true;
                     break;
                 case "special":
@@ -1027,6 +1043,7 @@ public class AdminCommands extends CommandReceiver {
                         case "chance":
                             double chance = arguments.nextDouble();
                             mobConfig.loot.special.chance = chance;
+                            new Message(I18n.format("modify.mob.loot.special.chance", chance)).send(sender);
                             modified = true;
                             break;
                         case "list":
@@ -1082,9 +1099,14 @@ public class AdminCommands extends CommandReceiver {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
-                    completeStr.addAll(mobAction);
+                    completeStr.addAll(InfPlugin.plugin.config().mobConfigs.keys());
                     break;
                 case 2:
+                    completeStr.addAll(mobAction);
+                    break;
+                case 3:
+                case 4:
+                case 5:
                     String id = arguments.nextString();
                     String action = arguments.nextString();
                     switch (action) {
@@ -1121,6 +1143,7 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add("special");
                     break;
                 case 2:
+                case 3:
                     String action = arguments.nextString();
                     switch (action) {
                         case "vanilla":
@@ -1213,9 +1236,14 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add("remove");
                     break;
                 case 2:
+                    MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(id);
                     String action = arguments.nextString();
-                    if ("add".equals(action) || "remove".equals(action)) {
+                    if ("add".equals(action)) {
                         completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
+                    } else if ("remove".equals(action)) {
+                        if (mobConfig != null) {
+                            completeStr.addAll(mobConfig.abilities);
+                        }
                     }
                     break;
             }
@@ -1231,25 +1259,24 @@ public class AdminCommands extends CommandReceiver {
             action = arguments.nextString();
             RegionConfig regionConfig = InfPlugin.plugin.config().regionConfigs.get(s);
             boolean modified = false;
-            if (regionConfig == null){
+            if (regionConfig == null) {
                 new Message(I18n.format("modify.region.not_exist", s)).send(sender);
                 return;
             }
-            switch (action){
+            switch (action) {
                 case "mobs":
                     String nextAction = arguments.nextString();
                     String mob = arguments.next();
-                    if (!checkMobFormat(mob)){
+                    if (!checkMobFormat(mob)) {
                         new Message(I18n.format("modify.region.mobs.not_exist")).send(sender);
                     }
                     String mobName = mob.substring(0, mob.indexOf(":"));
-                    switch (nextAction){
+                    switch (nextAction) {
                         case "add":
                             MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(mobName);
-                            if (mobConfig == null){
+                            if (mobConfig == null) {
                                 new Message(I18n.format("modify.region.not_exist")).send(sender);
-                            }
-                            else {
+                            } else {
                                 regionConfig.mobs.add(mobName);
                                 modified = true;
                                 new Message(I18n.format("modify.region.not_exist")).send(sender);
@@ -1259,14 +1286,14 @@ public class AdminCommands extends CommandReceiver {
                             if (regionConfig.mobs.remove(mob)) {
                                 modified = true;
                                 new Message(I18n.format("modify.region.mobs.remove.success", mobName)).send(sender);
-                            }else {
+                            } else {
                                 new Message(I18n.format("modify.region.mobs.remove.not_exist", mobName)).send(sender);
                             }
                             break;
                     }
                     break;
             }
-            if (modified){
+            if (modified) {
                 regionConfig.save();
             }
         }
@@ -1295,6 +1322,11 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add("mobs");
                     break;
                 case 3:
+//                    completeStr.add("list");
+                    completeStr.add("add");
+                    completeStr.add("remove");
+                    break;
+                case 4:
                     s = arguments.nextString();
                     arguments.next();
                     action = arguments.nextString();
@@ -1303,14 +1335,14 @@ public class AdminCommands extends CommandReceiver {
                         if (regionConfig != null) {
                             completeStr.addAll(regionConfig.mobs);
                         }
-                    }else if ("add".equals(action)){
+                    } else if ("add".equals(action)) {
                         completeStr.addAll(MobManager.instance().getMobConfigNames());
                     }
                     break;
-                case 4:
+                case 5:
                     s = arguments.nextString();
                     action = arguments.nextString();
-                    if ("add".equals(action)){
+                    if ("add".equals(action)) {
                         completeStr.add("weight");
                     }
             }
@@ -1325,10 +1357,156 @@ public class AdminCommands extends CommandReceiver {
             id = arguments.nextString();
             action = arguments.nextString();
             abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
-            switch (action){
-                case "add":
-                    //todo
+            if (abilitySetConfig == null) {
+                new Message(I18n.format("modify.ability.add.unknown_ability_set", id)).send(sender);
+                return;
             }
+            String targetAbility;
+            final boolean[] modified = {false};
+            switch (action) {
+                case "add":
+                    targetAbility = arguments.nextString();
+                    Class<? extends IAbility> aClass = AbilityCollection.ABILITY_NAMES.get(targetAbility);
+                    if (aClass == null) {
+                        new Message(I18n.format("modify.ability.add.unknown_ability", targetAbility)).send(sender);
+                        break;
+                    }
+                    try {
+                        IAbility iAbility = (IAbility) setField(aClass, arguments, "");
+                        Map<String, IAbility> abilities = abilitySetConfig.abilities;
+                        String baseName = iAbility.getName();
+                        int i = 0;
+                        String name = baseName;
+                        while (abilities.containsKey(name)) {
+                            name = baseName.concat("-" + i++);
+                        }
+                        abilities.put(name, iAbility);
+                        new Message(I18n.format("modify.ability.add.success", id, name)).send(sender);
+                        modified[0] = true;
+                    } catch (InstantiationException | IllegalAccessException ignored) {
+                        throw new BadCommandException();
+                    } catch (ClassCastException castEx) {
+                        StringBuilder sb = new StringBuilder("unsupported command: /");
+                        int length = arguments.length();
+                        for (int i = 0; i < length; i++) {
+                            sb.append(arguments.at(i)).append(" ");
+                        }
+                        Bukkit.getLogger().log(Level.WARNING, sb.toString(), castEx);
+                        new Message(I18n.format("modify.ability.add.unsupported_command")).send(sender);
+                    } catch (UnsupportedOperationException unsupported) {
+                        StringBuilder sb = new StringBuilder("unsupported command: /");
+                        int length = arguments.length();
+                        for (int i = 0; i < length; i++) {
+                            sb.append(arguments.at(i)).append(" ");
+                        }
+                        new Message(I18n.format("modify.ability.add.unsupported_command")).send(sender);
+                        Bukkit.getLogger().log(Level.WARNING, sb.toString(), unsupported);
+                    }
+                    break;
+                case "set":
+                    targetAbility = arguments.nextString();
+                    String property = arguments.nextString();
+                    String val = arguments.top();
+                    IAbility iAbility = abilitySetConfig.abilities.get(targetAbility);
+                    if (iAbility == null) {
+                        new Message(I18n.format("modify.ability.set.unknown_ability", targetAbility)).send(sender);
+                        break;
+                    }
+                    reflectField(property, iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                        try {
+                            modified[0] = setField(field, iSerializable, val);
+                            if (modified[0]) {
+                                new Message(I18n.format("modify.ability.set.success", targetAbility, property, val)).send(sender);
+                            } else {
+                                new Message(I18n.format("modify.ability.set.failed", targetAbility, property, val)).send(sender);
+                            }
+                        } catch (IllegalAccessException e) {
+                            throw new BadCommandException();
+                        }
+                    });
+                    break;
+                case "remove":
+                    targetAbility = arguments.nextString();
+                    IAbility remove = abilitySetConfig.abilities.remove(targetAbility);
+                    if (remove == null) {
+                        new Message(I18n.format("modify.ability.remove.not_exist", targetAbility)).send(sender);
+                    } else {
+                        new Message(I18n.format("modify.ability.remove.success", targetAbility)).send(sender);
+                    }
+                    break;
+            }
+            if (modified[0]) {
+                abilitySetConfig.save();
+            }
+        }
+
+        private boolean setField(Field field, ISerializable iAbility, String arg) throws IllegalAccessException {
+            if (arg == null) {
+                return false;
+            }
+            if (field.getAnnotation(ISerializable.Serializable.class) != null) {
+                field.setAccessible(true);
+                Class<?> fieldType = field.getType();
+                if (Integer.class.isAssignableFrom(fieldType) || int.class.isAssignableFrom(fieldType)) {
+                    int i = Integer.parseInt(arg);
+                    field.set(iAbility, i);
+                } else if (String.class.isAssignableFrom(fieldType)) {
+                    field.set(iAbility, arg);
+                } else if (Enum.class.isAssignableFrom(fieldType)) {
+                    Enum t = Enum.valueOf(((Class<Enum>) fieldType), arg);
+                    field.set(iAbility, t);
+                } else if (Double.class.isAssignableFrom(fieldType) || double.class.isAssignableFrom(fieldType)) {
+                    double a = Double.parseDouble(arg);
+                    field.set(iAbility, a);
+                } else if (Float.class.isAssignableFrom(fieldType) || float.class.isAssignableFrom(fieldType)) {
+                    float a = Float.parseFloat(arg);
+                    field.set(iAbility, a);
+                }
+                if (List.class.isAssignableFrom(fieldType)) {
+                    ArrayList<String> o = new Gson().fromJson(arg, new TypeToken<ArrayList<String>>() {
+                    }.getType());
+                    List o1 = ((List) field.get(iAbility));
+                    Object ref = o1.stream().findAny().orElse(null);
+                    if (ref != null) {
+                        Class<?> aClass1 = ref.getClass();
+                        if (Number.class.isAssignableFrom(aClass1)) {
+                            try {
+                                List<Number> collect = o.stream().map(s1 -> ((Number) Double.parseDouble(s1)))
+                                        .collect(Collectors.toList());
+                                ((List<Number>) o1).addAll(collect);
+                            } catch (Exception e) {
+                                throw new UnsupportedOperationException();
+                            }
+                        }
+                        if (String.class.isAssignableFrom(aClass1)) {
+                            ((List<String>) o1).addAll(o);
+                        }
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+                }
+            }
+            return true;
+        }
+
+        private ISerializable setField(Class<? extends ISerializable> aClass, Arguments arguments, String prefix) throws IllegalAccessException, InstantiationException {
+            ISerializable iAbility = aClass.newInstance();
+            Field[] declaredFields = aClass.getDeclaredFields();
+            if (declaredFields.length == 0) return iAbility;
+            for (Field field : declaredFields) {
+                Class<?> fieldType = field.getType();
+                if (ISerializable.class.isAssignableFrom(fieldType)) {
+                    field.set(iAbility, setField((Class<? extends ISerializable>) fieldType, arguments, prefix.concat(field.getName())));
+                }
+                String arg;
+                try {
+                    arg = arguments.argString(prefix.concat(field.getName()));
+                } catch (BadCommandException e) {
+                    arg = null;
+                }
+                setField(field, iAbility, arg);
+            }
+            return iAbility;
         }
 
         public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
@@ -1359,48 +1537,133 @@ public class AdminCommands extends CommandReceiver {
                             completeStr.addAll(abilitySetConfig.abilities.keySet());
                             break;
                     }
-                case 4:
+                    break;
+                default:
+                    if (arguments.remains() < 4) break;
                     id = arguments.nextString();
                     action = arguments.nextString();
-                    abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
-                    int remains = arguments.remains();
-                    List<String> excluded = new ArrayList<>();
-                    for (int i = 0; i < remains - 1; i++) {
-                        String next = arguments.next();
-                        excluded.add(next.substring(next.lastIndexOf(":")));
-                    }
-                    String basicAbility = arguments.nextString();
-                    Class<? extends IAbility> aClass = AbilityCollection.ABILITY_NAMES.get(basicAbility);
-                    String target = arguments.nextString();
-                    if (target.endsWith(":")) {
-                        Field field = reflectField(target, aClass);
-                        completeStr.add(field.getType().getName());
-                        return filtered(excluded, basicAbility, completeStr);
-                    } else {
-                        reflectISerializables(aClass, completeStr, "");
-                        return filtered(excluded, basicAbility, completeStr);
+                    String basicAbility;
+                    switch (action) {
+                        case "add":
+                            abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
+                            basicAbility = arguments.nextString();
+                            int remains = arguments.remains();
+                            List<String> excluded = new ArrayList<>();
+                            for (int i = 0; i < remains - 1; i++) {
+                                String next = arguments.next();
+                                excluded.add(next.substring(0, next.lastIndexOf(":") + 1));
+                            }
+                            Class<? extends IAbility> aClass = AbilityCollection.ABILITY_NAMES.get(basicAbility);
+                            String target = arguments.nextString();
+                            if (target.endsWith(":")) {
+                                try {
+                                    IAbility iAbility = aClass.newInstance();
+                                    reflectField(target, aClass, iAbility, (field, iSerializable) -> {
+                                        if (field == null) return;
+                                        if (Enum.class.isAssignableFrom(field.getType())) {
+                                            reflectEnum(field.getType(), anEnum -> completeStr.add(target.concat(anEnum.name())));
+                                        }
+                                        if (ISerializable.class.isAssignableFrom(field.getType())) {
+                                            reflectISerializables(field.getType(), (field1, prefix) -> {
+                                                completeStr.add(prefix.concat(field1.getName()).concat(":"));
+                                            }, "");
+                                        } else {
+                                            completeStr.add(target.concat(field.getType().getName()));
+                                        }
+                                    });
+                                } catch (InstantiationException | IllegalAccessException ignored) {
+                                }
+                                return completeStr;
+                            } else {
+                                String prefix = "";
+                                if (target.contains(":")) {
+                                    prefix = target.substring(0, target.lastIndexOf(":") + 1);
+                                }
+                                String finalPrefix = prefix;
+                                reflectISerializables(aClass, (field1, prefix1) -> {
+                                    completeStr.add(prefix1.concat(field1.getName()).concat(":"));
+                                }, "");
+                            }
+                            break;
+                        case "set":
+                            int remains1 = arguments.remains();
+                            abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
+                            if (abilitySetConfig == null)break;
+                            String targetAbi;
+                            String targetStr;
+                            IAbility iAbility;
+                            switch (remains1){
+                                case 1:
+                                    completeStr.addAll(abilitySetConfig.abilities.keySet());
+                                    break;
+                                case 2:
+                                    targetAbi = arguments.nextString();
+                                    targetStr = arguments.nextString();
+                                    iAbility = abilitySetConfig.abilities.get(targetAbi);
+                                    if (iAbility == null)break;
+                                    reflectField(targetStr, iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                                        if (field == null) return;
+                                        if (Enum.class.isAssignableFrom(field.getType())) {
+                                            reflectEnum(field.getType(), anEnum -> completeStr.add(target.concat(anEnum.name())));
+                                        }
+                                        if (ISerializable.class.isAssignableFrom(field.getType())) {
+                                            reflectISerializables(field.getType(), (field1, prefix) -> {
+                                                completeStr.add(prefix.concat(field1.getName()));
+                                            }, "");
+                                        } else {
+                                            completeStr.add(target.concat(field.getType().getName()));
+                                        }
+                                    });
+                                    return filtered(targetStr, completeStr);
+                                case 3:
+                                    targetAbi = arguments.nextString();
+                                    targetStr = arguments.nextString();
+                                    iAbility = abilitySetConfig.abilities.get(targetAbi);
+                                    if (iAbility == null)break;
+                                    reflectField(targetStr, iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                                        completeStr.add(field.getType().getName());
+                                    });
+                                    return completeStr;
+                            }
                     }
             }
             return filtered(arguments, completeStr);
         }
 
-        private Field reflectField(String target, Class<?> aClass) {
-            String[] split = target.split(":", 2);
+        private boolean reflectField(String target, Class<?> aClass, ISerializable instance, BiConsumer<Field, ISerializable> func) {
+            int ind = target.lastIndexOf(":");
+            String[] split = target.substring(0, ind > 0 ? ind : target.length()).split(":", 2);
             try {
                 String name = split[0];
-                if (aClass == null)return null;
+                if (aClass == null) return false;
                 Field declaredField = aClass.getDeclaredField(name);
                 if (split.length > 1) {
-                    return reflectField(split[1], declaredField.getType());
+                    return reflectField(split[1], declaredField.getType(), (ISerializable) declaredField.get(instance), func);
                 } else {
-                    return declaredField;
+                    func.accept(declaredField, instance);
+                    return true;
                 }
             } catch (Exception ignored) {
-                return null;
+                return false;
             }
         }
 
-        private void reflectISerializables(Class<?> aClass, List<String> completeStr, String prefix) {
+        private void reflectEnum(Class<?> aClass, Consumer<Enum> action) {
+            Class<? extends Enum> type = (Class<? extends Enum>) aClass;
+            try {
+                Field en = type.getDeclaredField("ENUM$VALUES");
+                en.setAccessible(true);
+                Enum[] o = ((Enum[]) en.get(null));
+                if (o != null && o.length > 0) {
+                    for (Enum anEnum : o) {
+                        action.accept(anEnum);
+                    }
+                }
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {
+            }
+        }
+
+        private void reflectISerializables(Class<?> aClass, BiConsumer<Field, String> action, String prefix) {
             if (aClass == null) return;
             Field[] declaredFields = aClass.getDeclaredFields();
             if (declaredFields.length > 0) {
@@ -1409,12 +1672,13 @@ public class AdminCommands extends CommandReceiver {
                         ISerializable.Serializable annotation = declaredField.getAnnotation(ISerializable.Serializable.class);
                         if (annotation != null) {
                             if (ISerializable.class.isAssignableFrom(declaredField.getType())) {
-                                reflectISerializables(declaredField.getType(), completeStr, declaredField.getName().concat(":"));
+                                reflectISerializables(declaredField.getType(), action, declaredField.getName().concat(":"));
                             } else {
-                                completeStr.add(prefix.concat(declaredField.getName()).concat(":"));
+                                action.accept(declaredField, prefix);
                             }
                         }
-                    } catch (Exception ignored) {
+                    } catch (Exception ig) {
+                        System.out.println();
                     }
                 }
             }

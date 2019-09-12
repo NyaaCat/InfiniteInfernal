@@ -16,7 +16,7 @@ public class AbilityCollection {
         ACTIVE_CLASSES = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.active", IAbility.class);
         PASSIVE_CLASSES = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ability.impl.passive", IAbility.class);
         ABILITY_NAMES = new LinkedHashMap<>();
-        Arrays.stream(ACTIVE_CLASSES).forEach(aClass -> ABILITY_NAMES.put(aClass.getName().replaceFirst("Ability", ""), aClass));
-        Arrays.stream(PASSIVE_CLASSES).forEach(aClass -> ABILITY_NAMES.put(aClass.getName().replaceFirst("Ability", ""), aClass));
+        Arrays.stream(ACTIVE_CLASSES).forEach(aClass -> ABILITY_NAMES.put(aClass.getSimpleName().replaceFirst("Ability", ""), aClass));
+        Arrays.stream(PASSIVE_CLASSES).forEach(aClass -> ABILITY_NAMES.put(aClass.getSimpleName().replaceFirst("Ability", ""), aClass));
     }
 }

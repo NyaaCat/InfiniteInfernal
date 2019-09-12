@@ -19,9 +19,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -34,7 +32,7 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
     @Serializable
     public int duration = 60;
     @Serializable
-    public List<String> effects = new ArrayList<>();
+    public List<String> effects = new ArrayList<>(Collections.singletonList("SPEED"));
     private static boolean inited = false;
 
     private static Listener listener;

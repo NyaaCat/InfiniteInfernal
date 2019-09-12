@@ -22,6 +22,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +32,7 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
     private static final String CACHE_EFFECT = "EFFECT";
 
     @Serializable
-    public List<String> effects = new ArrayList<>();
+    public List<String> effects = new ArrayList<>(Collections.singletonList("SPEED"));
 
     private static boolean inited = false;
 
