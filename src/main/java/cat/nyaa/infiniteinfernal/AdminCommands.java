@@ -68,6 +68,7 @@ public class AdminCommands extends CommandReceiver {
         inspectCommand = new InspectCommand(plugin, i18n);
         createCommand = new CreateCommand(plugin, i18n);
         modifyCommand = new ModifyCommand(plugin, i18n);
+        deleteCommand = new DeleteCommand(plugin, i18n);
     }
 
     @Override
@@ -189,6 +190,9 @@ public class AdminCommands extends CommandReceiver {
 
     @SubCommand(value = "modify", permission = "im.modify")
     public ModifyCommand modifyCommand;
+
+    @SubCommand(value = "delete", permission = "im.delete")
+    public DeleteCommand deleteCommand;
 
     @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
@@ -355,14 +359,8 @@ public class AdminCommands extends CommandReceiver {
     }
 
     private static List<String> filtered(Arguments arguments, List<String> completeStr) {
-        String next = "";
-        int remains = arguments.remains();
-        for (int i = 0; i < remains; i++) {
-            String next1 = arguments.next();
-            next = next1 == null ? next : next1;
-        }
-        String finalNext = next;
-        return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
+        String next = arguments.at(arguments.length() - 1);
+        return completeStr.stream().filter(s -> s.startsWith(next)).collect(Collectors.toList());
     }
 
     private static List<String> filtered(String lastArg, List<String> completeStr) {
@@ -450,7 +448,7 @@ public class AdminCommands extends CommandReceiver {
             if (region == null) throw new IllegalArgumentException();
             NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
             List<MobConfig> collect = region.mobs.stream()
-                    .map(s -> s.substring(0, s.indexOf(":")))
+                    .map(s -> s.contains(":") ? s.substring(0, s.indexOf(":")) : s)
                     .map(mobConfigs::get).collect(Collectors.toList());
             sendMobInfo(sender, collect, detailed);
         }
@@ -666,6 +664,11 @@ public class AdminCommands extends CommandReceiver {
             boolean autoSpawn = arguments.nextBoolean();
             int remains = arguments.remains();
             List<String> abilities = new ArrayList<>();
+            MobConfig mobConfig1 = InfPlugin.plugin.config().mobConfigs.get(id);
+            if (mobConfig1 != null){
+                new Message(I18n.format("create.mob.exists", id)).send(sender);
+                return;
+            }
             for (int i = 0; i < remains; i++) {
                 String ability = arguments.nextString();
                 AbilitySetConfig abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(ability);
@@ -946,7 +949,7 @@ public class AdminCommands extends CommandReceiver {
                                 new Message(I18n.format("modify.mob.spawn.biome.empty", id)).send(sender);
                             } else {
                                 biomes.forEach(s -> {
-                                    new Message(I18n.format("modify.mob.spawn.biome.info", s));
+                                    new Message(I18n.format("modify.mob.spawn.biome.info", s)).send(sender);
                                 });
                             }
 
@@ -1107,6 +1110,7 @@ public class AdminCommands extends CommandReceiver {
                 case 3:
                 case 4:
                 case 5:
+                default:
                     String id = arguments.nextString();
                     String action = arguments.nextString();
                     switch (action) {
@@ -1143,7 +1147,6 @@ public class AdminCommands extends CommandReceiver {
                     completeStr.add("special");
                     break;
                 case 2:
-                case 3:
                     String action = arguments.nextString();
                     switch (action) {
                         case "vanilla":
@@ -1155,26 +1158,37 @@ public class AdminCommands extends CommandReceiver {
                             completeStr.add("amount");
                             break;
                         case "special":
-                            String action1 = arguments.nextString();
-                            switch (action1) {
-                                case "chance":
-                                    completeStr.add("chance");
-                                    break;
-                                case "add":
-                                    completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys().stream()
-                                            .map(s -> s.concat(":"))
-                                            .collect(Collectors.toList()));
-                                    break;
-                                case "remove":
-                                    MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(id);
-                                    if (mobConfig != null) {
-                                        completeStr.addAll(mobConfig.abilities);
-                                    }
-                                    break;
-                            }
+                            completeStr.add("chance");
+                            completeStr.add("add");
+                            completeStr.add("remove");
                             break;
                     }
                     break;
+                case 3:
+                    String action1 = arguments.nextString();
+                    if (!"special".equals(action1)) break;
+                    String action2 = arguments.nextString();
+                    String target = arguments.nextString();
+                    switch (action2) {
+                        case "chance":
+                            completeStr.add("chance");
+                            break;
+                        case "add":
+                            if (target.endsWith(":")) {
+                                completeStr.add("weight");
+                            } else {
+                                completeStr.addAll(LootManager.instance().getLootNames().stream()
+                                        .map(s -> s.concat(":"))
+                                        .collect(Collectors.toList()));
+                            }
+                            break;
+                        case "remove":
+                            MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(id);
+                            if (mobConfig != null) {
+                                completeStr.addAll(mobConfig.loot.special.list);
+                            }
+                            break;
+                    }
             }
             return completeStr;
         }
@@ -1210,18 +1224,29 @@ public class AdminCommands extends CommandReceiver {
                         case "world":
                             completeString.add("list");
                             completeString.add("add");
-                            completeString.add("world");
+                            completeString.add("remove");
                             break;
                     }
                     break;
                 case 3:
                     action = arguments.nextString();
+                    MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(id);
+                    String action1 = arguments.nextString();
+                    if (mobConfig == null) break;
                     switch (action) {
                         case "biome":
-                            completeString.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
+                            if ("remove".equals(action1)) {
+                                completeString.addAll(mobConfig.spawn.biomes);
+                            } else {
+                                completeString.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
+                            }
                             break;
                         case "world":
-                            completeString.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                            if ("remove".equals(action1)) {
+                                completeString.addAll(mobConfig.spawn.worlds);
+                            } else {
+                                completeString.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                            }
                     }
             }
             return completeString;
@@ -1267,27 +1292,28 @@ public class AdminCommands extends CommandReceiver {
                 case "mobs":
                     String nextAction = arguments.nextString();
                     String mob = arguments.next();
-                    if (!checkMobFormat(mob)) {
-                        new Message(I18n.format("modify.region.mobs.not_exist")).send(sender);
-                    }
-                    String mobName = mob.substring(0, mob.indexOf(":"));
                     switch (nextAction) {
                         case "add":
+                            if (!checkMobFormat(mob)) {
+                                new Message(I18n.format("modify.region.mobs.not_exist")).send(sender);
+                                return;
+                            }
+                            String mobName = mob.substring(0, mob.indexOf(":"));
                             MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(mobName);
                             if (mobConfig == null) {
-                                new Message(I18n.format("modify.region.not_exist")).send(sender);
+                                new Message(I18n.format("modify.region.mob_not_exist", mob)).send(sender);
                             } else {
-                                regionConfig.mobs.add(mobName);
+                                regionConfig.mobs.add(mob);
                                 modified = true;
-                                new Message(I18n.format("modify.region.not_exist")).send(sender);
+                                new Message(I18n.format("modify.region.success", mob)).send(sender);
                             }
                             break;
                         case "remove":
                             if (regionConfig.mobs.remove(mob)) {
                                 modified = true;
-                                new Message(I18n.format("modify.region.mobs.remove.success", mobName)).send(sender);
+                                new Message(I18n.format("modify.region.mobs.remove.success", mob)).send(sender);
                             } else {
-                                new Message(I18n.format("modify.region.mobs.remove.not_exist", mobName)).send(sender);
+                                new Message(I18n.format("modify.region.mobs.remove.not_exist", mob)).send(sender);
                             }
                             break;
                     }
@@ -1305,7 +1331,7 @@ public class AdminCommands extends CommandReceiver {
                 int weight = Integer.parseInt(split[1]);
                 MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(name);
                 return mobConfig != null;
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
                 return false;
             }
         }
@@ -1375,7 +1401,7 @@ public class AdminCommands extends CommandReceiver {
                         IAbility iAbility = (IAbility) setField(aClass, arguments, "");
                         Map<String, IAbility> abilities = abilitySetConfig.abilities;
                         String baseName = iAbility.getName();
-                        int i = 0;
+                        int i = 1;
                         String name = baseName;
                         while (abilities.containsKey(name)) {
                             name = baseName.concat("-" + i++);
@@ -1412,7 +1438,7 @@ public class AdminCommands extends CommandReceiver {
                         new Message(I18n.format("modify.ability.set.unknown_ability", targetAbility)).send(sender);
                         break;
                     }
-                    reflectField(property, iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                    reflectField(property.concat(":"), iAbility.getClass(), iAbility, (field, iSerializable) -> {
                         try {
                             modified[0] = setField(field, iSerializable, val);
                             if (modified[0]) {
@@ -1450,6 +1476,9 @@ public class AdminCommands extends CommandReceiver {
                 if (Integer.class.isAssignableFrom(fieldType) || int.class.isAssignableFrom(fieldType)) {
                     int i = Integer.parseInt(arg);
                     field.set(iAbility, i);
+                } else if (Boolean.class.isAssignableFrom(fieldType) || boolean.class.isAssignableFrom(fieldType)) {
+                    boolean i = Boolean.parseBoolean(arg);
+                    field.set(iAbility, i);
                 } else if (String.class.isAssignableFrom(fieldType)) {
                     field.set(iAbility, arg);
                 } else if (Enum.class.isAssignableFrom(fieldType)) {
@@ -1461,8 +1490,7 @@ public class AdminCommands extends CommandReceiver {
                 } else if (Float.class.isAssignableFrom(fieldType) || float.class.isAssignableFrom(fieldType)) {
                     float a = Float.parseFloat(arg);
                     field.set(iAbility, a);
-                }
-                if (List.class.isAssignableFrom(fieldType)) {
+                } else if (List.class.isAssignableFrom(fieldType)) {
                     ArrayList<String> o = new Gson().fromJson(arg, new TypeToken<ArrayList<String>>() {
                     }.getType());
                     List o1 = ((List) field.get(iAbility));
@@ -1484,6 +1512,8 @@ public class AdminCommands extends CommandReceiver {
                     } else {
                         throw new UnsupportedOperationException();
                     }
+                } else {
+                    return false;
                 }
             }
             return true;
@@ -1510,7 +1540,7 @@ public class AdminCommands extends CommandReceiver {
         }
 
         public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
-            List<String> completeStr = new ArrayList<>();
+            final List<String> completeStr = new ArrayList<>();
             String id;
             String action;
             AbilitySetConfig abilitySetConfig;
@@ -1543,6 +1573,7 @@ public class AdminCommands extends CommandReceiver {
                     id = arguments.nextString();
                     action = arguments.nextString();
                     String basicAbility;
+                    String target;
                     switch (action) {
                         case "add":
                             abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
@@ -1554,7 +1585,7 @@ public class AdminCommands extends CommandReceiver {
                                 excluded.add(next.substring(0, next.lastIndexOf(":") + 1));
                             }
                             Class<? extends IAbility> aClass = AbilityCollection.ABILITY_NAMES.get(basicAbility);
-                            String target = arguments.nextString();
+                            target = arguments.nextString();
                             if (target.endsWith(":")) {
                                 try {
                                     IAbility iAbility = aClass.newInstance();
@@ -1588,11 +1619,11 @@ public class AdminCommands extends CommandReceiver {
                         case "set":
                             int remains1 = arguments.remains();
                             abilitySetConfig = InfPlugin.plugin.config().abilityConfigs.get(id);
-                            if (abilitySetConfig == null)break;
+                            if (abilitySetConfig == null) break;
                             String targetAbi;
                             String targetStr;
                             IAbility iAbility;
-                            switch (remains1){
+                            switch (remains1) {
                                 case 1:
                                     completeStr.addAll(abilitySetConfig.abilities.keySet());
                                     break;
@@ -1600,28 +1631,31 @@ public class AdminCommands extends CommandReceiver {
                                     targetAbi = arguments.nextString();
                                     targetStr = arguments.nextString();
                                     iAbility = abilitySetConfig.abilities.get(targetAbi);
-                                    if (iAbility == null)break;
-                                    reflectField(targetStr, iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                                    if (iAbility == null) break;
+                                    reflectISerializables(iAbility.getClass(), (field, prefix) -> {
                                         if (field == null) return;
-                                        if (Enum.class.isAssignableFrom(field.getType())) {
-                                            reflectEnum(field.getType(), anEnum -> completeStr.add(target.concat(anEnum.name())));
-                                        }
                                         if (ISerializable.class.isAssignableFrom(field.getType())) {
-                                            reflectISerializables(field.getType(), (field1, prefix) -> {
-                                                completeStr.add(prefix.concat(field1.getName()));
+                                            reflectISerializables(field.getType(), (field1, prefix1) -> {
+                                                completeStr.add(prefix1.concat(field1.getName()));
                                             }, "");
                                         } else {
-                                            completeStr.add(target.concat(field.getType().getName()));
+                                            completeStr.add(prefix.concat(field.getName()));
                                         }
-                                    });
+                                    }, "");
                                     return filtered(targetStr, completeStr);
                                 case 3:
                                     targetAbi = arguments.nextString();
                                     targetStr = arguments.nextString();
                                     iAbility = abilitySetConfig.abilities.get(targetAbi);
-                                    if (iAbility == null)break;
-                                    reflectField(targetStr, iAbility.getClass(), iAbility, (field, iSerializable) -> {
-                                        completeStr.add(field.getType().getName());
+                                    if (iAbility == null) break;
+                                    reflectField(targetStr.concat(":"), iAbility.getClass(), iAbility, (field, iSerializable) -> {
+                                        if (Enum.class.isAssignableFrom(field.getType())) {
+                                            reflectEnum(field.getType(), (anEnum) -> {
+                                                completeStr.add(anEnum.name());
+                                            });
+                                        } else {
+                                            completeStr.add(field.getType().getName());
+                                        }
                                     });
                                     return completeStr;
                             }
@@ -1697,6 +1731,224 @@ public class AdminCommands extends CommandReceiver {
             return filtered(arguments, completeStr);
         }
 
+
+    }
+
+    public static class DeleteCommand extends CommandReceiver {
+        /**
+         * @param plugin for logging purpose only
+         * @param _i18n
+         */
+        public DeleteCommand(Plugin plugin, ILocalizer _i18n) {
+            super(plugin, _i18n);
+        }
+
+        @Override
+        public String getHelpPrefix() {
+            return "";
+        }
+
+        Map<CommandSender, String> commandBuffer = new LinkedHashMap<>(10);
+
+        @SubCommand(value = "mob", permission = "im.delete.mob", tabCompleter = "mobCompleter")
+        public void mobCommand(CommandSender sender, Arguments arguments) {
+            String cmd = getFullCommand(arguments);
+            String id = arguments.nextString();
+            MobConfig mobConfig = InfPlugin.plugin.config().mobConfigs.get(id);
+            String s = commandBuffer.get(sender);
+            if (commandBuffer.containsKey(sender) && s != null && s.equals(cmd)) {
+                commandBuffer.remove(sender);
+                executeDeleteMob(sender, mobConfig, id);
+            } else {
+                printDeleteInfo(sender, mobConfig, id);
+                commandBuffer.put(sender, cmd);
+            }
+        }
+
+        private void printDeleteInfo(CommandSender sender, MobConfig mobConfig, String id) {
+            if (mobConfig == null) {
+                new Message(I18n.format("delete.no_mob", id)).send(sender);
+                return;
+            }
+            NamedDirConfigs<RegionConfig> regionConfigs = InfPlugin.plugin.config().regionConfigs;
+            new Message(I18n.format("delete.mob.info", id)).send(sender);
+            findInRegions(regionConfigs, id, regionConfig -> new Message(I18n.format("delete.info.influenced_config", regionConfig.name)).send(sender));
+        }
+
+        private void executeDeleteMob(CommandSender sender, MobConfig mobConfig, String id) {
+            if (mobConfig == null) {
+                new Message(I18n.format("delete.no_mob", id)).send(sender);
+                return;
+            }
+            NamedDirConfigs<RegionConfig> regionConfigs = InfPlugin.plugin.config().regionConfigs;
+            NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+            MobConfig remove = mobConfigs.remove(id);
+            if (remove == null) {
+                new Message(I18n.format("delete.mob.failed", id)).send(sender);
+                return;
+            }
+            new Message(I18n.format("delete.mob.success", id)).send(sender);
+            mobConfigs.saveToDir();
+            final boolean[] modified = {false};
+            findInRegions(regionConfigs, id, regionConfig -> {
+                List<String> collect = regionConfig.mobs.stream().filter(s -> {
+                    String[] split = s.split(":", 2);
+                    String s1 = split[0];
+                    return s1.equals(id);
+                }).collect(Collectors.toList());
+                modified[0] = modified[0] || regionConfig.mobs.removeAll(collect);
+            });
+            if (modified[0]) {
+                mobConfigs.saveToDir();
+            }
+        }
+
+        private void findInRegions(NamedDirConfigs<RegionConfig> regionConfigs, String id, Consumer<RegionConfig> consumer) {
+            regionConfigs.values().stream().filter(regionConfig -> regionConfig.mobs.stream().anyMatch(s -> {
+                String[] split = s.split(":", 2);
+                String s1 = split[0];
+                return s1.equals(id);
+            })).forEach(consumer);
+        }
+
+        public List<String> mobCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(InfPlugin.plugin.config().mobConfigs.keys());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "region", permission = "im.delete.region", tabCompleter = "regionCompleter")
+        public void regionCommand(CommandSender sender, Arguments arguments) {
+            String fullCommand = getFullCommand(arguments);
+            String id = arguments.nextString();
+            RegionConfig regionConfig = InfPlugin.plugin.config().regionConfigs.get(id);
+            if (regionConfig == null) {
+                new Message(I18n.format("delete.region.no_region", id)).send(sender);
+                return;
+            }
+            String s = commandBuffer.get(sender);
+            if (s != null && s.equals(fullCommand)) {
+                commandBuffer.remove(sender);
+                RegionConfig remove = InfPlugin.plugin.config().regionConfigs.remove(id);
+                if (remove == null) {
+                    new Message(I18n.format("delete.region.failed", id)).send(sender);
+                    return;
+                }
+                new Message(I18n.format("delete.region.success", id)).send(sender);
+            } else {
+                commandBuffer.put(sender, fullCommand);
+                new Message(I18n.format("delete.region.info", id)).send(sender);
+            }
+        }
+
+        private String getFullCommand(Arguments arguments) {
+            int length = arguments.length();
+            StringBuilder builder = new StringBuilder("/");
+            for (int i = 0; i < length; i++) {
+                String at = arguments.at(i);
+                builder.append(at).append(" ");
+            }
+            return builder.toString();
+        }
+
+        public List<String> regionCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(InfPlugin.plugin.config().regionConfigs.keys());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @SubCommand(value = "ability", permission = "im.delete.ability", tabCompleter = "abilityCompleter")
+        public void abilityCommand(CommandSender sender, Arguments arguments) {
+            String fullCommand = getFullCommand(arguments);
+            String id = arguments.nextString();
+            NamedDirConfigs<AbilitySetConfig> abilityConfigs = InfPlugin.plugin.config().abilityConfigs;
+            AbilitySetConfig config = abilityConfigs.get(id);
+            if (config == null) {
+                new Message(I18n.format("delete.ability.no_ability_set", id)).send(sender);
+                return;
+            }
+            String s = commandBuffer.get(sender);
+            if (s != null && s.equals(fullCommand)) {
+                new Message(I18n.format("delete.ability.success", id)).send(sender);
+                commandBuffer.remove(sender);
+                executeDeleteAbility(sender, config, id);
+            } else {
+                new Message(I18n.format("delete.mob.confirm", id)).send(sender);
+                commandBuffer.put(sender, fullCommand);
+                printAbilityInfo(sender, config, id);
+            }
+        }
+
+        private void printAbilityInfo(CommandSender sender, AbilitySetConfig config, String id) {
+            new Message(I18n.format("delete.ability.confirm", id)).send(sender);
+            findInMobs(sender, id, mobConfig -> {
+                new Message(I18n.format("delete.ability.info", mobConfig.name, mobConfig)).send(sender);
+            });
+        }
+
+
+        private void executeDeleteAbility(CommandSender sender, AbilitySetConfig config, String id) {
+            NamedDirConfigs<AbilitySetConfig> abilityConfigs = InfPlugin.plugin.config().abilityConfigs;
+            boolean[] modified = {false};
+            AbilitySetConfig remove = abilityConfigs.remove(id);
+            if (remove == null) {
+                new Message(I18n.format("delete.ability.fail", id)).send(sender);
+                return;
+            }
+            findInMobs(sender, id, mobConfig -> {
+                List<String> collect = mobConfig.abilities.stream().filter(s -> {
+                    String[] split = s.split(":", 2);
+                    String s1 = split[0];
+                    return s1.equals(id);
+                }).collect(Collectors.toList());
+                modified[0] = modified[0] || mobConfig.abilities.removeAll(collect);
+            });
+            abilityConfigs.saveToDir();
+            new Message(I18n.format("delete.ability.success", id)).send(sender);
+            if (modified[0]) {
+                InfPlugin.plugin.config().mobConfigs.saveToDir();
+            }
+        }
+
+        private void findInMobs(CommandSender sender, String id, Consumer<MobConfig> func) {
+            NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
+            mobConfigs.values().stream().filter(mobConfig -> mobConfig.abilities.stream().anyMatch(s -> {
+                String[] split = s.split(":", 2);
+                String s1 = split[0];
+                return s1.equals(id);
+            })).forEach(func);
+        }
+
+        public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(InfPlugin.plugin.config().abilityConfigs.keys());
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        //@SubCommand(value = "", permission = "im.delete.", tabCompleter = "Completer")
+        public void sampleCommand(CommandSender sender, Arguments arguments) {
+        }
+
+        public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
 
     }
     //</editor-fold>

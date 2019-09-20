@@ -51,18 +51,18 @@ public class MobManager {
     }
 
     private void initialize() {
-        if ((!worldMobMap.values().isEmpty())) {
-            worldMobMap.values().forEach(list -> {
-                if (!list.isEmpty()) {
-                    LinkedList<IMob> iMobs = new LinkedList<>(list);
-                    IMob poll;
-                    while ((poll = iMobs.poll()) != null) {
-                        removeMob(poll, false);
-                    }
-                }
-            });
-        }
-        worldMobMap.clear();
+//        if ((!worldMobMap.values().isEmpty())) {
+//            worldMobMap.values().forEach(list -> {
+//                if (!list.isEmpty()) {
+//                    LinkedList<IMob> iMobs = new LinkedList<>(list);
+//                    IMob poll;
+//                    while ((poll = iMobs.poll()) != null) {
+//                        removeMob(poll, false);
+//                    }
+//                }
+//            });
+//        }
+//        worldMobMap.clear();
         nameCfgMap.clear();
         natualSpawnLists.clear();
     }
