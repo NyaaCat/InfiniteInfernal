@@ -192,6 +192,10 @@ public class Utils {
     }
 
     private static boolean isValidLocation(Location targetLocation) {
+        World world = targetLocation.getWorld();
+        if (world == null || !world.isChunkLoaded(targetLocation.getBlockX() >> 4, targetLocation.getBlockZ() >> 4)){
+            return false;
+        }
         Block block = targetLocation.getBlock();
         Block lowerBlock = block.getRelative(BlockFace.DOWN);
         Block upperBlock = block.getRelative(BlockFace.UP);
