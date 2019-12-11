@@ -7,7 +7,7 @@ softdepend: [WorldGuard,NyaaUtils]
 authors: [ReinWD]
 website: "https://github.com/NyaaCat/InfiniteInfernal"
 database: false
-api-version: 1.14
+api-version: 1.15
 
 commands:
   infiniteinfernal:
