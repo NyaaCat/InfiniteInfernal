@@ -21,9 +21,16 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
     public double radius = 10;
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
+    @Serializable
+    public int maxTimes = 0;
+
+    private int counter = 0;
 
     @Override
     public void active(IMob iMob) {
+        if (maxTimes != 0 && counter >= maxTimes){
+            return;
+        }
         List<LivingEntity> candidate = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(radius, radius, radius))
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidate);
@@ -35,6 +42,7 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
                 NmsUtils.setEntityTag(entity,nbt);
             }
         }
+        counter++;
     }
 
     @Override

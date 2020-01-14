@@ -17,9 +17,16 @@ public class AbilitySummon extends ActiveAbility {
     public double radius;
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
+    @Serializable
+    public int maxTimes = 0;
+
+    private int counter = 0;
 
     @Override
     public void active(IMob iMob) {
+        if (maxTimes != 0 && counter >= maxTimes){
+            return;
+        }
         for (int i = 0; i < amount; i++) {
             Location location = null;
             for (int j = 0; j < 20; j++) {
@@ -36,6 +43,7 @@ public class AbilitySummon extends ActiveAbility {
                 NmsUtils.setEntityTag(entity,nbt);
             }
         }
+        counter++;
     }
 
     @Override
