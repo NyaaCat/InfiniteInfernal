@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.*;
 import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityProjectile;
+import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.controler.FirenlyFireControler;
 import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
@@ -79,6 +80,14 @@ public class Events implements Listener {
         if (event instanceof EntityDamageByEntityEvent) return;
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
+            LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
+            double damageResist;
+            damageResist = levelConfig == null? 0 : levelConfig.attr.damageResist;
+            if(damageResist!=0){
+                double origDamage = event.getDamage();
+                double resist = origDamage * (damageResist / 100d);
+                event.setDamage(Math.max(0, origDamage - resist));
+            }
             iMob.setLastDamageCause(event);
             List<IAbilitySet> abilities = iMob.getAbilities();
 
