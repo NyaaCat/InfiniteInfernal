@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.ability.AbilitySpawn;
+import cat.nyaa.infiniteinfernal.ability.BaseAbility;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -10,7 +11,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 
-public class AbilitySpawnEffect extends AbilityPassive implements AbilitySpawn {
+public class AbilitySpawnEffect extends BaseAbility implements AbilitySpawn {
     @Serializable
     public ParticleConfig particle = new ParticleConfig();
 
