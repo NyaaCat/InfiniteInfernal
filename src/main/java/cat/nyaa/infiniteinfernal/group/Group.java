@@ -2,11 +2,13 @@ package cat.nyaa.infiniteinfernal.group;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.nyaacore.Message;
-import org.bukkit.command.CommandSender;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Group {
@@ -15,6 +17,9 @@ public class Group {
     Set<UUID> admins = new LinkedHashSet<>();
     ExpDropMode dropMode = ExpDropMode.AVERAGE;
     LootMode lootMode = LootMode.KILLER;
+    Cache<UUID, UUID> quitCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
     public Group(String name){
         this.name = name;
@@ -30,6 +35,7 @@ public class Group {
 
     public void joinMember(Player member){
         members.add(member);
+        broadcast(new Message("").append(I18n.format("group.join.success", member.getName(), getName())));
     }
 
     public void addAdmin(Player member){
@@ -64,6 +70,27 @@ public class Group {
 
     public Collection<? extends String> getMemberNames() {
         return members.stream().map(HumanEntity::getName).collect(Collectors.toList());
+    }
+
+    public void removeAdmin(Player player) {
+        admins.remove(player.getUniqueId());
+    }
+
+    public void broadcast(Message append) {
+        members.forEach(player -> append.send(player));
+    }
+
+    public void kick(Player player) {
+        broadcast(new Message("").append(I18n.format("group.kick.player", player.getName())));
+        members.remove(player);
+        quitCache.invalidate(player.getUniqueId());
+    }
+
+    public void disband() {
+        broadcast(new Message("").append(I18n.format("group.disband.message")));
+        new ArrayList<>(members).forEach(player -> leaveMember(player));
+        admins.clear();
+        quitCache.cleanUp();
     }
 
     enum ExpDropMode {
