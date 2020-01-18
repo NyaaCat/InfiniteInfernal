@@ -44,30 +44,14 @@ public class InfMessager implements IMessager {
     public void broadcastToWorld(IMob deadMob, Entity killer, ILootItem item) {
         if (killer == null)return;
         buildMessage(MessageType.MOB_KILLED, deadMob, killer, item)
-                .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
+                .broadcast(Message.MessageType.CHAT, player -> Utils.shouldReceiveMessage(killer, player));
         if (item != null) {
             buildMessage(MessageType.DROP, deadMob, killer, item)
-                    .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
+                    .broadcast(Message.MessageType.CHAT, player -> Utils.shouldReceiveMessage(killer, player));
         } else {
             buildMessage(MessageType.NO_DROP, deadMob, killer, item)
-                    .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
+                    .broadcast(Message.MessageType.CHAT, player -> Utils.shouldReceiveMessage(killer, player));
         }
-    }
-
-    private boolean shouldReceiveMessage(Entity killer, Player player) {
-        BroadcastManager broadcastManager = InfPlugin.plugin.getBroadcastManager();
-        BroadcastMode receiveType = broadcastManager.getReceiveType(player.getWorld(), player.getUniqueId().toString());
-        switch (receiveType) {
-            case ALL:
-                return true;
-            case NEARBY:
-                return player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld());
-            case SELF_ONLY:
-                return killer.equals(player) || (!(killer instanceof Player) && player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld()));
-            case OFF:
-                return false;
-        }
-        return true;
     }
 
     private Message buildMessage(MessageType messageType, IMob deadMob, Entity killer, ILootItem lootItem) {
@@ -145,7 +129,7 @@ public class InfMessager implements IMessager {
         if (killer == null)return;
         if (item != null) {
             buildMessage(MessageType.SPETIAL_DROP, deadMob, killer, item)
-                    .broadcast(Message.MessageType.CHAT, player -> shouldReceiveMessage(killer, player));
+                    .broadcast(Message.MessageType.CHAT, player -> Utils.shouldReceiveMessage(killer, player));
         }
     }
 

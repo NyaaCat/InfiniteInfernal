@@ -1,9 +1,12 @@
 package cat.nyaa.infiniteinfernal.utils;
 
+import cat.nyaa.infiniteinfernal.BroadcastManager;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -125,12 +128,12 @@ public class Utils {
     public static Location randomSpawnLocationInFront(Location location, int minSpawnDistance, int maxSpawnDistance) {
         Vector direction = location.getDirection().clone();
         direction.setY(0);
-        if (direction.length() > 1e-4){
+        if (direction.length() > 1e-4) {
             direction = cone(direction, 30);
             for (int i = 0; i < 20; i++) {
                 Location targetLocation = location.clone().add(direction.normalize().multiply(random(minSpawnDistance, maxSpawnDistance)));
                 Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-                if (validSpawnLocationInY!=null) return validSpawnLocationInY;
+                if (validSpawnLocationInY != null) return validSpawnLocationInY;
             }
         }
         return randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
@@ -141,9 +144,9 @@ public class Utils {
         for (int i = 0; i < 20; i++) {
             targetLocation = randomLocation(center, innerRange, outerRange);
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (validSpawnLocationInY!=null) return validSpawnLocationInY;
+            if (validSpawnLocationInY != null) return validSpawnLocationInY;
         }
-        if (isSky(targetLocation)){
+        if (isSky(targetLocation)) {
             return targetLocation;
         }
         return null;
@@ -162,7 +165,7 @@ public class Utils {
         for (int i = 0; i < 30; i++) {
             Location targetLocation = randomLocation(center, innerRange, outerRange);
             Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (validSpawnLocationInY!=null) return validSpawnLocationInY;
+            if (validSpawnLocationInY != null) return validSpawnLocationInY;
         }
         return center;
     }
@@ -193,7 +196,7 @@ public class Utils {
 
     private static boolean isValidLocation(Location targetLocation) {
         World world = targetLocation.getWorld();
-        if (world == null || !world.isChunkLoaded(targetLocation.getBlockX() >> 4, targetLocation.getBlockZ() >> 4)){
+        if (world == null || !world.isChunkLoaded(targetLocation.getBlockX() >> 4, targetLocation.getBlockZ() >> 4)) {
             return false;
         }
         Block block = targetLocation.getBlock();
@@ -206,7 +209,7 @@ public class Utils {
         PotionEffectType eff = PotionEffectType.getByName(effect);
         if (eff != null) {
             PotionEffect potionEffect = target.getPotionEffect(eff);
-            if (potionEffect!=null && potionEffect.getAmplifier()>amplifier){
+            if (potionEffect != null && potionEffect.getAmplifier() > amplifier) {
                 return;
             }
             target.removePotionEffect(eff);
@@ -393,9 +396,33 @@ public class Utils {
         LivingEntity entity = iMob.getEntity();
         EntityEquipment equipment = entity.getEquipment();
         ItemStack itemInMainHand = null;
-        if (equipment != null){
+        if (equipment != null) {
             itemInMainHand = equipment.getItemInMainHand();
         }
         return targetLost.getCorrection(entity, itemInMainHand);
+    }
+
+    public static void addToPlayer(Player player, ItemStack itemStack) {
+        if (!InventoryUtils.addItem(player, itemStack)) {
+            Location location = player.getLocation();
+            World world = player.getWorld();
+            world.dropItem(location, itemStack);
+        }
+    }
+
+    public static boolean shouldReceiveMessage(Entity killer, Player player) {
+        BroadcastManager broadcastManager = InfPlugin.plugin.getBroadcastManager();
+        BroadcastMode receiveType = broadcastManager.getReceiveType(player.getWorld(), player.getUniqueId().toString());
+        switch (receiveType) {
+            case ALL:
+                return true;
+            case NEARBY:
+                return player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld());
+            case SELF_ONLY:
+                return killer.equals(player) || (!(killer instanceof Player) && player.getWorld().equals(killer.getWorld()) && player.getLocation().distance(killer.getLocation()) < broadcastManager.getNearbyRange(player.getWorld()));
+            case OFF:
+                return false;
+        }
+        return true;
     }
 }
