@@ -84,9 +84,25 @@ public class GroupManager {
     public void createGroup(String groupName, Player creator) {
         Group group = new Group(groupName);
         groupMap.put(groupName, group);
-        group.joinMember(creator);
+        join(creator, group);
         group.addAdmin(creator);
     }
+
+    void join(Player player, Group group) {
+        checkAndLeave(player);
+        Message append = new Message("").append(I18n.format("group.leave.success", player.getName()));
+        group.joinMember(player);
+        playerGroupMap.put(player, group);
+    }
+
+    void checkAndLeave(Player player) {
+        Group group1 = GroupManager.getInstance().getPlayerGroup(player);
+        if (group1 != null){
+            group1.leaveMember(player);
+            playerGroupMap.remove(player);
+        }
+    }
+
 
     public void disband(Group group) {
         groupMap.remove(group.name);
@@ -100,7 +116,7 @@ public class GroupManager {
     public void autoJoin(Player player) {
         Group group = quitCache.getIfPresent(player.getUniqueId());
         if (group != null){
-            group.joinMember(player);
+            join(player, group);
         }
     }
 
@@ -108,7 +124,7 @@ public class GroupManager {
         Group playerGroup = getPlayerGroup(player);
         if (playerGroup!=null){
             quitCache.put(player.getUniqueId(), playerGroup);
-            playerGroup.leaveMember(player);
+            checkAndLeave(player);
             playerGroup.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
         }
     }

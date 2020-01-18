@@ -48,7 +48,7 @@ public class GroupCommands extends CommandReceiver {
             new Message("").append(I18n.format("group.join.already_in", groupName)).send(sender);
             return;
         }
-        join(player, group);
+        GroupManager.getInstance().join(player, group);
         new Message("").append(I18n.format("group.join.success", player.getName(), groupName)).send(sender);
         if (sender != player){
             Message append = new Message("").append(I18n.format("group.join.success", player.getName(), groupName));
@@ -97,8 +97,10 @@ public class GroupCommands extends CommandReceiver {
             new Message("").append(I18n.format("group.leave.no_group")).send(sender);
             return;
         }
-        group.leaveMember(player);
-        group.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
+        GroupManager.getInstance().checkAndLeave(player);
+        Message append = new Message("").append(I18n.format("group.leave.success", player.getName()));
+        group.broadcast(append);
+        append.send(player);
     }
 
     public List<String> leaveCompleter(CommandSender sender, Arguments arguments) {
@@ -134,7 +136,7 @@ public class GroupCommands extends CommandReceiver {
             return;
         }
         GroupManager.getInstance().invite(inviter, player, target);
-        new Message("").append(I18n.format("group.invite.requested", player.getName(), target.getName()));
+        new Message("").append(I18n.format("group.invite.requested", player.getName(), target.getName())).send(sender);
     }
 
     public List<String> inviteCompleter(CommandSender sender, Arguments arguments) {
@@ -156,7 +158,7 @@ public class GroupCommands extends CommandReceiver {
         }
         if (session.player.equals(player)) {
             Group target = session.target;
-            join(player, target);
+            GroupManager.getInstance().join(player, target);
             GroupManager.getInstance().removeSession(player.getUniqueId());
         }
     }
@@ -190,7 +192,7 @@ public class GroupCommands extends CommandReceiver {
             new Message("").append(I18n.format("group.add_player.no_group", s)).send(sender);
             return;
         }
-        join(player, group);
+        GroupManager.getInstance().join(player, group);
     }
 
     public List<String> addPlayerCompleter(CommandSender sender, Arguments arguments) {
@@ -256,18 +258,6 @@ public class GroupCommands extends CommandReceiver {
     @SubCommand(value = "manage", permission = "im.group")
     public ManageCommands manageCommand;
 
-    private void join(Player player, Group group) {
-        checkAndLeave(player);
-        group.joinMember(player);
-    }
-
-    private void checkAndLeave(Player player) {
-        Group group1 = GroupManager.getInstance().getPlayerGroup(player);
-        if (group1 != null){
-            group1.leaveMember(player);
-            group1.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
-        }
-    }
 
     public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -472,8 +462,8 @@ public class GroupCommands extends CommandReceiver {
         }
 
         private void disband(Group group, String name) {
-            group.disband();
             GroupManager.getInstance().disband(group);
+            group.disband();
         }
 
         private void sendConfirmMessage(CommandSender sender, String name) {
