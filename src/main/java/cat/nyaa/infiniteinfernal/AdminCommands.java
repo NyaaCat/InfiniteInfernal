@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal;
 import cat.nyaa.infiniteinfernal.ability.AbilityCollection;
 import cat.nyaa.infiniteinfernal.ability.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
+import cat.nyaa.infiniteinfernal.group.GroupCommands;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -61,7 +62,7 @@ public class AdminCommands extends CommandReceiver {
     private InfPlugin plugin;
     private ILocalizer i18n;
 
-    public AdminCommands(InfPlugin plugin, ILocalizer _i18n) {
+    public AdminCommands(InfPlugin plugin, ILocalizer _i18n, GroupCommands groupCommands) {
         super(plugin, _i18n);
         this.plugin = plugin;
         this.i18n = _i18n;
@@ -69,6 +70,7 @@ public class AdminCommands extends CommandReceiver {
         createCommand = new CreateCommand(plugin, i18n);
         modifyCommand = new ModifyCommand(plugin, i18n);
         deleteCommand = new DeleteCommand(plugin, i18n);
+        this.groupCommands = groupCommands;
     }
 
     @Override
@@ -251,6 +253,9 @@ public class AdminCommands extends CommandReceiver {
             }
         }.runTaskAsynchronously(InfPlugin.plugin);
     }
+
+    @SubCommand(value = "group", permission = "im.group")
+    GroupCommands groupCommands;
 
     public List<String> addLootCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -738,7 +743,7 @@ public class AdminCommands extends CommandReceiver {
             AbilitySetConfig config = new AbilitySetConfig(s);
             abilityConfigs.add(s, config);
             abilityConfigs.saveToDir();
-            new Message(I18n.format("create.error.success", s)).send(sender);
+            new Message(I18n.format("create.ability.success", s)).send(sender);
         }
 
         public List<String> abilityCompleter(CommandSender sender, Arguments arguments) {

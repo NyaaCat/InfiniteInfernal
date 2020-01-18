@@ -253,9 +253,8 @@ public class GroupCommands extends CommandReceiver {
         message.send(sender);
     }
 
-
-    @SubCommand(value = "manage", permission = "im.group", tabCompleter = "leaveCompleter")
-    ManageCommands manageCommand;
+    @SubCommand(value = "manage", permission = "im.group")
+    public ManageCommands manageCommand;
 
     private void join(Player player, Group group) {
         checkAndLeave(player);
@@ -289,7 +288,7 @@ public class GroupCommands extends CommandReceiver {
         return null;
     }
 
-    public class ManageCommands extends CommandReceiver {
+    public static class ManageCommands extends CommandReceiver {
 
         /**
          * @param plugin for logging purpose only

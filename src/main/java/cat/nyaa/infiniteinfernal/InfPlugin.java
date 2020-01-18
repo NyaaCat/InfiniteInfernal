@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
+import cat.nyaa.infiniteinfernal.group.GroupCommands;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
@@ -22,15 +23,20 @@ public class InfPlugin extends JavaPlugin {
     Config config;
     MessageConfig messageConfig;
     I18n i18n;
+
+    ImiCommands imiCommand;
+    DebugCommands debugCommands;
     AdminCommands commands;
+    GroupCommands groupCommands;
+
     LootManager lootManager;
     MobManager mobManager;
     BroadcastManager broadcastManager;
+    BossbarManager bossbarManager;
+
     InfMessager infMessager;
     ISpawnControler spawnControler;
-    ImiCommands imiCommand;
-    DebugCommands debugCommands;
-    BossbarManager bossbarManager;
+
 
 
     @Override
@@ -42,9 +48,13 @@ public class InfPlugin extends JavaPlugin {
         events = new Events(this);
         i18n = new I18n(this, config.language);
         i18n.load();
-        commands = new AdminCommands(this, i18n);
+
+        groupCommands = new GroupCommands(this, i18n);
+        commands = new AdminCommands(this, i18n, groupCommands);
         imiCommand = new ImiCommands(this, i18n);
         debugCommands = new DebugCommands(this, i18n);
+
+
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
         broadcastManager = new BroadcastManager();
@@ -53,8 +63,10 @@ public class InfPlugin extends JavaPlugin {
         messageConfig.load();
         infMessager = new InfMessager(messageConfig);
         spawnControler = new InfSpawnControler(this);
+
         Bukkit.getPluginManager().registerEvents(events, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
+        Bukkit.getPluginCommand("ig").setExecutor(groupCommands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
         Bukkit.getPluginCommand("infdebug").setExecutor(debugCommands);
 

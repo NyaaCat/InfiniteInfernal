@@ -15,6 +15,10 @@ commands:
     aliases: [ii,im,inf]
     permission: "im.command"
     permission-message: "You don't have required permission <permission>"
+  ig:
+    description: "main command for infinite infernal plugin."
+    permission: "im.group"
+    permission-message: "You don't have required permission <permission>"
   imi:
     description: "controls message for infinite infernal plugin"
     permission: "imi.command"
@@ -59,4 +63,10 @@ permissions:
     default: op
   im.kill.damages:
     description: "permission for \"im.kill.damages\""
+    default: op
+  im.group:
+    description: "permission for im group commands"
+    default: true
+  im.group.admin:
+    description: "admin permission for im group commands"
     default: op
