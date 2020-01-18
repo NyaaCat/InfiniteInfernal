@@ -62,6 +62,9 @@ public class Config extends PluginConfigure {
     public List<String> tags = new ArrayList<>();
 
     @Serializable
+    public int groupShareRange = 50;
+
+    @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     @Serializable(name = "GetDropMessageFeedback")

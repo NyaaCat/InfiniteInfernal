@@ -3,6 +3,8 @@ package cat.nyaa.infiniteinfernal.group;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.nyaacore.Message;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -11,6 +13,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GroupManager {
@@ -87,6 +90,32 @@ public class GroupManager {
 
     public void disband(Group group) {
         groupMap.remove(group.name);
+        quitCache.cleanUp();
+    }
+
+    Cache<UUID, Group> quitCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
+
+    public void autoJoin(Player player) {
+        Group group = quitCache.getIfPresent(player.getUniqueId());
+        if (group != null){
+            group.joinMember(player);
+        }
+    }
+
+    public void savePlayerState(Player player) {
+        Group playerGroup = getPlayerGroup(player);
+        if (playerGroup!=null){
+            quitCache.put(player.getUniqueId(), playerGroup);
+            playerGroup.leaveMember(player);
+            playerGroup.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
+        }
+    }
+
+    public void kick(Player player, Group group) {
+        group.kick(player);
+        quitCache.invalidate(player.getUniqueId());
     }
 
 

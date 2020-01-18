@@ -17,9 +17,6 @@ public class Group {
     Set<UUID> admins = new LinkedHashSet<>();
     ExpDropMode dropMode = ExpDropMode.AVERAGE;
     LootMode lootMode = LootMode.KILLER;
-    Cache<UUID, UUID> quitCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
 
     public Group(String name){
         this.name = name;
@@ -83,14 +80,20 @@ public class Group {
     public void kick(Player player) {
         broadcast(new Message("").append(I18n.format("group.kick.player", player.getName())));
         members.remove(player);
-        quitCache.invalidate(player.getUniqueId());
     }
 
     public void disband() {
         broadcast(new Message("").append(I18n.format("group.disband.message")));
         new ArrayList<>(members).forEach(player -> leaveMember(player));
         admins.clear();
-        quitCache.cleanUp();
+    }
+
+    public ExpDropMode getExpDropMode() {
+        return dropMode;
+    }
+
+    public LootMode getLootMode() {
+        return lootMode;
     }
 
     enum ExpDropMode {
@@ -98,6 +101,6 @@ public class Group {
     }
 
     enum LootMode{
-        ROLL, KILLER, MAX_DAMAGE;
+        ROLL, KILLER;
     }
 }

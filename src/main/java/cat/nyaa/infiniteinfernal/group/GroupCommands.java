@@ -210,7 +210,7 @@ public class GroupCommands extends CommandReceiver {
         return filtered(arguments, completeStr);
     }
 
-    @SubCommand(value = "create", permission = "im.group", tabCompleter = "createCompleter")
+    @SubCommand(value = "create", permission = "im.group")
     public void onCreateGroup(CommandSender sender, Arguments arguments){
         String name = arguments.nextString();
         GroupManager instance = GroupManager.getInstance();
@@ -222,6 +222,37 @@ public class GroupCommands extends CommandReceiver {
         instance.createGroup(name, player);
         new Message("").append(I18n.format("group.create.success", name)).send(sender);
     }
+
+    @SubCommand(value = "list", permission = "im.group")
+    public void onList(CommandSender sender, Arguments arguments){
+        if (sender instanceof Player){
+            Group playerGroup = GroupManager.getInstance().getPlayerGroup((Player) sender);
+            if (playerGroup == null){
+                listGroup(sender);
+                return;
+            }
+            listPlayersInGroup(playerGroup, sender);
+        }else {
+            listGroup(sender);
+        }
+    }
+
+    private void listPlayersInGroup(Group playerGroup, CommandSender sender){
+        new Message("").append(I18n.format("group.list.message")).send(sender);
+        Message message = new Message("");
+        Collection<? extends String> groupNames = playerGroup.getMemberNames();
+        groupNames.forEach(s -> message.append(String.format("\"%s\"",s)).append(" "));
+        message.send(sender);
+    }
+
+    private void listGroup(CommandSender sender) {
+        new Message("").append(I18n.format("group.list.message")).send(sender);
+        Message message = new Message("");
+        Collection<? extends String> groupNames = GroupManager.getInstance().getGroupNames();
+        groupNames.forEach(s -> message.append(String.format("\"%s\"",s)).append(" "));
+        message.send(sender);
+    }
+
 
     @SubCommand(value = "manage", permission = "im.group", tabCompleter = "leaveCompleter")
     ManageCommands manageCommand;
@@ -344,7 +375,7 @@ public class GroupCommands extends CommandReceiver {
                 new Message("").append(I18n.format("error.permission")).send(sender);
                 return;
             }
-            group.kick(player);
+            GroupManager.getInstance().kick(player, group);
         }
 
         public List<String> kickCompleter(CommandSender sender, Arguments arguments) {
