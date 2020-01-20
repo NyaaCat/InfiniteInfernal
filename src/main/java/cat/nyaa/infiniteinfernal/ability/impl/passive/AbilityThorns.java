@@ -44,13 +44,13 @@ public class AbilityThorns extends AbilityPassive implements AbilityHurt {
         }
         if (damager instanceof LivingEntity) {
             Context.instance().putTemp(damager.getUniqueId(), DAMAGE_THORN, true);
-            ((LivingEntity) damager).damage(getThornDamage(ev), iMob.getEntity());
+            ((LivingEntity) damager).damage(getThornDamage(iMob, ev), iMob.getEntity());
             damager.getWorld().playSound(damager.getLocation(), Sound.ENCHANT_THORNS_HIT, 1,1);
         }
     }
 
-    private double getThornDamage(EntityDamageEvent event) {
-        return event.getFinalDamage() * (percentile / 100d);
+    private double getThornDamage(IMob iMob, EntityDamageEvent event) {
+        return Math.max(event.getFinalDamage() * (percentile / 100d), iMob.getDamage());
     }
 
     @Override
