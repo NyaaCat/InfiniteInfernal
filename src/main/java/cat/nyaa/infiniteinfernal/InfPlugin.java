@@ -5,11 +5,14 @@ import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.group.GroupCommands;
+import cat.nyaa.infiniteinfernal.group.GroupListener;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.ui.InfVarManager;
 import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
+import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,6 +26,8 @@ public class InfPlugin extends JavaPlugin {
     Config config;
     MessageConfig messageConfig;
     I18n i18n;
+
+    GroupListener groupListener;
 
     ImiCommands imiCommand;
     DebugCommands debugCommands;
@@ -54,6 +59,7 @@ public class InfPlugin extends JavaPlugin {
         imiCommand = new ImiCommands(this, i18n);
         debugCommands = new DebugCommands(this, i18n);
 
+        groupListener = new GroupListener();
 
         lootManager = LootManager.instance();
         mobManager = MobManager.instance();
@@ -65,6 +71,7 @@ public class InfPlugin extends JavaPlugin {
         spawnControler = new InfSpawnControler(this);
 
         Bukkit.getPluginManager().registerEvents(events, this);
+        Bukkit.getPluginManager().registerEvents(groupListener, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("ig").setExecutor(groupCommands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
@@ -81,6 +88,8 @@ public class InfPlugin extends JavaPlugin {
             bossbarManager.start(10);
         }
         MainLoopTask.start();
+        Ticker.getInstance().init(this);
+        InfVarManager.getInstance();
     }
 
     public void onReload() {

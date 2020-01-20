@@ -127,6 +127,14 @@ public class Events implements Listener {
             iMob.setLastDamageCause(event);
             List<IAbilitySet> abilities = iMob.getAbilities();
 
+            LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
+            double damageResist;
+            damageResist = levelConfig == null? 0 : levelConfig.attr.damageResist;
+            if(damageResist!=0){
+                double origDamage = event.getDamage();
+                double resist = origDamage * (damageResist / 100d);
+                event.setDamage(Math.max(0, origDamage - resist));
+            }
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));
