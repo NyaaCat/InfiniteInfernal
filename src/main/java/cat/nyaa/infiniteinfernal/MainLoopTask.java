@@ -75,8 +75,6 @@ public class MainLoopTask {
         }
         iMob.showParticleEffect();
         iMob.autoRetarget();
-        LivingEntity target = iMob.getTarget();
-        if (target == null)return;
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
         if (iCorrector != null) {
             EntityEquipment equipment = iMob.getEntity().getEquipment();
@@ -92,6 +90,8 @@ public class MainLoopTask {
         if (playersNearMob.size() == 0) {
             mobManager.removeMob(iMob, false);
         }
+        LivingEntity target = iMob.getTarget();
+        if (target == null)return;
         List<IAbilitySet> abilities = iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
                 .collect(Collectors.toList());
