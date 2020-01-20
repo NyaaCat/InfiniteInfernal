@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.controler;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,8 +63,18 @@ public class InfSpawnControler implements ISpawnControler {
 
     @Override
     public boolean canSpawnNearPlayer(Player player) {
-        int nearbyMobs = MobManager.instance().getMobsNearPlayer(player).size();
-        return !player.getGameMode().equals(GameMode.SPECTATOR) && nearbyMobs < getMaxSpawnAmount(player);
+        if(player.getGameMode().equals(GameMode.SPECTATOR)){
+            return false;
+        }
+        Location location = player.getLocation();
+        List<RegionConfig> regionsForLocation = InfPlugin.plugin.config().getRegionsForLocation(location);
+        int nearbyMobs = (int) MobManager.instance().getMobsNearPlayer(player)
+                .stream().filter(iMob -> {
+                    if (regionsForLocation.isEmpty())return true;
+                    Location location1 = iMob.getEntity().getLocation();
+                    return regionsForLocation.stream().anyMatch(regionConfig -> regionConfig.region.contains(location1));
+                }).count();
+        return nearbyMobs < getMaxSpawnAmount(player);
     }
 
     @Override
