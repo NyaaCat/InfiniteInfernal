@@ -18,7 +18,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GroupListener implements Listener {

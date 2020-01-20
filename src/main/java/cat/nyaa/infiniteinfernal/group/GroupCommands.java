@@ -415,9 +415,9 @@ public class GroupCommands extends CommandReceiver {
                 new Message(group.dropMode.name()).send(sender);
                 return;
             }
-            Group.ExpDropMode expDropMode = arguments.nextEnum(Group.ExpDropMode.class);
-            group.setDropMode(expDropMode);
-            new Message("").append(I18n.format("group.expdropmode_change", expDropMode.name())).send(sender);
+            Group.LootMode lootMode = arguments.nextEnum(Group.LootMode.class);
+            group.setLootMode(lootMode);
+            new Message("").append(I18n.format("group.expdropmode_change", lootMode.name())).send(sender);
         }
 
         public List<String> lootModeCompleter(CommandSender sender, Arguments arguments)  {
