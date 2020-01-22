@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.utils.ExperienceUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,7 +19,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GroupListener implements Listener {
@@ -38,7 +38,7 @@ public class GroupListener implements Listener {
         instance.savePlayerState(player);
     }
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onLoot(EntityDeathEvent event) {
         LivingEntity mob = event.getEntity();
         Player killer = mob.getKiller();
@@ -55,11 +55,11 @@ public class GroupListener implements Listener {
                 .filter(entity -> entity.getLocation().distance(mob.getLocation()) < groupShareRange)
                 .filter(entity -> playerGroup.containsMember(entity))
                 .collect(Collectors.toList());
-        if (expDropMode.equals(Group.ExpDropMode.AVERAGE)) {
+        if (expDropMode.equals(Group.ExpDropMode.AVERAGE) && collect.size() > 0) {
             int size = collect.size();
             int droppedExp = event.getDroppedExp();
-            float v = ((float) droppedExp) / ((float) size);
-            collect.forEach(player -> player.setExp(v));
+            int v = Math.round(((float) droppedExp) / ((float) size));
+            collect.forEach(player -> player.giveExp(v));
             event.setDroppedExp(0);
         }
         if (lootMode.equals(Group.LootMode.ROLL)) {
@@ -74,9 +74,9 @@ public class GroupListener implements Listener {
                                     .broadcast(Message.MessageType.CHAT, player1 -> Utils.shouldReceiveMessage(killer, player1));
                         }
                 );
+                drops.clear();
             }
         }
-        List<ItemStack> drops = event.getDrops();
 
     }
 

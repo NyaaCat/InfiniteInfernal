@@ -40,6 +40,8 @@ dependencies {
     compile('cat.nyaa:nyaacore:7.0-SNAPSHOT')
     compileOnly "org.spigotmc:spigot-api:1.15-R0.1-SNAPSHOT"
 
+//    compileOnly('com.udojava:EvalEx:2.1')
+
     implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
@@ -48,4 +50,11 @@ dependencies {
         exclude group: 'org.bukkit', module: 'bukkit'
     }
     compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.4.0"
+}
+
+task apiJar(type: Jar) {
+    includeEmptyDirs = false
+    from sourceSets.main.output.classesDirs
+    include('**/cat/nyaa/infiniteinfernal/')
+
 }

@@ -48,6 +48,9 @@ public class WorldConfig implements ISerializable {
     @Serializable(name = "broadcast")
     public BroadcastConfig broadcastConfig = new BroadcastConfig();
 
+    @Serializable
+    public double despawnRange = 128;
+
     public static class AggroConfig implements ISerializable {
         @Serializable
         public RangeConfig range = new RangeConfig();
