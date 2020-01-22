@@ -63,7 +63,7 @@ public class GroupManager {
     }
 
     public void invite(Player inviter, Player player, Group target) {
-        String inviterName = inviter == null? "" : inviter.getName();
+        String inviterName = inviter == null? "server" : inviter.getName();
         InviteSession inviteSession = new InviteSession(inviter, player, target);
         inviteSessionMap.put(player.getUniqueId(), inviteSession);
         new BukkitRunnable(){
@@ -74,11 +74,12 @@ public class GroupManager {
                     if (session.equals(inviteSession)){
                         inviteSessionMap.remove(player.getUniqueId());
                         new Message("").append(I18n.format("group.invite.timeout")).send(player);
+                        new Message("").append(I18n.format("group.invite.timeout")).send(session.inviter);
                     }
                 }
             }
         }.runTaskLater(InfPlugin.plugin, 600);
-        new Message("").append(I18n.format("group.invite.message", inviterName, player.getName(), target.getName())).send(player);
+        new Message("").append(I18n.format("group.invite.message", inviterName, target.getName())).send(player);
     }
 
     public void createGroup(String groupName, Player creator) {

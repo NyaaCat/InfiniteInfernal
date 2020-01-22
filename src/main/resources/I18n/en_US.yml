@@ -51,3 +51,48 @@ message:
   error:
     drop: "没有掉落提示信息，请联系管理员"
     special_drop: "没有特殊掉落提示信息，请联系管理员"
+group:
+  chat_format: "<{playerName}> {message}"
+  join:
+    success: "player %s joined group %s"
+    no_group: "no group \"%s\""
+    already_in: "you're already in group %s"
+  leave:
+    no_group: "player %s don't have a group"
+    success: "player %s left group"
+  invite:
+    no_group: "you don't have a group, use /ig group <groupName> to create one."
+    requested: "you invited player %s to join group %s"
+    no_session: "you don't have an invitation."
+    denied_inviter: "player %s denied your request"
+    denied_player: "you rejected to join group %s"
+    timeout: "invitation timed out."
+    message: "player %s invited you to join group %s.\n use /ig accept to accept, or /ig deny to deny."
+  add_player:
+    no_group: "there's no group %s"
+  create:
+    exists: "group %s exists"
+    success: "group %s created"
+  list:
+    message:
+      players: "group %s has players:"
+      groups: "there're groups:"
+  admin:
+    no_group_name: "there's no group %s"
+  manage:
+    admin:
+      add_success: "successfully added player %s to group %s"
+      remove_success: "successfully removed player %s from group %s"
+    no_group: "there's no group %s"
+    expdropmode_change: "exp drop mode changed to %s"
+    lootmode_change: "loot mode changed to %s"
+  disband:
+    no_group: "you don't have a group"
+    confirm_message: "are you sure to disband group %s? repeat command to confirm."
+    message: "your group has disbanded"
+    aborted: "disband aborted"
+  drop:
+    roll: "{playerName} got item {itemName} * {amount}"
+  kick:
+    player: "kicked player %s"
+

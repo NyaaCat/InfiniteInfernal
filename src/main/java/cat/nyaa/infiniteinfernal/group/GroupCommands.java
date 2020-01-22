@@ -50,7 +50,7 @@ public class GroupCommands extends CommandReceiver {
         }
         GroupManager.getInstance().join(player, group);
         new Message("").append(I18n.format("group.join.success", player.getName(), groupName)).send(sender);
-        if (sender != player){
+        if (sender != player) {
             Message append = new Message("").append(I18n.format("group.join.success", player.getName(), groupName));
             group.broadcast(append);
         }
@@ -81,11 +81,6 @@ public class GroupCommands extends CommandReceiver {
 
     @SubCommand(value = "leave", permission = "im.group", tabCompleter = "leaveCompleter")
     public void onLeave(CommandSender sender, Arguments arguments) {
-        if (sender.hasPermission("im.group.admin") && arguments.top() != null){
-            Player player = arguments.nextPlayer();
-            new Message("").append(I18n.format("group.leave.cleared", player.getName())).send(sender);
-            return;
-        }
         Player player = null;
         if (sender.hasPermission("im.group.admin") && arguments.top() != null) {
             player = arguments.nextPlayer();
@@ -93,8 +88,8 @@ public class GroupCommands extends CommandReceiver {
             player = asPlayer(sender);
         }
         Group group = GroupManager.getInstance().getPlayerGroup(player);
-        if (group == null){
-            new Message("").append(I18n.format("group.leave.no_group")).send(sender);
+        if (group == null) {
+            new Message("").append(I18n.format("group.leave.no_group", player.getName())).send(sender);
             return;
         }
         GroupManager.getInstance().checkAndLeave(player);
@@ -107,7 +102,7 @@ public class GroupCommands extends CommandReceiver {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
             case 1:
-                if (sender.hasPermission("im.group.admin")){
+                if (sender.hasPermission("im.group.admin")) {
                     completeStr.addAll(GroupManager.getInstance().getPlayerNames());
                 }
                 break;
@@ -121,18 +116,21 @@ public class GroupCommands extends CommandReceiver {
         Group target = null;
         Player inviter = null;
         GroupManager instance = GroupManager.getInstance();
-        if (sender.isOp() || sender.hasPermission("im.group.admin")){
+        if (sender.isOp() || sender.hasPermission("im.group.admin")) {
             if (arguments.top() != null) {
                 target = instance.getGroup(arguments.nextString());
-            }else {
+            } else {
                 if (sender instanceof Player) {
                     target = instance.getPlayerGroup(((Player) sender));
                     inviter = ((Player) sender);
                 }
             }
+        } else if (sender instanceof Player) {
+                target = instance.getPlayerGroup(((Player) sender));
+                inviter = ((Player) sender);
         }
-        if (target == null){
-            new Message("").append(I18n.format("group.invite.no_group", player.getName())).send(sender);
+        if (target == null) {
+            new Message("").append(I18n.format("group.invite.no_group")).send(sender);
             return;
         }
         GroupManager.getInstance().invite(inviter, player, target);
@@ -141,8 +139,33 @@ public class GroupCommands extends CommandReceiver {
 
     public List<String> inviteCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
+        GroupManager instance = GroupManager.getInstance();
         switch (arguments.remains()) {
             case 1:
+                if (sender instanceof Player) {
+                    Group playerGroup = instance.getPlayerGroup(((Player) sender));
+                    if (playerGroup!=null) {
+                        completeStr.addAll(Bukkit.getOnlinePlayers().stream().filter(player -> !playerGroup.containsMember(player)).map(pl -> pl.getName()).collect(Collectors.toSet()));
+                    }
+                }
+                if (sender.isOp() || sender.hasPermission("im.group.admin")) {
+                    if (filtered(arguments, completeStr).size() == 0){
+                        completeStr.addAll(instance.getGroupNames());
+                    }
+                }
+                break;
+            case 2:
+                if (sender.isOp() || sender.hasPermission("im.group.admin")) {
+                    Group playerGroup;
+                    if (sender instanceof Player) {
+                        playerGroup = instance.getPlayerGroup(((Player) sender));
+                    }else {
+                        playerGroup = instance.getGroup(arguments.top());
+                    }
+                    if (playerGroup != null){
+                        completeStr.addAll(Bukkit.getOnlinePlayers().stream().filter(player -> !playerGroup.containsMember(player)).map(pl -> pl.getName()).collect(Collectors.toSet()));
+                    }
+                }
                 break;
         }
         return filtered(arguments, completeStr);
@@ -188,7 +211,7 @@ public class GroupCommands extends CommandReceiver {
         String s = arguments.nextString();
         Group group = GroupManager.getInstance().getGroup(s);
         Player player = arguments.nextPlayer();
-        if (group == null){
+        if (group == null) {
             new Message("").append(I18n.format("group.add_player.no_group", s)).send(sender);
             return;
         }
@@ -204,7 +227,7 @@ public class GroupCommands extends CommandReceiver {
             case 2:
                 String s = arguments.nextString();
                 Group group = GroupManager.getInstance().getGroup(s);
-                if (group!=null){
+                if (group != null) {
                     completeStr.addAll(Bukkit.getOnlinePlayers().stream().filter(player -> !group.containsMember(player)).map(HumanEntity::getName).collect(Collectors.toList()));
                 }
                 break;
@@ -213,10 +236,10 @@ public class GroupCommands extends CommandReceiver {
     }
 
     @SubCommand(value = "create", permission = "im.group")
-    public void onCreateGroup(CommandSender sender, Arguments arguments){
+    public void onCreateGroup(CommandSender sender, Arguments arguments) {
         String name = arguments.nextString();
         GroupManager instance = GroupManager.getInstance();
-        if (instance.getGroup(name) != null){
+        if (instance.getGroup(name) != null) {
             new Message("").append(I18n.format("group.create.exists", name)).send(sender);
             return;
         }
@@ -226,32 +249,32 @@ public class GroupCommands extends CommandReceiver {
     }
 
     @SubCommand(value = "list", permission = "im.group")
-    public void onList(CommandSender sender, Arguments arguments){
-        if (sender instanceof Player){
+    public void onList(CommandSender sender, Arguments arguments) {
+        if (sender instanceof Player) {
             Group playerGroup = GroupManager.getInstance().getPlayerGroup((Player) sender);
-            if (playerGroup == null){
+            if (playerGroup == null) {
                 listGroup(sender);
                 return;
             }
             listPlayersInGroup(playerGroup, sender);
-        }else {
+        } else {
             listGroup(sender);
         }
     }
 
-    private void listPlayersInGroup(Group playerGroup, CommandSender sender){
-        new Message("").append(I18n.format("group.list.message")).send(sender);
+    private void listPlayersInGroup(Group playerGroup, CommandSender sender) {
+        new Message("").append(I18n.format("group.list.message.players", playerGroup.getName())).send(sender);
         Message message = new Message("");
         Collection<? extends String> groupNames = playerGroup.getMemberNames();
-        groupNames.forEach(s -> message.append(String.format("\"%s\"",s)).append(" "));
+        groupNames.forEach(s -> message.append(String.format("\"%s\"", s)).append(" "));
         message.send(sender);
     }
 
     private void listGroup(CommandSender sender) {
-        new Message("").append(I18n.format("group.list.message")).send(sender);
+        new Message("").append(I18n.format("group.list.message.groups")).send(sender);
         Message message = new Message("");
         Collection<? extends String> groupNames = GroupManager.getInstance().getGroupNames();
-        groupNames.forEach(s -> message.append(String.format("\"%s\"",s)).append(" "));
+        groupNames.forEach(s -> message.append(String.format("\"%s\"", s)).append(" "));
         message.send(sender);
     }
 
@@ -294,38 +317,38 @@ public class GroupCommands extends CommandReceiver {
         public void onAdmin(CommandSender sender, Arguments arguments) {
             String action = arguments.nextString();
             Group group;
-            switch (action){
+            switch (action) {
                 case "add":
                 case "remove":
                     group = GroupManager.getInstance().getPlayerGroup(asPlayer(sender));
                     break;
                 default:
                     group = GroupManager.getInstance().getGroup(action);
-                    if (group == null){
-                        new Message("").append(I18n.format("group.admin.no_group_name"));
+                    if (group == null) {
+                        new Message("").append(I18n.format("group.admin.no_group_name", action));
                     }
                     action = arguments.nextString();
             }
-            if (group == null){
+            if (group == null) {
                 throw new IllegalArgumentException();
             }
-            if (!sender.isOp() && !group.isAdmin(asPlayer(sender))){
+            if (!sender.isOp() && !group.isAdmin(asPlayer(sender))) {
                 new Message("").append(I18n.format("error.permission")).send(sender);
                 return;
             }
             Player player = arguments.nextPlayer();
-            switch (action){
+            switch (action) {
                 case "add":
                     group.addAdmin(player);
                     new Message("").append(I18n.format("group.manage.admin.add_success", player.getName(), group.name)).send(sender);
-                    if (sender != player){
+                    if (sender != player) {
                         new Message("").append(I18n.format("group.manage.admin.add_success", player.getName(), group.name)).send(player);
                     }
                     break;
                 case "remove":
                     group.removeAdmin(player);
                     new Message("").append(I18n.format("group.manage.admin.remove_success", player.getName(), group.name)).send(sender);
-                    if (sender != player){
+                    if (sender != player) {
                         new Message("").append(I18n.format("group.manage.admin.add_success", player.getName(), group.name)).send(player);
                     }
                     break;
@@ -338,12 +361,22 @@ public class GroupCommands extends CommandReceiver {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
-                    if (sender instanceof Player){
+                    completeStr.add("add");
+                    completeStr.add("remove");
+                    if (sender.isOp() || sender.hasPermission("im.group.admin")) {
+                        completeStr.add("<groupName>");
+                        if (filtered(arguments, completeStr).size() == 0) {
+                            completeStr.addAll(GroupManager.getInstance().getGroupNames());
+                        }
+                    }
+                    break;
+                case 2:
+                    if (sender instanceof Player) {
                         Player player = (Player) sender;
                         Group group = GroupManager.getInstance().getPlayerGroup(player);
-                        if (group != null){
+                        if (group != null) {
                             completeStr.addAll(group.getMemberNames());
-                        }else {
+                        } else {
                             completeStr.addAll(GroupManager.getInstance().getGroupNames());
                         }
                     }
@@ -356,11 +389,11 @@ public class GroupCommands extends CommandReceiver {
         public void onKick(CommandSender sender, Arguments arguments) {
             Player player = asPlayer(sender);
             Group group = GroupManager.getInstance().getPlayerGroup(player);
-            if (group == null){
+            if (group == null) {
                 new Message("").append(I18n.format("group.manage.no_group")).send(sender);
                 return;
             }
-            if (!sender.isOp() && !group.isAdmin(asPlayer(sender))){
+            if (!sender.isOp() && !group.isAdmin(asPlayer(sender))) {
                 new Message("").append(I18n.format("error.permission")).send(sender);
                 return;
             }
@@ -371,9 +404,9 @@ public class GroupCommands extends CommandReceiver {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
-                    if (sender instanceof Player){
+                    if (sender instanceof Player) {
                         Group group = GroupManager.getInstance().getPlayerGroup((Player) sender);
-                        if (group !=null){
+                        if (group != null) {
                             completeStr.addAll(group.getMemberNames());
                         }
                     }
@@ -383,11 +416,11 @@ public class GroupCommands extends CommandReceiver {
         }
 
         @SubCommand(value = "expDropMode", permission = "im.group", tabCompleter = "expDropModeCompleter")
-        public void onDropMode(CommandSender sender, Arguments arguments){
+        public void onDropMode(CommandSender sender, Arguments arguments) {
             Player player = asPlayer(sender);
             Group group = GroupManager.getInstance().getPlayerGroup(player);
 
-            if (arguments.top() == null){
+            if (arguments.top() == null) {
                 new Message(group.dropMode.name()).send(sender);
                 return;
             }
@@ -417,10 +450,10 @@ public class GroupCommands extends CommandReceiver {
             }
             Group.LootMode lootMode = arguments.nextEnum(Group.LootMode.class);
             group.setLootMode(lootMode);
-            new Message("").append(I18n.format("group.expdropmode_change", lootMode.name())).send(sender);
+            new Message("").append(I18n.format("group.lootmode_change", lootMode.name())).send(sender);
         }
 
-        public List<String> lootModeCompleter(CommandSender sender, Arguments arguments)  {
+        public List<String> lootModeCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
@@ -431,18 +464,18 @@ public class GroupCommands extends CommandReceiver {
         }
 
         @SubCommand(value = "disband", permission = "im.group", tabCompleter = "disbandCompleter")
-        public void onDisband(CommandSender sender, Arguments arguments){
-            if (arguments.top() != null){
+        public void onDisband(CommandSender sender, Arguments arguments) {
+            if (arguments.top() != null) {
                 String s = arguments.nextString();
                 Group group = GroupManager.getInstance().getGroup(s);
-                if (group == null){
+                if (group == null) {
                     new Message("").append(I18n.format("group.disband.no_group")).send(sender);
                     return;
                 }
-                if (sender.isOp() || sender.hasPermission("im.group.admin")){
-                    if (!disbandSet.contains(sender)){
+                if (sender.isOp() || sender.hasPermission("im.group.admin")) {
+                    if (!disbandSet.contains(sender)) {
                         sendConfirmMessage(sender, group.getName());
-                    }else {
+                    } else {
                         disband(group, sender.getName());
                     }
                 }
@@ -450,13 +483,13 @@ public class GroupCommands extends CommandReceiver {
             }
             Player player = asPlayer(sender);
             Group playerGroup = GroupManager.getInstance().getPlayerGroup(player);
-            if (playerGroup == null){
+            if (playerGroup == null) {
                 new Message("").append(I18n.format("group.disband.no_group")).send(sender);
                 return;
             }
-            if (!disbandSet.contains(sender)){
+            if (!disbandSet.contains(sender)) {
                 sendConfirmMessage(sender, playerGroup.getName());
-            }else {
+            } else {
                 disband(playerGroup, sender.getName());
             }
         }
@@ -468,22 +501,22 @@ public class GroupCommands extends CommandReceiver {
 
         private void sendConfirmMessage(CommandSender sender, String name) {
             new Message("").append(I18n.format("group.disband.confirm_message", name)).send(sender);
-                disbandSet.add(sender);
+            disbandSet.add(sender);
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     if (disbandSet.remove(sender)) {
-                        new Message("").append("group.disband.aborted").send(sender);
+                        new Message("").append(I18n.format("group.disband.aborted")).send(sender);
                     }
                 }
             }.runTaskLater(InfPlugin.plugin, 200);
         }
 
-        public List<String> disbandCompleter(CommandSender sender, Arguments arguments)  {
+        public List<String> disbandCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
-                    if (sender.isOp() || sender.hasPermission("im.group.admin")){
+                    if (sender.isOp() || sender.hasPermission("im.group.admin")) {
                         completeStr.addAll(GroupManager.getInstance().getGroupNames());
                     }
                     break;
@@ -491,7 +524,7 @@ public class GroupCommands extends CommandReceiver {
             return filtered(arguments, completeStr);
         }
 
-        public List<String> sampleCompleter(CommandSender sender, Arguments arguments)  {
+        public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:

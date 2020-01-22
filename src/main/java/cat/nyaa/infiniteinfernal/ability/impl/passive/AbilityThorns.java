@@ -50,7 +50,7 @@ public class AbilityThorns extends AbilityPassive implements AbilityHurt {
     }
 
     private double getThornDamage(IMob iMob, EntityDamageEvent event) {
-        return Math.max(event.getFinalDamage() * (percentile / 100d), iMob.getDamage());
+        return Math.min(event.getFinalDamage() * (percentile / 100d), iMob.getDamage());
     }
 
     @Override

@@ -47,3 +47,47 @@ message:
   error:
     drop: "没有掉落提示信息，请联系管理员"
     special_drop: "没有特殊掉落提示信息，请联系管理员"
+group:
+  chat_format: "<{playerName}> {message}"
+  join:
+    success: "玩家 %s 加入了队伍 %s"
+    no_group: "没有名为 \"%s\" 的队伍"
+    already_in: "你已经在队伍 %s 里了"
+  leave:
+    no_group: "玩家 %s 没有队伍"
+    success: "玩家 %s 离开了队伍"
+  invite:
+    no_group: "你不在任何队伍中,使用/ig create <队伍名> 创建一个队伍"
+    requested: "你邀请了玩家 %s 加入队伍 %s"
+    no_session: "你没有收到任何请求"
+    denied_inviter: "玩家 %s 拒绝了你的邀请"
+    denied_player: "你拒绝加入队伍 %s"
+    timeout: "邀请超时"
+    message: "玩家 %s 邀请你加入队伍 %s.\n 使用 /ig accept 同意邀请, 或者 /ig deny 拒绝."
+  add_player:
+    no_group: "队伍 %s 不存在"
+  create:
+    exists: "已经存在队伍 %s"
+    success: "成功创建队伍 %s"
+  list:
+    message:
+      players: "队伍 %s 中的玩家:"
+      groups: "队伍列表:"
+  admin:
+    no_group_name: "队伍 %s 不存在"
+  manage:
+    admin:
+      add_success: "成功添加玩家 %s 到队伍 %s"
+      remove_success: "成功移除玩家 %s 从队伍 %s"
+    no_group: "队伍 %s 不存在"
+    expdropmode_change: "经验分配模式修改为 %s"
+    lootmode_change: "掉落分配模式改为 %s"
+  disband:
+    no_group: "你不在任何队伍中"
+    confirm_message: "你确定要解散队伍 %s 吗? 重复输入此命令确认"
+    message: "你的队伍已经解散"
+    aborted: "解散超时"
+  drop:
+    roll: "{playerName} 通过roll点得到了 {itemName} * {amount}"
+  kick:
+    player: "踢出了玩家 %s"
