@@ -254,6 +254,13 @@ public class AdminCommands extends CommandReceiver {
         }.runTaskAsynchronously(InfPlugin.plugin);
     }
 
+    @SubCommand(value = "toggleActionbarUi", permission = "im.command")
+    public void onToggleUi(CommandSender sender, Arguments arguments){
+        boolean enableActionbarInfo = InfPlugin.plugin.config.enableActionbarInfo;
+        InfPlugin.plugin.config.enableActionbarInfo = !enableActionbarInfo;
+        InfPlugin.plugin.config.save();
+    }
+
     @SubCommand(value = "group", permission = "im.group")
     GroupCommands groupCommands;
 
