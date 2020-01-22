@@ -30,7 +30,7 @@ public class GroupCommands extends CommandReceiver {
         manageCommand = new ManageCommands(plugin, _i18n);
     }
 
-    @SubCommand(value = "join", permission = "im.group", tabCompleter = "joinCompleter")
+    @SubCommand(value = "join", permission = "im.group.admin", tabCompleter = "joinCompleter")
     public void onJoin(CommandSender sender, Arguments arguments) {
         String groupName = arguments.nextString();
         Group group = GroupManager.getInstance().getGroup(groupName);
@@ -468,6 +468,7 @@ public class GroupCommands extends CommandReceiver {
 
         private void sendConfirmMessage(CommandSender sender, String name) {
             new Message("").append(I18n.format("group.disband.confirm_message", name)).send(sender);
+                disbandSet.add(sender);
             new BukkitRunnable() {
                 @Override
                 public void run() {

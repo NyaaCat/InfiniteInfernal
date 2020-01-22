@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHit;
 import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHurt;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.ui.UiManager;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
@@ -123,6 +124,24 @@ public class DebugCommands extends CommandReceiver {
             Creeper spawn = targetBlock.getWorld().spawn(targetBlock.getLocation(), Creeper.class);
             NmsUtils.setEntityTag(spawn, tag);
         }
+    }
+
+    @SubCommand("mana")
+    public void onMana(CommandSender sender, Arguments arguments) {
+        Player player = arguments.nextPlayer();
+        double v = arguments.nextDouble();
+        UiManager instance = UiManager.getInstance();
+        int tick = instance.getTick();
+        instance.getUi(player).getMana().drop(v, tick);
+    }
+
+    @SubCommand("rage")
+    public void onRage(CommandSender sender, Arguments arguments) {
+        Player player = arguments.nextPlayer();
+        double v = arguments.nextDouble();
+        UiManager instance = UiManager.getInstance();
+        int tick = instance.getTick();
+        instance.getUi(player).getRage().drop(-v, tick);
     }
 
     Vector yAxies = new Vector(0, 1, 0);

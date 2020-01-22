@@ -98,7 +98,7 @@ public class GroupManager {
     void checkAndLeave(Player player) {
         Group group1 = GroupManager.getInstance().getPlayerGroup(player);
         if (group1 != null){
-            group1.leaveMember(player);
+            group1.leaveMember(player.getUniqueId());
             playerGroupMap.remove(player);
         }
     }
@@ -124,8 +124,8 @@ public class GroupManager {
         Group playerGroup = getPlayerGroup(player);
         if (playerGroup!=null){
             quitCache.put(player.getUniqueId(), playerGroup);
-            checkAndLeave(player);
             playerGroup.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
+            checkAndLeave(player);
         }
     }
 

@@ -425,4 +425,8 @@ public class Utils {
         }
         return true;
     }
+
+    public static String colored(String str) {
+        return ChatColor.translateAlternateColorCodes('&', str);
+    }
 }

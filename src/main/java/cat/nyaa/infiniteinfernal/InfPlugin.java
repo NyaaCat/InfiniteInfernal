@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.api.InfVarApi;
 import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
@@ -10,10 +11,13 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.ui.InfVarManager;
+import cat.nyaa.infiniteinfernal.ui.UiManager;
+import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
+import cat.nyaa.infiniteinfernal.ui.impl.VarRage;
 import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
 import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
@@ -89,7 +93,7 @@ public class InfPlugin extends JavaPlugin {
         }
         MainLoopTask.start();
         Ticker.getInstance().init(this);
-        InfVarManager.getInstance();
+        UiManager.getInstance();
     }
 
     public void onReload() {
@@ -135,5 +139,29 @@ public class InfPlugin extends JavaPlugin {
 
     public IMessager getMessager() {
         return infMessager;
+    }
+
+    InfVarApi infVarApi;
+
+    public InfVarApi getVarApi(){
+        if (infVarApi ==null) {
+            infVarApi = new InfVarApi() {
+                @Override
+                public VarRage getRage(Player player) {
+                    return UiManager.getInstance().getUi(player).getRage();
+                }
+
+                @Override
+                public VarMana getMana(Player player) {
+                    return UiManager.getInstance().getUi(player).getMana();
+                }
+
+                @Override
+                public int getTick() {
+                    return UiManager.getInstance().getTick();
+                }
+            };
+        }
+        return infVarApi;
     }
 }

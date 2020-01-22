@@ -65,6 +65,9 @@ public class Config extends PluginConfigure {
     public int groupShareRange = 50;
 
     @Serializable
+    public boolean enableActionbarInfo = true;
+
+    @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     @Serializable(name = "GetDropMessageFeedback")

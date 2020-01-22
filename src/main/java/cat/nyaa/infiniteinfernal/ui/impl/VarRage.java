@@ -1,16 +1,18 @@
 package cat.nyaa.infiniteinfernal.ui.impl;
 
-import cat.nyaa.infiniteinfernal.ui.BaseVar;
 
-public class VarRage extends BaseVar<Double> {
+import cat.nyaa.infiniteinfernal.ui.DoubleVar;
+
+public class VarRage extends DoubleVar {
     public VarRage(double value, double max) {
         super(value, max);
     }
 
     @Override
     public Double defaultRegeneration(int tick) {
-        int x = tick - lastChange;
-        return -(1.67 * x * x - 15 * x + 33.33);
+        double x = (tick - lastChange)/20d;
+//        return -(Math.min(1.67 * x * x - 15 * x + 33.33,40));
+        return - Math.min(20, Math.max(0, 4 * x - 20));
     }
 
     @Override

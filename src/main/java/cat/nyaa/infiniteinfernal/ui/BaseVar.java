@@ -5,6 +5,7 @@ public abstract class BaseVar<T> implements IVar<T>{
     protected T max;
     protected T baseMax;
     protected int lastChange = 0;
+    protected T damageIndicate;
 
     public BaseVar(T value, T max) {
         this.value = value;

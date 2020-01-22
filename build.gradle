@@ -51,3 +51,10 @@ dependencies {
     }
     compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.4.0"
 }
+
+task apiJar(type: Jar) {
+    includeEmptyDirs = false
+    from sourceSets.main.output.classesDirs
+    include('**/cat/nyaa/infiniteinfernal/')
+
+}

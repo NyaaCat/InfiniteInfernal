@@ -1,40 +1,41 @@
 package cat.nyaa.infiniteinfernal.ui;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
-import cat.nyaa.infiniteinfernal.ui.impl.VarRage;
 import cat.nyaa.infiniteinfernal.utils.ticker.TickEvent;
 import cat.nyaa.infiniteinfernal.utils.ticker.TickTask;
 import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 //import cat.nyaa.nyaacore.utils.ClassPathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.function.Predicate;
 
-public class InfVarManager {
-    private static InfVarManager INSTANCE;
+public class UiManager {
+    private static UiManager INSTANCE;
 
-    private InfVarManager(){
-        Ticker.getInstance().register(new RegenerationTask(tickEvent -> true));
+    RegenerationTask tickTask;
+
+    private UiManager(){
+        tickTask = new RegenerationTask(tickEvent -> false);
+        Ticker.getInstance().register(tickTask);
 //        Class<? extends BaseVar<?>>[] classes = ClassPathUtils.scanSubclasses(InfPlugin.plugin, "cat.nyaa.infiniteinfernal.ui.impl", BaseVar.class);
 //        for (Class<? extends BaseVar<?>> aClass : classes) {
 //            iVarMap.put(aClass.getSimpleName().substring(3), aClass);
 //        }
     }
 
-    public static InfVarManager getInstance() {
+    public static UiManager getInstance() {
         if (INSTANCE == null){
-            synchronized (InfVarManager.class){
+            synchronized (UiManager.class){
                 if (INSTANCE == null){
-                    INSTANCE = new InfVarManager();
+                    INSTANCE = new UiManager();
                 }
             }
         }
         return INSTANCE;
     }
 
-    Queue<Player> playerQueue = new LinkedList<>();
 //    Map<Player, Map<String, IVar<?>>> variableMap = new LinkedHashMap<>();
 //    Map<String, Class<? extends BaseVar<?>>> iVarMap = new LinkedHashMap<>();
 //
@@ -44,50 +45,33 @@ public class InfVarManager {
 //        return iVar;
 //    }
 
-    Map<Player, VarMana> manaMap = new LinkedHashMap<>();
-    Map<Player, VarRage> rageMap = new LinkedHashMap<>();
+    Map<UUID, BaseUi> uiMap = new LinkedHashMap<>();
 
-    public VarMana getMana(Player player){
-        return manaMap.get(player);
+    public BaseUi getUi(Player player) {
+        return uiMap.computeIfAbsent(player.getUniqueId(), uuid -> new BaseUi(uuid));
     }
 
-    public VarRage getRage(Player player){
-        return rageMap.get(player);
+    public int getTick() {
+        return tickTask.getTicked();
     }
 
     public class RegenerationTask extends TickTask {
+        Queue<Player> playerQueue = new LinkedList<>();
+
         public RegenerationTask(Predicate<TickEvent> shouldRemove) {
             super(shouldRemove);
         }
 
         @Override
         public void run(int ticked) {
-            if (playerQueue.isEmpty()) {
-                fillPlayerQueue();
-            }
-            int online = InfPlugin.plugin.getServer().getOnlinePlayers().size();
-            int playersPerTick = online;
-            for (int i = 0; i < playersPerTick; i++) {
-                if (playerQueue.isEmpty()) {
-                    break;
-                }
+            if (!InfPlugin.plugin.config().enableActionbarInfo)return;
+            while (!playerQueue.isEmpty()){
                 Player poll = playerQueue.poll();
-                refreshUi(poll);
+                BaseUi baseUi = uiMap.computeIfAbsent(poll.getUniqueId(), BaseUi::new);
+                baseUi.regeneration(poll,ticked);
+                baseUi.refreshUi(poll);
             }
-        }
-
-        private void refreshUi(Player poll) {
-            VarMana mana = getMana(poll);
-            VarRage rage = getRage(poll);
-
-        }
-
-        private void regeneration(IVar<Double> ivar) {
-        }
-
-        private void fillPlayerQueue() {
-            Collection<? extends Player> onlines = InfPlugin.plugin.getServer().getOnlinePlayers();
-            playerQueue.addAll(onlines);
+            playerQueue.addAll(Bukkit.getOnlinePlayers());
         }
     }
 }

@@ -30,7 +30,7 @@ public abstract class TickTask extends BukkitRunnable {
 
     public abstract void run(int ticked);
 
-    private int getTicked() {
+    public int getTicked() {
         return tickedTimes;
     }
 }

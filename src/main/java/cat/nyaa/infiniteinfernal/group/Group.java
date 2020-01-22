@@ -2,18 +2,15 @@ package cat.nyaa.infiniteinfernal.group;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.nyaacore.Message;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Group {
     String name;
-    Set<Player> members = new LinkedHashSet<>();
+    Set<UUID> members = new LinkedHashSet<>();
     Set<UUID> admins = new LinkedHashSet<>();
     ExpDropMode dropMode = ExpDropMode.AVERAGE;
     LootMode lootMode = LootMode.KILLER;
@@ -31,7 +28,7 @@ public class Group {
     }
 
     public void joinMember(Player member){
-        members.add(member);
+        members.add(member.getUniqueId());
         broadcast(new Message("").append(I18n.format("group.join.success", member.getName(), getName())));
     }
 
@@ -44,16 +41,16 @@ public class Group {
     }
 
     public Set<Player> getMembers(){
-        return Collections.unmodifiableSet(members);
+        return Collections.unmodifiableSet(members.stream().map(uuid -> Bukkit.getPlayer(uuid)).collect(Collectors.toSet()));
     }
 
     public boolean containsMember(Player sender) {
-        return members.contains(sender);
+        return members.contains(sender.getUniqueId());
     }
 
-    public void leaveMember(Player player) {
+    public void leaveMember(UUID player) {
         members.remove(player);
-        admins.remove(player.getUniqueId());
+        admins.remove(player);
     }
 
     public String getName() {
@@ -62,11 +59,11 @@ public class Group {
 
     public void broadcast(Message message, Player from){
         new Message(I18n.format("group.chat_format", from)).append(message.inner);
-        members.forEach(player -> message.send(player));
+        members.forEach(uuid -> message.send(Bukkit.getOfflinePlayer(uuid)));
     }
 
     public Collection<? extends String> getMemberNames() {
-        return members.stream().map(HumanEntity::getName).collect(Collectors.toList());
+        return members.stream().map(uuid -> Bukkit.getOfflinePlayer(uuid).getName()).collect(Collectors.toList());
     }
 
     public void removeAdmin(Player player) {
@@ -74,7 +71,7 @@ public class Group {
     }
 
     public void broadcast(Message append) {
-        members.forEach(player -> append.send(player));
+        members.forEach(uuid -> append.send(Bukkit.getOfflinePlayer(uuid)));
     }
 
     public void kick(Player player) {
@@ -84,7 +81,9 @@ public class Group {
 
     public void disband() {
         broadcast(new Message("").append(I18n.format("group.disband.message")));
-        new ArrayList<>(members).forEach(player -> leaveMember(player));
+        new ArrayList<>(members).forEach(uuid -> {
+            leaveMember(uuid);
+        });
         admins.clear();
     }
 
