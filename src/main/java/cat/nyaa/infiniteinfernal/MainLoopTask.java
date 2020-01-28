@@ -71,7 +71,6 @@ public class MainLoopTask {
         LivingEntity entity = iMob.getEntity();
         if (entity == null || entity.isDead()) {
             mobManager.removeMob(iMob, false);
-            return;
         }
         iMob.showParticleEffect();
         iMob.autoRetarget();
@@ -91,7 +90,9 @@ public class MainLoopTask {
             mobManager.removeMob(iMob, false);
         }
         LivingEntity target = iMob.getTarget();
-        if (target == null)return;
+        if (target == null || target.getWorld().equals(iMob.getEntity().getWorld()))
+            return;
+
         List<IAbilitySet> abilities = iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
                 .collect(Collectors.toList());
@@ -126,6 +127,8 @@ public class MainLoopTask {
 
         @Override
         public void run() {
+            if (!InfPlugin.plugin.config().isEnabledInWorld(world))return;
+
             List<IMob> mobs = MobManager.instance().getMobsInWorld(world);
             if (!mobs.isEmpty()) {
                 infernalTicker.submitInfernalTickMobs(mobs);

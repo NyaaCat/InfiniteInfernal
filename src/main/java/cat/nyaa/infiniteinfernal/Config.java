@@ -68,6 +68,9 @@ public class Config extends PluginConfigure {
     public boolean enableActionbarInfo = true;
 
     @Serializable
+    public int groupCapacity= 8;
+
+    @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     @Serializable(name = "GetDropMessageFeedback")
@@ -75,6 +78,9 @@ public class Config extends PluginConfigure {
 
     @Serializable
     public Map<String, String> addEffects = new LinkedHashMap<>();
+
+    @Serializable
+    public boolean enabled = true;
 
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
@@ -302,6 +308,14 @@ public class Config extends PluginConfigure {
             initAddEffectInstance();
         }
         return addEffectInstance.get(name);
+    }
+
+    public boolean isEnabledInWorld(World world){
+        if (!enabled)return false;
+        if (worlds.containsKey(world.getName())) {
+            return worlds.get(world.getName()).enabled;
+        }
+        return false;
     }
 
     private void initAddEffectInstance() {

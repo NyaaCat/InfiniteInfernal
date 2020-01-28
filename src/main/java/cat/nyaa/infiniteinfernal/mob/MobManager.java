@@ -117,6 +117,7 @@ public class MobManager {
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
+                spawn.addScoreboardTag("inf_infernal_mob");
                 Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
                 customMob.makeInfernal(spawn);
                 registerMob(customMob);
@@ -186,6 +187,18 @@ public class MobManager {
 
     public Set<Integer> getLevels() {
         return natualSpawnLists.keySet();
+    }
+
+    public void initMobs() {
+        Bukkit.getWorlds().forEach(world -> {
+            if (InfPlugin.plugin.config().isEnabledInWorld(world)){
+                world.getEntities().stream().filter(entity -> {
+                    Set<String> scoreboardTags = entity.getScoreboardTags();
+                    return scoreboardTags.contains("inf_infernal_mob") || scoreboardTags.contains("inf_damage_indicator");
+                })
+                        .forEach(Entity::remove);
+            }
+        });
     }
 
     static class FluidLocationWrapper {
@@ -410,7 +423,7 @@ public class MobManager {
                 bossBar.removeAll();
                 bossBarIMobMap.remove(mob.getBossBar(), mob);
             }
-            mob.getEntity().remove();
+            Utils.removeEntityLater(mob.getEntity(), 20);
         }
     }
 

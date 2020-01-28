@@ -94,6 +94,7 @@ public class InfPlugin extends JavaPlugin {
         MainLoopTask.start();
         Ticker.getInstance().init(this);
         UiManager.getInstance();
+        MobManager.instance().initMobs();
     }
 
     public void onReload() {
@@ -111,6 +112,7 @@ public class InfPlugin extends JavaPlugin {
         if (config.bossbar.enabled) {
             bossbarManager.start(10);
         }
+        MobManager.instance().initMobs();
     }
 
     @Override

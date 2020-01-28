@@ -168,7 +168,7 @@ public class InfSpawnControler implements ISpawnControler {
         if (iMob == null) return;
         World world = iMob.getEntity().getWorld();
         int maxSpawnDistance = getMaxSpawnDistance(world);
-        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance*2);
+        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance + 48);
     }
 
     @Override

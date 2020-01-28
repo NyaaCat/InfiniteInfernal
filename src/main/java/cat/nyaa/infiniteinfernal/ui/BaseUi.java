@@ -7,11 +7,16 @@ import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.UUID;
 
 public class BaseUi {
     private UUID uuid;
+
+    VarMana mana;
+    VarRage rage;
+    PlayerStatus status = PlayerStatus.NORMAL;
 
     public Message buildMessage() {
         Message message = new Message("");
@@ -19,19 +24,20 @@ public class BaseUi {
         BarInfo manaInfo = new BarInfo(mana.getMaxValue(), mana.getValue(), mana.getDamageIndicate());
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("&c&l% 4.0f &6/ &c&l% 4.0f ", rage.getValue(), rage.max));
 
         append(sb, "❰", rageInfo.empty, ChatColor.BLACK);
         append(sb, "❰", rageInfo.indicate, ChatColor.YELLOW);
         append(sb, "❰", rageInfo.filled, ChatColor.GOLD);
 
-        sb.append(" &c&lRAGE").append("&r | ").append("&b&lMANA ");
+        sb.append(String.format(" &6&l% 4.0f", rage.getValue()));
+
+        sb.append(" &6&lRAGE").append(String.format("&%c ❖ ",status.getColor().getChar())).append("&b&lMANA ");
+
+        sb.append(String.format("&b&l% 4.0f ", mana.getValue()));
 
         append(sb, "❱", manaInfo.filled, ChatColor.BLUE);
         append(sb, "❱", manaInfo.indicate, ChatColor.AQUA);
         append(sb, "❱", manaInfo.empty, ChatColor.BLACK);
-
-        sb.append(String.format("&b&l% 4.0f &9/ &b&l% 4.0f", mana.getValue(), mana.max));
 
         return message.append(Utils.colored(sb.toString()));
     }
@@ -50,22 +56,6 @@ public class BaseUi {
         return rage;
     }
 
-    class BarInfo {
-        int empty, filled, indicate;
-
-        BarInfo(double max, double value, double indicate) {
-            double totalSplits = 20;
-            this.indicate = (int) Math.ceil((indicate / max) * totalSplits);
-            filled = (int) Math.ceil((value / max) * totalSplits);
-            int remains = (int) totalSplits - filled;
-            this.indicate = Math.min(remains, this.indicate);
-            empty = remains - this.indicate;
-        }
-    }
-
-    VarMana mana;
-    VarRage rage;
-
     public BaseUi(UUID player) {
         this.uuid = player;
         mana = new VarMana(100, 100);
@@ -83,14 +73,27 @@ public class BaseUi {
         Bukkit.getPluginManager().callEvent(rageEvt);
         double manaReg = (manaEvt.getRegeneration() / 20d) * manaEvt.getFactor();
         double rageReg = (rageEvt.getRegeneration() / 20d) * rageEvt.getFactor();
-        mana.setValue(Math.min(mana.max, mana.getValue() + manaReg));
-        rage.setValue(Math.min(rage.max, Math.max(rage.getValue() + rageReg, 0)));
-        mana.refreshIndicate(tick - mana.lastChange);
-        rage.refreshIndicate(tick - rage.lastChange);
+        mana.regenerate(manaReg);
+        rage.regenerate(-rageReg);
+        mana.refreshIndicate(tick);
+        rage.refreshIndicate(tick);
     }
 
     public void refreshUi(Player poll) {
         Message message = buildMessage();
         message.send(poll, Message.MessageType.ACTION_BAR);
+    }
+
+    class BarInfo {
+        int empty, filled, indicate;
+
+        BarInfo(double max, double value, double indicate) {
+            double totalSplits = 20;
+            this.indicate = (int) Math.ceil((indicate / max) * totalSplits);
+            filled = (int) Math.ceil((value / max) * totalSplits);
+            int remains = (int) totalSplits - filled;
+            this.indicate = Math.min(remains, this.indicate);
+            empty = remains - this.indicate;
+        }
     }
 }

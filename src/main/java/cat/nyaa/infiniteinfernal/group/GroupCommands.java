@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.group;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
@@ -262,6 +263,17 @@ public class GroupCommands extends CommandReceiver {
         }
     }
 
+    @SubCommand(value = "tp", permission = "im.group.admin")
+    public void onTp(CommandSender sender, Arguments arguments){
+        Player player = asPlayer(sender);
+        Group playerGroup = GroupManager.getInstance().getPlayerGroup(player);
+        if (playerGroup==null)return;
+        if (playerGroup.getMembers().size() <= 1)return;
+        List<Player> collect = playerGroup.getMembers().stream().filter(player1 -> !player1.equals(player)).collect(Collectors.toList());
+        Player player1 = Utils.randomPick(collect);
+        player.teleport(player1);
+    }
+
     private void listPlayersInGroup(Group playerGroup, CommandSender sender) {
         new Message("").append(I18n.format("group.list.message.players", playerGroup.getName())).send(sender);
         Message message = new Message("");
@@ -426,7 +438,7 @@ public class GroupCommands extends CommandReceiver {
             }
             Group.ExpDropMode expDropMode = arguments.nextEnum(Group.ExpDropMode.class);
             group.setDropMode(expDropMode);
-            new Message("").append(I18n.format("group.expdropmode_change", expDropMode.name())).send(sender);
+            new Message("").append(I18n.format("group.manage.expdropmode_change", expDropMode.name())).send(sender);
         }
 
         public List<String> expDropModeCompleter(CommandSender sender, Arguments arguments) {
@@ -450,7 +462,7 @@ public class GroupCommands extends CommandReceiver {
             }
             Group.LootMode lootMode = arguments.nextEnum(Group.LootMode.class);
             group.setLootMode(lootMode);
-            new Message("").append(I18n.format("group.lootmode_change", lootMode.name())).send(sender);
+            new Message("").append(I18n.format("group.manage.lootmode_change", lootMode.name())).send(sender);
         }
 
         public List<String> lootModeCompleter(CommandSender sender, Arguments arguments) {

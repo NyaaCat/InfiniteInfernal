@@ -18,6 +18,9 @@ public class WorldConfig implements ISerializable {
         this.plugin = plugin;
     }
 
+    @Serializable
+    public boolean enabled = true;
+
     @Serializable(name = "disable-natural-spawning")
     public boolean disableNaturalSpawning = true;
 

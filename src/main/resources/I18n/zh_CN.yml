@@ -50,11 +50,12 @@ message:
 group:
   chat_format: "<{playerName}> {message}"
   join:
-    success: "玩家 %s 加入了队伍 %s"
-    no_group: "没有名为 \"%s\" 的队伍"
-    already_in: "你已经在队伍 %s 里了"
+    success: "&6玩家 &r%s &e加入了队伍 %s"
+    no_group: "&4没有名为 &r\"%s\" &4的队伍"
+    already_in: "&6你已经在队伍 &r%s &6里了"
+    capacity: "队伍已满"
   leave:
-    no_group: "玩家 %s 没有队伍"
+    no_group: "&4玩家 &r%s &c没有队伍"
     success: "玩家 %s 离开了队伍"
   invite:
     no_group: "你不在任何队伍中,使用/ig create <队伍名> 创建一个队伍"

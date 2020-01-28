@@ -13,7 +13,7 @@ public class Group {
     Set<UUID> members = new LinkedHashSet<>();
     Set<UUID> admins = new LinkedHashSet<>();
     ExpDropMode dropMode = ExpDropMode.AVERAGE;
-    LootMode lootMode = LootMode.KILLER;
+    LootMode lootMode = LootMode.ROLL;
 
     public Group(String name){
         this.name = name;

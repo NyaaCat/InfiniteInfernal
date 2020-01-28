@@ -264,6 +264,28 @@ public class AdminCommands extends CommandReceiver {
     @SubCommand(value = "group", permission = "im.group")
     GroupCommands groupCommands;
 
+    @SubCommand(value = "enable", permission = "im.admin", tabCompleter = "enableCompleter")
+    public void onEnable(CommandSender sender, Arguments arguments){
+        if (arguments.top() == null) {
+            boolean enabled = InfPlugin.plugin.config.enabled;
+            if (enabled){
+                MobManager instance = MobManager.instance();
+                Collection<IMob> mobs = instance.getMobs();
+                mobs.forEach(iMob -> instance.removeMob(iMob, false));
+            }
+            InfPlugin.plugin.config.enabled = !enabled;
+            return;
+        }
+    }
+    public List<String> enableCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
     public List<String> addLootCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {

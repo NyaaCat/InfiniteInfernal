@@ -90,6 +90,12 @@ public class GroupManager {
     }
 
     void join(Player player, Group group) {
+        if (group.getMembers().size()>=InfPlugin.plugin.config().groupCapacity){
+            Message append = new Message("").append(I18n.format("group.join.capacity"));
+            group.broadcast(append);
+            append.send(player);
+            return;
+        }
         checkAndLeave(player);
         Message append = new Message("").append(I18n.format("group.leave.success", player.getName()));
         group.joinMember(player);
@@ -132,6 +138,7 @@ public class GroupManager {
 
     public void kick(Player player, Group group) {
         group.kick(player);
+        checkAndLeave(player);
         quitCache.invalidate(player.getUniqueId());
     }
 

@@ -21,6 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.bukkit.Material.AIR;
+
 public class GroupListener implements Listener {
 
 
@@ -58,7 +60,7 @@ public class GroupListener implements Listener {
         if (expDropMode.equals(Group.ExpDropMode.AVERAGE) && collect.size() > 0) {
             int size = collect.size();
             int droppedExp = event.getDroppedExp();
-            int v = Math.round(((float) droppedExp) / ((float) size));
+            int v = (int) Math.ceil(((float) droppedExp) / ((float) size));
             collect.forEach(player -> player.giveExp(v));
             event.setDroppedExp(0);
         }
@@ -67,12 +69,13 @@ public class GroupListener implements Listener {
             List<ItemStack> drops = event.getDrops();
             if (!drops.isEmpty()) {
                 drops.forEach(itemStack -> {
+                            if (itemStack.getType().equals(AIR))return;
                             Utils.addToPlayer(player, itemStack);
                             String format = I18n.format("group.drop.roll");
                             format = format.replaceAll("\\{playerName}", player.getName());
                             new Message("").append(format, itemStack)
                                     .broadcast(Message.MessageType.CHAT, player1 -> Utils.shouldReceiveMessage(killer, player1));
-                        }
+                    }
                 );
                 drops.clear();
             }

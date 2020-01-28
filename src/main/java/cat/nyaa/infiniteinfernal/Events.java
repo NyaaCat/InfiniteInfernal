@@ -42,6 +42,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMobDeath(EntityDeathEvent ev) {
+        World world = ev.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         Entity entity = ev.getEntity();
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
@@ -68,6 +71,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onArmorStandHurt(EntityDamageEvent event) {
+        World world = event.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         Entity entity = event.getEntity();
         if (entity.getScoreboardTags().contains("inf_damage_indicator")) {
             event.setCancelled(true);
@@ -76,6 +82,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurt(EntityDamageEvent event) {
+        World world = event.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         Entity entity = event.getEntity();
         if (event instanceof EntityDamageByEntityEvent) return;
         if (MobManager.instance().isIMob(entity)) {
@@ -121,6 +130,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurtByEntity(EntityDamageByEntityEvent event) {
+        World world = event.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         Entity entity = event.getEntity();
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
@@ -174,6 +186,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onImobAttackLivingEntity(EntityDamageByEntityEvent ev) {
+        World world = ev.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         if (!(ev.getEntity() instanceof LivingEntity)) return;
         IMob iMob;
         if (!MobManager.instance().isIMob(ev.getDamager())) {
@@ -218,6 +233,8 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onNatualMobSpawn(CreatureSpawnEvent event) {
         World world = event.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.NATURAL)) {
             if (!InfPlugin.plugin.getSpawnControler().canVanillaAutoSpawn(world)) {
                 event.setCancelled(true);
@@ -237,6 +254,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onIMobNearDeath(IMobNearDeathEvent ev) {
+        World world = ev.getMob().getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         List<IAbilitySet> abilities = ev.getMob().getAbilities();
         if (abilities.isEmpty()) return;
         abilities.forEach(iAbilitySet -> {
@@ -248,6 +268,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInfMobSpawn(InfernalSpawnEvent ev) {
+        World world = ev.getIMob().getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         IMob iMob = ev.getIMob();
         List<IAbilitySet> abilities = iMob.getAbilities();
         if (!abilities.isEmpty()) {
@@ -262,6 +285,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onLootEvent(LootDropEvent ev) {
+        World world = ev.getiMob().getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         List<ItemStack> drops = ev.getEntityDeathEvent().getDrops();
         drops.clear();
         IMessager iMessager = InfPlugin.plugin.getMessager();
@@ -286,6 +312,9 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPotion(EntityPotionEffectEvent ev) {
+        World world = ev.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
+
         Entity entity = ev.getEntity();
         IMob iMob = MobManager.instance().toIMob(entity);
         if (iMob == null) {
@@ -316,5 +345,9 @@ public class Events implements Listener {
         if (!Objects.equals(target, currentTarget)) {
             ev.setCancelled(true);
         }
+    }
+
+    private boolean enabledInWorld(World world) {
+        return InfPlugin.plugin.config().isEnabledInWorld(world);
     }
 }
