@@ -26,8 +26,8 @@ public class BaseUi {
         StringBuilder sb = new StringBuilder();
 
         append(sb, "❰", rageInfo.empty, ChatColor.BLACK);
-        append(sb, "❰", rageInfo.indicate, ChatColor.YELLOW);
-        append(sb, "❰", rageInfo.filled, ChatColor.GOLD);
+        append(sb, "❰", rageInfo.indicate, ChatColor.DARK_RED);
+        append(sb, "❰", rageInfo.filled, ChatColor.RED);
 
         sb.append(String.format(" &6&l% 4.0f", rage.getValue()));
 
@@ -41,6 +41,7 @@ public class BaseUi {
 
         return message.append(Utils.colored(sb.toString()));
     }
+
     void append(StringBuilder sb, String charr, int amount, ChatColor color){
         sb.append(String.format("&%c",color.getChar()));
         for (int i = 0; i < amount; i++) {
@@ -74,7 +75,7 @@ public class BaseUi {
         double manaReg = (manaEvt.getRegeneration() / 20d) * manaEvt.getFactor();
         double rageReg = (rageEvt.getRegeneration() / 20d) * rageEvt.getFactor();
         mana.regenerate(manaReg);
-        rage.regenerate(-rageReg);
+        rage.regenerate(rageReg);
         mana.refreshIndicate(tick);
         rage.refreshIndicate(tick);
     }

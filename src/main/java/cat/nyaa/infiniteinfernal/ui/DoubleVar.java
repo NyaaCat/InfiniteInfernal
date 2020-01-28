@@ -33,6 +33,6 @@ public abstract class   DoubleVar extends BaseVar<Double> {
     }
 
     public void regenerate(double manaReg) {
-        setValue(Math.min(max, getValue() + manaReg));
+        setValue(Math.max(0,Math.min(max, getValue() + manaReg)));
     }
 }

@@ -255,7 +255,7 @@ public class AdminCommands extends CommandReceiver {
     }
 
     @SubCommand(value = "toggleActionbarUi", permission = "im.command")
-    public void onToggleUi(CommandSender sender, Arguments arguments){
+    public void onToggleUi(CommandSender sender, Arguments arguments) {
         boolean enableActionbarInfo = InfPlugin.plugin.config.enableActionbarInfo;
         InfPlugin.plugin.config.enableActionbarInfo = !enableActionbarInfo;
         InfPlugin.plugin.config.save();
@@ -265,18 +265,22 @@ public class AdminCommands extends CommandReceiver {
     GroupCommands groupCommands;
 
     @SubCommand(value = "enable", permission = "im.admin", tabCompleter = "enableCompleter")
-    public void onEnable(CommandSender sender, Arguments arguments){
-        if (arguments.top() == null) {
-            boolean enabled = InfPlugin.plugin.config.enabled;
-            if (enabled){
-                MobManager instance = MobManager.instance();
-                Collection<IMob> mobs = instance.getMobs();
-                mobs.forEach(iMob -> instance.removeMob(iMob, false));
-            }
-            InfPlugin.plugin.config.enabled = !enabled;
-            return;
+    public void onEnable(CommandSender sender, Arguments arguments) {
+        boolean enabled = InfPlugin.plugin.config.enabled;
+        if (enabled) {
+            MobManager instance = MobManager.instance();
+            Collection<IMob> mobs = instance.getMobs();
+            mobs.forEach(iMob -> instance.removeMob(iMob, false));
         }
+        InfPlugin.plugin.config.enabled = !enabled;
+        if (!enabled) {
+            new Message("").append(I18n.format("enabled")).send(sender);
+        } else {
+            new Message("").append(I18n.format("disabled")).send(sender);
+        }
+        InfPlugin.plugin.config().save();
     }
+
     public List<String> enableCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
@@ -699,7 +703,7 @@ public class AdminCommands extends CommandReceiver {
             int remains = arguments.remains();
             List<String> abilities = new ArrayList<>();
             MobConfig mobConfig1 = InfPlugin.plugin.config().mobConfigs.get(id);
-            if (mobConfig1 != null){
+            if (mobConfig1 != null) {
                 new Message(I18n.format("create.mob.exists", id)).send(sender);
                 return;
             }

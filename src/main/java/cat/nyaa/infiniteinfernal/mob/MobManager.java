@@ -128,7 +128,7 @@ public class MobManager {
     }
 
     public Collection<IMob> getMobs() {
-        return uuidMap.values();
+        return Collections.unmodifiableCollection(uuidMap.values());
     }
 
     public IMob spawnMobByName(String name, Location location, Integer level) {
