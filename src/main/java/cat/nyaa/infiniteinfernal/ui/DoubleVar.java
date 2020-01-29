@@ -1,12 +1,11 @@
 package cat.nyaa.infiniteinfernal.ui;
 
-public abstract class   DoubleVar extends BaseVar<Double> {
+public abstract class DoubleVar extends BaseVar<Double> {
 
     public DoubleVar(double value, double max) {
         super(value, max);
         damageIndicate = 0d;
     }
-
 
     public void drop(double drop, int tick){
         Double orig = this.value;

@@ -1,15 +1,20 @@
 package cat.nyaa.infiniteinfernal.ui;
 
+import cat.nyaa.infiniteinfernal.data.Database;
+import cat.nyaa.infiniteinfernal.data.PlayerData;
 import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
 import cat.nyaa.infiniteinfernal.ui.impl.VarRage;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
+import com.google.common.cache.Cache;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class BaseUi {
     private UUID uuid;
@@ -31,7 +36,7 @@ public class BaseUi {
 
         sb.append(String.format(" &6&l% 4.0f", rage.getValue()));
 
-        sb.append(" &6&lRAGE").append(String.format("&%c ❖ ",status.getColor().getChar())).append("&b&lMANA ");
+        sb.append(" &6&lRAGE").append(String.format("&%c ❖ ", status.getColor().getChar())).append("&b&lMANA ");
 
         sb.append(String.format("&b&l% 4.0f ", mana.getValue()));
 
@@ -42,8 +47,8 @@ public class BaseUi {
         return message.append(Utils.colored(sb.toString()));
     }
 
-    void append(StringBuilder sb, String charr, int amount, ChatColor color){
-        sb.append(String.format("&%c",color.getChar()));
+    void append(StringBuilder sb, String charr, int amount, ChatColor color) {
+        sb.append(String.format("&%c", color.getChar()));
         for (int i = 0; i < amount; i++) {
             sb.append(charr);
         }
@@ -59,8 +64,8 @@ public class BaseUi {
 
     public BaseUi(UUID player) {
         this.uuid = player;
-        mana = new VarMana(100, 100);
-        rage = new VarRage(0, 100);
+        mana = new VarMana(100, 100, this);
+        rage = new VarRage(0, 100, this);
     }
 
     public Player getPlayer(UUID uuid) {
@@ -81,8 +86,48 @@ public class BaseUi {
     }
 
     public void refreshUi(Player poll) {
+        if (status.equals(PlayerStatus.BUFFED)) {
+            status = checkPlayer(poll);
+        }
         Message message = buildMessage();
         message.send(poll, Message.MessageType.ACTION_BAR);
+    }
+
+    public void refreshIfPartial() {
+        Player player = Bukkit.getPlayer(uuid);
+        refreshUi(player);
+    }
+
+    public void refreshIfOn(Player poll) {
+        UiReceiveMode uiReceiveMode;
+        Cache<UUID, UiReceiveMode> cache = UiManager.cache;
+        try {
+            uiReceiveMode = cache.get(poll.getUniqueId(), () -> UiReceiveMode.valueOf(Database.getInstance().getPlayerData(poll).actionbarReceiveMode));
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            PlayerData playerData = Database.getInstance().getPlayerData(poll);
+            uiReceiveMode = UiReceiveMode.ON;
+            playerData.actionbarReceiveMode = uiReceiveMode.name();
+            Database.getInstance().setPlayerData(playerData);
+        }
+        if (uiReceiveMode.equals(UiReceiveMode.ON)) {
+            refreshUi(poll);
+        }
+    }
+
+    PlayerStatus checkPlayer(Player player) {
+        Collection<PotionEffect> activePotionEffects = player.getActivePotionEffects();
+        if (activePotionEffects.stream().anyMatch(potionEffect -> buffList.contains(potionEffect.getType()) && potionEffect.getAmplifier() > 0)) {
+            return PlayerStatus.BUFFED;
+        } else return PlayerStatus.NORMAL;
+    }
+
+    public void setStatus(PlayerStatus status) {
+        this.status = status;
+    }
+
+    public PlayerStatus getStatus() {
+        return status;
     }
 
     class BarInfo {
@@ -93,8 +138,35 @@ public class BaseUi {
             this.indicate = (int) Math.ceil((indicate / max) * totalSplits);
             filled = (int) Math.ceil((value / max) * totalSplits);
             int remains = (int) totalSplits - filled;
-            this.indicate = Math.min(remains, this.indicate);
+            this.indicate = Math.max(Math.min(remains, this.indicate), 0);
             empty = remains - this.indicate;
         }
+    }
+
+    static final Set<PotionEffectType> buffList = new HashSet<>();
+
+    static {
+        PotionEffectType[] potionTypes = {
+                PotionEffectType.SPEED,
+                PotionEffectType.FAST_DIGGING,
+                PotionEffectType.INCREASE_DAMAGE,
+                PotionEffectType.HEAL,
+                PotionEffectType.JUMP,
+                PotionEffectType.REGENERATION,
+                PotionEffectType.DAMAGE_RESISTANCE,
+                PotionEffectType.FIRE_RESISTANCE,
+                PotionEffectType.WATER_BREATHING,
+                PotionEffectType.INVISIBILITY,
+                PotionEffectType.NIGHT_VISION,
+                PotionEffectType.HEALTH_BOOST,
+                PotionEffectType.ABSORPTION,
+                PotionEffectType.SATURATION,
+                PotionEffectType.LUCK,
+                PotionEffectType.SLOW_FALLING,
+                PotionEffectType.CONDUIT_POWER,
+                PotionEffectType.DOLPHINS_GRACE,
+                PotionEffectType.HERO_OF_THE_VILLAGE,
+        };
+        buffList.addAll(Arrays.asList(potionTypes));
     }
 }

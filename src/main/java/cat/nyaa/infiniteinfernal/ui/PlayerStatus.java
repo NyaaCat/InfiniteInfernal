@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.ui;
 import org.bukkit.ChatColor;
 
 public enum PlayerStatus {
-    NORMAL(ChatColor.GREEN), DAMAGED(ChatColor.DARK_RED), BUFFED(ChatColor.AQUA), HIT_TARGET(ChatColor.GOLD);
+    NORMAL(ChatColor.GREEN), DAMAGED(ChatColor.RED), BUFFED(ChatColor.BLUE), HIT_TARGET(ChatColor.YELLOW);
 
     private ChatColor color;
 

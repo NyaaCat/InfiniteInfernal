@@ -1,10 +1,20 @@
 package cat.nyaa.infiniteinfernal.ui.impl;
 
+import cat.nyaa.infiniteinfernal.ui.BaseUi;
 import cat.nyaa.infiniteinfernal.ui.DoubleVar;
 
 public class VarMana extends DoubleVar {
-    public VarMana(double value, double max) {
+    private BaseUi baseUi;
+
+    public VarMana(double value, double max, BaseUi baseUi) {
         super(value, max);
+        this.baseUi = baseUi;
+    }
+
+    @Override
+    public void drop(double drop, int tick) {
+        super.drop(drop, tick);
+        baseUi.refreshIfPartial();
     }
 
     @Override

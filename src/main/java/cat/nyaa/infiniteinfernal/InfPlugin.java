@@ -5,12 +5,14 @@ import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
 import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
+import cat.nyaa.infiniteinfernal.data.Database;
 import cat.nyaa.infiniteinfernal.group.GroupCommands;
 import cat.nyaa.infiniteinfernal.group.GroupListener;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.ui.UiEvents;
 import cat.nyaa.infiniteinfernal.ui.UiManager;
 import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
 import cat.nyaa.infiniteinfernal.ui.impl.VarRage;
@@ -20,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.logging.Level;
 
 public class InfPlugin extends JavaPlugin {
@@ -27,13 +30,16 @@ public class InfPlugin extends JavaPlugin {
     public static boolean wgEnabled = false;
 
     Events events;
+    UiEvents uiEvents;
     Config config;
     MessageConfig messageConfig;
     I18n i18n;
+    Database database;
 
     GroupListener groupListener;
 
     ImiCommands imiCommand;
+    ImbCommands imbCommands;
     DebugCommands debugCommands;
     AdminCommands commands;
     GroupCommands groupCommands;
@@ -55,6 +61,7 @@ public class InfPlugin extends JavaPlugin {
         config = new Config(this);
         config.load();
         events = new Events(this);
+        uiEvents = new UiEvents();
         i18n = new I18n(this, config.language);
         i18n.load();
 
@@ -62,6 +69,7 @@ public class InfPlugin extends JavaPlugin {
         commands = new AdminCommands(this, i18n, groupCommands);
         imiCommand = new ImiCommands(this, i18n);
         debugCommands = new DebugCommands(this, i18n);
+        imbCommands = new ImbCommands(this, i18n);
 
         groupListener = new GroupListener();
 
@@ -75,11 +83,13 @@ public class InfPlugin extends JavaPlugin {
         spawnControler = new InfSpawnControler(this);
 
         Bukkit.getPluginManager().registerEvents(events, this);
+        Bukkit.getPluginManager().registerEvents(uiEvents, this);
         Bukkit.getPluginManager().registerEvents(groupListener, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("ig").setExecutor(groupCommands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
         Bukkit.getPluginCommand("infdebug").setExecutor(debugCommands);
+        Bukkit.getPluginCommand("imb").setExecutor(imbCommands);
 
         try {
             WorldGuardUtils.init();
@@ -95,6 +105,16 @@ public class InfPlugin extends JavaPlugin {
         Ticker.getInstance().init(this);
         UiManager.getInstance();
         MobManager.instance().initMobs();
+        Database instance = Database.getInstance();
+        instance.load();
+        try {
+            instance.init();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void onReload() {

@@ -5,7 +5,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class RegenerationEvent extends Event {
-    private static HandlerList handlerList = new HandlerList();
+    public static HandlerList handlerList = new HandlerList();
 
     private final Player player;
     private final IVar<Double> iVar;
@@ -48,4 +48,9 @@ public class RegenerationEvent extends Event {
     public HandlerList getHandlers() {
         return handlerList;
     }
+
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
 }

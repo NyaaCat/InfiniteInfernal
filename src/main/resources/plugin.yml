@@ -23,6 +23,10 @@ commands:
     description: "controls message for infinite infernal plugin"
     permission: "imi.command"
     permission-message: "You don't have required permission <permission>"
+  imb:
+    description: "controls message for infinite infernal plugin"
+    permission: "imb.command"
+    permission-message: "You don't have required permission <permission>"
   infdebug:
     description: "debug command for infinite infernal plugin"
     aliases: imd

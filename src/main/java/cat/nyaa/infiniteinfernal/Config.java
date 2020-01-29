@@ -117,8 +117,8 @@ public class Config extends PluginConfigure {
         if (worlds.size() == 0) {
             Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
             initConfigs();
+            generateConfigForWorlds();
         }
-        generateConfigForWorlds();
         this.loadStandaloneConfigs();
         save();
     }
