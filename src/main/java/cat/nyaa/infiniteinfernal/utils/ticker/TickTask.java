@@ -8,6 +8,10 @@ public abstract class TickTask extends BukkitRunnable {
     private int tickedTimes = 0;
     private Predicate<TickEvent> predicate;
 
+    public TickTask(){
+
+    }
+
     public TickTask(Predicate<TickEvent> shouldRemove) {
         predicate = shouldRemove;
     }
@@ -32,5 +36,9 @@ public abstract class TickTask extends BukkitRunnable {
 
     public int getTicked() {
         return tickedTimes;
+    }
+
+    protected void setPredicate(Predicate<TickEvent> shouldRemove) {
+        this.predicate = shouldRemove;
     }
 }

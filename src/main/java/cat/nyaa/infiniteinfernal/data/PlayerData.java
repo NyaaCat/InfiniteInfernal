@@ -12,7 +12,6 @@ public class PlayerData {
     @Column(name = "imd")
     public String actionbarReceiveMode = "ON";
     @Column(name = "mana")
-    public int manaBase = 100;
-
+    public double manaBase = 20;
 
 }

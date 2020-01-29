@@ -74,12 +74,7 @@ public class Database extends FileConfigure {
 
     public PlayerData getPlayerData(Player player){
         UUID uniqueId = player.getUniqueId();
-        PlayerData playerData = connect.getUnverifiedTable(PlayerData.class).selectUniqueUnchecked(WhereClause.EQ("uuid", uniqueId.toString()));
-        if (playerData == null){
-            playerData = new PlayerData();
-            playerData.uuid = uniqueId.toString();
-        }
-        return playerData;
+        return getPlayerData(uniqueId);
     }
 
     public void setPlayerData(PlayerData playerData) {
@@ -95,5 +90,14 @@ public class Database extends FileConfigure {
         } else {
             table.update(newRecord, where);
         }
+    }
+
+    public PlayerData getPlayerData(UUID uuid) {
+        PlayerData playerData = connect.getUnverifiedTable(PlayerData.class).selectUniqueUnchecked(WhereClause.EQ("uuid", uuid.toString()));
+        if (playerData == null){
+            playerData = new PlayerData();
+            playerData.uuid = uuid.toString();
+        }
+        return playerData;
     }
 }

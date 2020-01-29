@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.ui;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.data.Database;
 import cat.nyaa.infiniteinfernal.data.PlayerData;
 import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
@@ -9,6 +10,7 @@ import cat.nyaa.nyaacore.Message;
 import com.google.common.cache.Cache;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -64,7 +66,8 @@ public class BaseUi {
 
     public BaseUi(UUID player) {
         this.uuid = player;
-        mana = new VarMana(100, 100, this);
+        PlayerData playerData = Database.getInstance().getPlayerData(player);
+        mana = new VarMana(playerData.manaBase, playerData.manaBase, this);
         rage = new VarRage(0, 100, this);
     }
 
@@ -95,7 +98,10 @@ public class BaseUi {
 
     public void refreshIfPartial() {
         Player player = Bukkit.getPlayer(uuid);
-        refreshUi(player);
+        World world = player.getWorld();
+        if ((InfPlugin.plugin.config().enableActionbarInfo && !InfPlugin.plugin.config().isEnabledInWorld(world)) || Database.getInstance().getPlayerData(player).actionbarReceiveMode.equals(UiReceiveMode.PARTIAL.name())) {
+            refreshUi(player);
+        }
     }
 
     public void refreshIfOn(Player poll) {

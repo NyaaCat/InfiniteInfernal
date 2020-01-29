@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -76,6 +77,8 @@ public class UiManager {
             if (!InfPlugin.plugin.config().enableActionbarInfo) return;
             while (!playerQueue.isEmpty()) {
                 Player poll = playerQueue.poll();
+                World world = poll.getWorld();
+                if (!InfPlugin.plugin.config().isEnabledInWorld(world))continue;
 
                 BaseUi baseUi = uiMap.computeIfAbsent(poll.getUniqueId(), BaseUi::new);
                 baseUi.regeneration(poll, ticked);
