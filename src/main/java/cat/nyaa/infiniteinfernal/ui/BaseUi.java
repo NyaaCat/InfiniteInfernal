@@ -38,7 +38,7 @@ public class BaseUi {
 
         sb.append(String.format(" &6&l% 4.0f", rage.getValue()));
 
-        sb.append(" &6&lRAGE").append(String.format("&%c ❖ ", status.getColor().getChar())).append("&b&lMANA ");
+        sb.append(" &6&lRAGE").append(String.format("&%c ◄ ❖ ► ", status.getColor().getChar())).append("&b&lMANA ");
 
         sb.append(String.format("&b&l% 4.0f ", mana.getValue()));
 
