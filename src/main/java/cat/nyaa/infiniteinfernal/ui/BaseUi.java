@@ -68,7 +68,7 @@ public class BaseUi {
         this.uuid = player;
         PlayerData playerData = Database.getInstance().getPlayerData(player);
         mana = new VarMana(playerData.manaBase, playerData.manaBase, this);
-        rage = new VarRage(0, 100, this);
+        rage = new VarRage(playerData.rageBase, playerData.rageBase, this);
     }
 
     public Player getPlayer(UUID uuid) {
@@ -121,6 +121,11 @@ public class BaseUi {
         }else if (uiReceiveMode.equals(UiReceiveMode.AUTO) && InfPlugin.plugin.config().isEnabledInWorld(poll.getWorld())){
             refreshUi(poll);
         }
+    }
+
+    public void refreshBase(Player player){
+        PlayerData playerData = Database.getInstance().getPlayerData(player);
+        mana.setBaseMax(playerData.manaBase);
     }
 
     PlayerStatus checkPlayer(Player player) {

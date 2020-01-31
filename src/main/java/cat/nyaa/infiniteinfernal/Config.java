@@ -73,6 +73,12 @@ public class Config extends PluginConfigure {
     @Serializable
     public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
+    @Serializable(name = "player.base.mana")
+    public double defaultMana = 20;
+
+    @Serializable(name = "player.base.rage")
+    public double defaultRage = 100;
+
     @Serializable(name = "GetDropMessageFeedback")
     public boolean isGetDropMessageEnabled = false;
 

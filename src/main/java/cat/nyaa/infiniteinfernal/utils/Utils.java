@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -428,5 +429,10 @@ public class Utils {
 
     public static String colored(String str) {
         return ChatColor.translateAlternateColorCodes('&', str);
+    }
+
+    public static List<String> filtered(Arguments arguments, List<String> completeStr) {
+        String next = arguments.at(arguments.length() - 1);
+        return completeStr.stream().filter(s -> s.startsWith(next)).collect(Collectors.toList());
     }
 }

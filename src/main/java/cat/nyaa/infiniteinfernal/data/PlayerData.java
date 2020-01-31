@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.data;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.nyaacore.orm.annotations.Column;
 import cat.nyaa.nyaacore.orm.annotations.Table;
 
@@ -12,6 +13,8 @@ public class PlayerData {
     @Column(name = "imd")
     public String actionbarReceiveMode = "AUTO";
     @Column(name = "mana")
-    public double manaBase = 20;
+    public double manaBase = InfPlugin.plugin.config().defaultMana;
+    @Column(name = "rage")
+    public double rageBase = InfPlugin.plugin.config().defaultRage;
 
 }

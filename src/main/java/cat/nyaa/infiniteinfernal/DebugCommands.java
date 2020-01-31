@@ -6,9 +6,12 @@ import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityShingeki;
 import cat.nyaa.infiniteinfernal.ability.impl.active.AbilityStuck;
 import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHit;
 import cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPotionHurt;
+import cat.nyaa.infiniteinfernal.data.Database;
+import cat.nyaa.infiniteinfernal.data.PlayerData;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.ui.UiManager;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
@@ -36,6 +39,7 @@ import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -142,6 +146,89 @@ public class DebugCommands extends CommandReceiver {
         UiManager instance = UiManager.getInstance();
         int tick = instance.getTick();
         instance.getUi(player).getRage().drop(-v, tick);
+    }
+
+    @SubCommand(value = "manaBase", tabCompleter = "manaBaseCompleter")
+    public void onManaBase(CommandSender sender, Arguments arguments) {
+        Player player = arguments.nextPlayer();
+        String action = arguments.nextString();
+        double v = arguments.nextDouble();
+        switch (action){
+            case "inc":
+                PlayerData playerData = Database.getInstance().getPlayerData(player);
+                playerData.manaBase = playerData.manaBase + v;
+                Database.getInstance().setPlayerData(playerData);
+                break;
+            case "dec":
+                PlayerData playerData1 = Database.getInstance().getPlayerData(player);
+                playerData1.manaBase = playerData1.manaBase - v;
+                Database.getInstance().setPlayerData(playerData1);
+                break;
+            case "set":
+                PlayerData playerData2 = Database.getInstance().getPlayerData(player);
+                playerData2.manaBase = v;
+                Database.getInstance().setPlayerData(playerData2);
+                break;
+        }
+        UiManager.getInstance().getUi(player).refreshBase(player);
+    }
+
+    public List<String> manaBaseCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.add("inc");
+                completeStr.add("dec");
+                completeStr.add("set");
+                break;
+        }
+        return Utils.filtered(arguments, completeStr);
+    }
+
+    @SubCommand(value = "rageBase", tabCompleter = "rageBaseCompleter")
+    public void onRageBase(CommandSender sender, Arguments arguments) {
+        Player player = arguments.nextPlayer();
+        String action = arguments.nextString();
+        double v = arguments.nextDouble();
+        switch (action){
+            case "inc":
+                PlayerData playerData = Database.getInstance().getPlayerData(player);
+                playerData.manaBase = playerData.rageBase + v;
+                Database.getInstance().setPlayerData(playerData);
+                break;
+            case "dec":
+                PlayerData playerData1 = Database.getInstance().getPlayerData(player);
+                playerData1.manaBase = playerData1.rageBase - v;
+                Database.getInstance().setPlayerData(playerData1);
+                break;
+            case "set":
+                PlayerData playerData2 = Database.getInstance().getPlayerData(player);
+                playerData2.rageBase = v;
+                Database.getInstance().setPlayerData(playerData2);
+                break;
+        }
+        UiManager.getInstance().getUi(player).refreshBase(player);
+    }
+
+    public List<String> rageBaseCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.add("inc");
+                completeStr.add("dec");
+                completeStr.add("set");
+                break;
+        }
+        return Utils.filtered(arguments, completeStr);
+    }
+
+    public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                break;
+        }
+        return Utils.filtered(arguments, completeStr);
     }
 
     Vector yAxies = new Vector(0, 1, 0);
