@@ -15,7 +15,7 @@ public class VarRage extends DoubleVar {
     @Override
     public void drop(double drop, int tick) {
         super.drop(drop, tick);
-        baseUi.refreshIfPartial();
+        baseUi.refreshIfAuto();
     }
 
     @Override

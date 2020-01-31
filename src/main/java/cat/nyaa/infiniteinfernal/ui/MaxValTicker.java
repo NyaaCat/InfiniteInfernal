@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.ui;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.data.Database;
 import cat.nyaa.infiniteinfernal.event.ui.PlayerManaMaxEvent;
 import cat.nyaa.infiniteinfernal.event.ui.PlayerRageMaxEvent;
@@ -8,11 +9,12 @@ import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class MaxValTicker {
     PlayerTicker task;
-    private Queue<Player> playerQueue;
+    private Queue<Player> playerQueue = new LinkedList<>();
 
     public MaxValTicker(){
 
@@ -40,6 +42,7 @@ public class MaxValTicker {
 
         @Override
         public void run(int ticked) {
+            if (!InfPlugin.plugin.config().enabled)return;
             if (playerQueue.isEmpty()){
                 fillQueue();
             }

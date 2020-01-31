@@ -22,10 +22,13 @@ import java.util.function.Predicate;
 public class UiManager {
     private static UiManager INSTANCE;
 
+    MaxValTicker maxValTicker;
     RegenerationTask tickTask;
 
     private UiManager() {
         tickTask = new RegenerationTask(tickEvent -> false);
+        maxValTicker = new MaxValTicker();
+        maxValTicker.start();
         Ticker.getInstance().register(tickTask);
     }
 
@@ -77,9 +80,6 @@ public class UiManager {
             if (!InfPlugin.plugin.config().enableActionbarInfo) return;
             while (!playerQueue.isEmpty()) {
                 Player poll = playerQueue.poll();
-                World world = poll.getWorld();
-                if (!InfPlugin.plugin.config().isEnabledInWorld(world))continue;
-
                 BaseUi baseUi = uiMap.computeIfAbsent(poll.getUniqueId(), BaseUi::new);
                 baseUi.regeneration(poll, ticked);
                 baseUi.refreshIfOn(poll);

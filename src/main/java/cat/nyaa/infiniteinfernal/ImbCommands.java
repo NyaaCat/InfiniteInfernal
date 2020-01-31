@@ -33,10 +33,10 @@ public class ImbCommands extends CommandReceiver {
         UiReceiveMode uiReceiveMode = UiReceiveMode.valueOf(playerData.actionbarReceiveMode.toUpperCase());
         switch (uiReceiveMode){
             case ON:
-                uiReceiveMode = UiReceiveMode.PARTIAL;
-                new Message("").append(I18n.format("imd.partial")).send(player);
+                uiReceiveMode = UiReceiveMode.AUTO;
+                new Message("").append(I18n.format("imd.auto")).send(player);
                 break;
-            case PARTIAL:
+            case AUTO:
                 uiReceiveMode = UiReceiveMode.OFF;
                 new Message("").append(I18n.format("imd.off")).send(player);
                 break;
@@ -72,12 +72,12 @@ public class ImbCommands extends CommandReceiver {
         setData(player, playerData);
     }
 
-    @SubCommand(value = "partial", permission = "imb.command")
-    public void onPartial(CommandSender sender, Arguments arguments){
+    @SubCommand(value = "auto", permission = "imb.command")
+    public void onAuto(CommandSender sender, Arguments arguments){
         Player player = asPlayer(sender);
         PlayerData playerData = Database.getInstance().getPlayerData(player);
-        playerData.actionbarReceiveMode = UiReceiveMode.PARTIAL.name();
-        new Message("").append(I18n.format("imd.partial")).send(player);
+        playerData.actionbarReceiveMode = UiReceiveMode.AUTO.name();
+        new Message("").append(I18n.format("imd.auto")).send(player);
         setData(player, playerData);
     }
 

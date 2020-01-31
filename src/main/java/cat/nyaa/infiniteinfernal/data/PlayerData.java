@@ -10,7 +10,7 @@ public class PlayerData {
     @Column(name = "imi")
     public String killMessageReceiveMode = "ALL";
     @Column(name = "imd")
-    public String actionbarReceiveMode = "ON";
+    public String actionbarReceiveMode = "AUTO";
     @Column(name = "mana")
     public double manaBase = 20;
 

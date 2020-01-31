@@ -96,10 +96,10 @@ public class BaseUi {
         message.send(poll, Message.MessageType.ACTION_BAR);
     }
 
-    public void refreshIfPartial() {
+    public void refreshIfAuto() {
         Player player = Bukkit.getPlayer(uuid);
         World world = player.getWorld();
-        if ((InfPlugin.plugin.config().enableActionbarInfo && !InfPlugin.plugin.config().isEnabledInWorld(world)) || Database.getInstance().getPlayerData(player).actionbarReceiveMode.equals(UiReceiveMode.PARTIAL.name())) {
+        if ((InfPlugin.plugin.config().enableActionbarInfo && !InfPlugin.plugin.config().isEnabledInWorld(world)) && Database.getInstance().getPlayerData(player).actionbarReceiveMode.equals(UiReceiveMode.AUTO.name())) {
             refreshUi(player);
         }
     }
@@ -117,6 +117,8 @@ public class BaseUi {
             Database.getInstance().setPlayerData(playerData);
         }
         if (uiReceiveMode.equals(UiReceiveMode.ON)) {
+            refreshUi(poll);
+        }else if (uiReceiveMode.equals(UiReceiveMode.AUTO) && InfPlugin.plugin.config().isEnabledInWorld(poll.getWorld())){
             refreshUi(poll);
         }
     }
