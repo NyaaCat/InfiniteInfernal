@@ -1,14 +1,11 @@
 package cat.nyaa.infiniteinfernal.ability.impl.active;
 
-import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.List;
@@ -22,12 +19,12 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
     @Serializable
     public double speed = 1;
     @Serializable
-    public int duration = 10;
+    public double range = 10;
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
         if (!Utils.possibility(attackChance))return;
-        launch(target);
+        launch(target, mob);
     }
 
     @Override
@@ -35,38 +32,18 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
         if (!Utils.possibility(tickChance))return;
 
         LivingEntity mobEntity = iMob.getEntity();
-        List<Entity> nearbyEntities = mobEntity.getNearbyEntities(20, 20, 20);
+        double bigRange = this.range*1.5;
+        List<Entity> nearbyEntities = mobEntity.getNearbyEntities(bigRange, bigRange, bigRange);
         Utils.getValidTargets(iMob, nearbyEntities)
-                .forEach(this::launch);
+                .forEach(p -> launch(p, iMob));
     }
 
-    private void launch(LivingEntity p) {
-        Location direction = p.getEyeLocation();
-        new BukkitRunnable() {
-            private final static int ELYTRA_DELAY = 3;
-            final int d = duration;
-            final Vector v = toVector(direction.getYaw(), direction.getPitch(), speed);
-            final LivingEntity player = p;
-            int current = 0;
-            boolean stopped = false;
-
-            @Override
-            public void run() {
-                if (!stopped) {
-                    if (current < d) {
-                        current++;
-                        player.setVelocity(v);
-                    } else {
-                        player.setVelocity(player.getEyeLocation().getDirection().normalize().multiply(speed));
-                        cancel();
-                        stopped = true;
-                    }
-                } else {
-                    cancel();
-                    stopped = true;
-                }
-            }
-        }.runTaskTimer(InfPlugin.plugin, 1, 1);
+    private void launch(LivingEntity p, IMob iMob) {
+        final Vector v = toVector((Utils.random()*360) - 180, 45, speed);
+        final LivingEntity player = p;
+        if (player.getLocation().distance(iMob.getEntity().getLocation()) <= range) {
+            player.setVelocity(v);
+        }
     }
 
     private static Vector toVector(double yaw, double pitch, double length) {

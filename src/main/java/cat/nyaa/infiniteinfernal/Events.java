@@ -26,9 +26,11 @@ import org.bukkit.event.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -79,7 +81,21 @@ public class Events implements Listener {
             event.setCancelled(true);
         }
     }
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDot(EntityDamageEvent event) {
+        World world = event.getEntity().getWorld();
+        if (!enabledInWorld(world))return;
 
+        EntityDamageEvent.DamageCause cause = event.getCause();
+        if (cause.equals(EntityDamageEvent.DamageCause.WITHER) || cause.equals(EntityDamageEvent.DamageCause.POISON)|| cause.equals(EntityDamageEvent.DamageCause.FIRE_TICK)){
+            LivingEntity entity = (LivingEntity) event.getEntity();
+            Collection<PotionEffect> activePotionEffects = entity.getActivePotionEffects();
+            if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
+                return;
+            }
+            entity.setHealth(Math.max(entity.getHealth() - 1, 0.01));
+        }
+    }
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurt(EntityDamageEvent event) {
         World world = event.getEntity().getWorld();

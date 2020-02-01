@@ -117,7 +117,7 @@ public class MobManager {
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
-                spawn.addScoreboardTag("inf_infernal_mob");
+                InfPlugin.plugin.config().tags.forEach(spawn::addScoreboardTag);
                 Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
                 customMob.makeInfernal(spawn);
                 registerMob(customMob);
@@ -194,7 +194,8 @@ public class MobManager {
             if (InfPlugin.plugin.config().isEnabledInWorld(world)){
                 world.getEntities().stream().filter(entity -> {
                     Set<String> scoreboardTags = entity.getScoreboardTags();
-                    return scoreboardTags.contains("inf_infernal_mob") || scoreboardTags.contains("inf_damage_indicator");
+                    List<String> tags = InfPlugin.plugin.config().tags;
+                    return scoreboardTags.stream().anyMatch(tags::contains) || scoreboardTags.contains("inf_damage_indicator");
                 })
                         .forEach(Entity::remove);
             }
