@@ -193,12 +193,12 @@ public class DebugCommands extends CommandReceiver {
         switch (action){
             case "inc":
                 PlayerData playerData = Database.getInstance().getPlayerData(player);
-                playerData.manaBase = playerData.rageBase + v;
+                playerData.rageBase = playerData.rageBase + v;
                 Database.getInstance().setPlayerData(playerData);
                 break;
             case "dec":
                 PlayerData playerData1 = Database.getInstance().getPlayerData(player);
-                playerData1.manaBase = playerData1.rageBase - v;
+                playerData1.rageBase = playerData1.rageBase - v;
                 Database.getInstance().setPlayerData(playerData1);
                 break;
             case "set":

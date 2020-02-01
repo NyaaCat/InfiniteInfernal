@@ -22,7 +22,7 @@ public class VarRage extends DoubleVar {
     public Double defaultRegeneration(int tick) {
         double x = (tick - lastChange)/20d;
 //        return -(Math.min(1.67 * x * x - 15 * x + 33.33,40));
-        return - Math.min(20, Math.max(0, 4 * x - 20));
+        return - Math.max(0, 8 * x - 40);
     }
 
     @Override

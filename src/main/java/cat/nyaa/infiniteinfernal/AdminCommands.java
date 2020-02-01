@@ -279,6 +279,7 @@ public class AdminCommands extends CommandReceiver {
             new Message("").append(I18n.format("disabled")).send(sender);
         }
         InfPlugin.plugin.config().save();
+        MobManager.instance().initMobs();
     }
 
     public List<String> enableCompleter(CommandSender sender, Arguments arguments) {

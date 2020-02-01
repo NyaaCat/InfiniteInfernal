@@ -126,6 +126,7 @@ public class BaseUi {
     public void refreshBase(Player player){
         PlayerData playerData = Database.getInstance().getPlayerData(player);
         mana.setBaseMax(playerData.manaBase);
+        rage.setBaseMax(playerData.rageBase);
     }
 
     PlayerStatus checkPlayer(Player player) {
