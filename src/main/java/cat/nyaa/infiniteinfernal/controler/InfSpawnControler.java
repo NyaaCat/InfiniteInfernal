@@ -52,7 +52,7 @@ public class InfSpawnControler implements ISpawnControler {
                 .forEach(player -> {
                     boolean tempB = canSpawn.get();
                     if (!tempB) return;
-                    canSpawn.set(canSpawnNearPlayer(player) && !isTooClose(player, location));
+                    canSpawn.set(canSpawnNearPlayer(player, location) && !isTooClose(player, location));
                 });
         return canSpawn.get();
     }
@@ -62,12 +62,15 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     @Override
-    public boolean canSpawnNearPlayer(Player player) {
+    public boolean canSpawnNearPlayer(Player player, Location location) {
         if(player.getGameMode().equals(GameMode.SPECTATOR)){
             return false;
         }
-        Location location = player.getLocation();
-        List<RegionConfig> regionsForLocation = InfPlugin.plugin.config().getRegionsForLocation(location);
+        Location playerLocation = player.getLocation();
+        List<RegionConfig> regionsForLocation = InfPlugin.plugin.config().getRegionsForLocation(playerLocation);
+        if (!regionsForLocation.isEmpty() && regionsForLocation.stream().noneMatch(regionConfig -> regionConfig.region.contains(location))){
+            return false;
+        }
         int nearbyMobs = (int) MobManager.instance().getMobsNearPlayer(player)
                 .stream().filter(iMob -> {
                     if (regionsForLocation.isEmpty())return true;

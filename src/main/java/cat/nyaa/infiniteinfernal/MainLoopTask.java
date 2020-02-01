@@ -90,7 +90,7 @@ public class MainLoopTask {
             mobManager.removeMob(iMob, false);
         }
         LivingEntity target = iMob.getTarget();
-        if (target == null || target.getWorld().equals(iMob.getEntity().getWorld()))
+        if (target == null || !target.getWorld().equals(iMob.getEntity().getWorld()))
             return;
 
         List<IAbilitySet> abilities = iMob.getAbilities().stream()

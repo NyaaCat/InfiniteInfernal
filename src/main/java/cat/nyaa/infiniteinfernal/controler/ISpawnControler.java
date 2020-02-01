@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 
 public interface ISpawnControler {
     boolean canSpawn(World world, Location location);
-    boolean canSpawnNearPlayer(Player player);
+    boolean canSpawnNearPlayer(Player player, Location location);
     boolean canIMobAutoSpawn(World world);
     boolean canVanillaAutoSpawn(World world);
 
