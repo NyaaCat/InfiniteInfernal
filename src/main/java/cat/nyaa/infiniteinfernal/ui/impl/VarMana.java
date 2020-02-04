@@ -19,8 +19,8 @@ public class VarMana extends DoubleVar {
 
     @Override
     public Double defaultRegeneration(int tick) {
-        double x = (tick - lastChange) / 20d;
-        return Math.min(20, Math.max(0, 4 * x - 15));
+        double x = (tick - lastDrop) / 20d;
+        return Math.min(50, Math.max(0, 4 * x - 15));
     }
 
     @Override

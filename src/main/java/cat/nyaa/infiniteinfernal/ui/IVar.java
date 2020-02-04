@@ -9,7 +9,10 @@ public interface IVar<T> {
     void setMaxValue(T value);
     void setBaseMax(T value);
     T getDamageIndicate();
-    void setLastChange(int lastChange);
-    int getLastChange();
+    void setLastDrop(int lastChange);
+    int getLastDrop();
+    void setLastRaise(int lastChange);
+    int getLastRaise();
+
     String getName();
 }

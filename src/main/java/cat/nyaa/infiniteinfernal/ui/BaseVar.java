@@ -4,7 +4,8 @@ public abstract class BaseVar<T> implements IVar<T>{
     protected T value;
     protected T max;
     protected T baseMax;
-    protected int lastChange = 0;
+    protected int lastDrop = 0;
+    protected int lastRaise = 0;
     protected T damageIndicate;
 
     public BaseVar(T value, T max) {
@@ -46,12 +47,22 @@ public abstract class BaseVar<T> implements IVar<T>{
     }
 
     @Override
-    public void setLastChange(int lastChange) {
-        this.lastChange = lastChange;
+    public void setLastDrop(int lastChange) {
+        this.lastDrop = lastChange;
     }
 
     @Override
-    public int getLastChange() {
-        return lastChange;
+    public int getLastRaise() {
+        return lastRaise;
+    }
+
+    @Override
+    public void setLastRaise(int lastRaise) {
+        this.lastRaise = lastRaise;
+    }
+
+    @Override
+    public int getLastDrop() {
+        return lastDrop;
     }
 }

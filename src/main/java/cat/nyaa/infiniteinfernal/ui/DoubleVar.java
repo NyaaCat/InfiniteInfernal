@@ -11,7 +11,11 @@ public abstract class DoubleVar extends BaseVar<Double> {
         Double orig = this.value;
         setValue(Math.max(0, Math.min(this.value - drop, max)));
         damageIndicate = Math.min(damageIndicate + orig - getValue(), max);
-        setLastChange(tick);
+        if (drop > 0) {
+            setLastDrop(tick);
+        }else {
+            setLastRaise(tick);
+        }
     }
 
     @Override
@@ -20,7 +24,7 @@ public abstract class DoubleVar extends BaseVar<Double> {
     }
 
     public void refreshIndicate(int tick) {
-        int x = tick - lastChange;
+        int x = tick - lastDrop;
         double indicateDrop = getIndicateDrop(x);
         damageIndicate = Math.max(damageIndicate - indicateDrop, 0);
     }
