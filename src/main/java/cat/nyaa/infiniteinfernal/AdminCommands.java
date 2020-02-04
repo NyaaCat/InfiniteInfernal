@@ -119,12 +119,6 @@ public class AdminCommands extends CommandReceiver {
                 return;
             }
             ILootItem loot = lootManager.getLoot(itemName);
-            if (loot != null) {
-                Message message = new Message("");
-                message.append(I18n.format("loot.add.error.exists", itemName), loot.getItemStack())
-                        .send(sender);
-                return;
-            }
             lootManager.addLoot(itemName, isDynamic, itemInMainHand);
             Message append = new Message("");
             append.append(I18n.format("loot.add.success", itemName, isDynamic), itemInMainHand)
