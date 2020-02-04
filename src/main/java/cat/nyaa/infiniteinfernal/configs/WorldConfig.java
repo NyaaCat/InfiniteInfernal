@@ -72,6 +72,7 @@ public class WorldConfig implements ISerializable {
         trueDamage.put(EntityDamageEvent.DamageCause.HOT_FLOOR.name().toLowerCase(), 1d);
         trueDamage.put(EntityDamageEvent.DamageCause.STARVATION.name().toLowerCase(), 1d);
         trueDamage.put(EntityDamageEvent.DamageCause.DRAGON_BREATH.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.CONTACT.name().toLowerCase(), 1d);
     }
 
     @Serializable
