@@ -4,18 +4,18 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.ISerializable;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WorldConfig implements ISerializable {
-    private InfPlugin plugin;
 
     public WorldConfig() {
-    }
-
-    public WorldConfig(InfPlugin plugin) {
-        this.plugin = plugin;
+        trueDamage = new LinkedHashMap<>();
+        initDefault();
     }
 
     @Serializable
@@ -52,7 +52,38 @@ public class WorldConfig implements ISerializable {
     public BroadcastConfig broadcastConfig = new BroadcastConfig();
 
     @Serializable
+    public boolean enableTrueDamage = true;
+
+    @Serializable
+    public Map<String, Double> trueDamage;
+
+    private void initDefault() {
+        trueDamage.put(EntityDamageEvent.DamageCause.WITHER.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.POISON.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.FIRE_TICK.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.FIRE.name().toLowerCase(), 2d);
+        trueDamage.put(EntityDamageEvent.DamageCause.LAVA.name().toLowerCase(), 4d);
+        trueDamage.put(EntityDamageEvent.DamageCause.LIGHTNING.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.FIRE_TICK.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.MAGIC.name().toLowerCase(), -1.01d);
+        trueDamage.put(EntityDamageEvent.DamageCause.SUFFOCATION.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.VOID.name().toLowerCase(), 4d);
+        trueDamage.put(EntityDamageEvent.DamageCause.DROWNING.name().toLowerCase(), 2d);
+        trueDamage.put(EntityDamageEvent.DamageCause.HOT_FLOOR.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.STARVATION.name().toLowerCase(), 1d);
+        trueDamage.put(EntityDamageEvent.DamageCause.DRAGON_BREATH.name().toLowerCase(), 1d);
+    }
+
+    @Serializable
     public double despawnRange = 128;
+
+    public double getTruedamage(String type) {
+        return trueDamage.getOrDefault(type, 0d);
+    }
+
+    public boolean isTrueDamageEnabled() {
+        return enableTrueDamage;
+    }
 
     public static class AggroConfig implements ISerializable {
         @Serializable

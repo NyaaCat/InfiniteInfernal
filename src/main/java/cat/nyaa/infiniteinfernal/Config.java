@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,9 @@ public class Config extends PluginConfigure {
         levelConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "levels"), LevelConfig.class);
         mobConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "mobs"), MobConfig.class);
         regionConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
+        addEffects = new LinkedHashMap<>();
     }
+
 
     @Override
     protected JavaPlugin getPlugin() {
@@ -83,7 +86,7 @@ public class Config extends PluginConfigure {
     public boolean isGetDropMessageEnabled = false;
 
     @Serializable
-    public Map<String, String> addEffects = new LinkedHashMap<>();
+    public Map<String, String> addEffects;
 
     @Serializable
     public boolean enabled = true;
@@ -134,9 +137,11 @@ public class Config extends PluginConfigure {
         if (!worlds.isEmpty()) {
             String inc = "attribute:GENERIC_LUCK:10";
             String dec = "effect:UNLUCK:5";
+            AtomicBoolean firstEnable = new AtomicBoolean(true);
             worlds.forEach(world -> {
                 if (this.worlds.get(world.getName()) == null) {
-                    WorldConfig value = new WorldConfig(InfPlugin.plugin);
+                    WorldConfig value = new WorldConfig();
+                    value.enabled = firstEnable.getAndSet(false);
                     value.looting.dynamic.dec.add(dec);
                     value.looting.dynamic.inc.add(inc);
                     value.looting.overall.dec.add(dec);
@@ -332,5 +337,21 @@ public class Config extends PluginConfigure {
                 addEffectInstance.put(s, iCorrector);
             }
         }));
+    }
+
+    public double getTrueDamageFor(String type, World world) {
+        WorldConfig worldConfig = worlds.get(world.getName());
+        if (worldConfig == null) {
+            return 0;
+        }
+        return worldConfig.getTruedamage(type);
+    }
+
+    public boolean enableTrueDamage(World world) {
+        WorldConfig worldConfig = worlds.get(world.getName());
+        if (worldConfig == null) {
+            return false;
+        }
+        return worldConfig.isTrueDamageEnabled();
     }
 }

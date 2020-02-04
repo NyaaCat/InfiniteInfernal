@@ -86,16 +86,22 @@ public class Events implements Listener {
         World world = event.getEntity().getWorld();
         if (!enabledInWorld(world))return;
 
+        if (!InfPlugin.plugin.config().enableTrueDamage(world))return;
+
         EntityDamageEvent.DamageCause cause = event.getCause();
-        if (cause.equals(EntityDamageEvent.DamageCause.WITHER) || cause.equals(EntityDamageEvent.DamageCause.POISON)|| cause.equals(EntityDamageEvent.DamageCause.FIRE_TICK)){
-            LivingEntity entity = (LivingEntity) event.getEntity();
-            Collection<PotionEffect> activePotionEffects = entity.getActivePotionEffects();
-            if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
-                return;
-            }
-            entity.setHealth(Math.max(entity.getHealth() - 1, 0.01));
+        String type = cause.name().toLowerCase();
+        double damage = InfPlugin.plugin.config().getTrueDamageFor(type, world);
+        if (damage == -1.01d){
+            damage = event.getDamage();
         }
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        Collection<PotionEffect> activePotionEffects = entity.getActivePotionEffects();
+        if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
+            return;
+        }
+        entity.setHealth(Math.max(entity.getHealth() - damage, 0.01));
     }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobHurt(EntityDamageEvent event) {
         World world = event.getEntity().getWorld();
