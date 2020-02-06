@@ -94,6 +94,7 @@ public class Events implements Listener {
         if (damage == -1.01d){
             damage = event.getDamage();
         }
+        if(!(event.getEntity() instanceof LivingEntity)) return;
         LivingEntity entity = (LivingEntity) event.getEntity();
         Collection<PotionEffect> activePotionEffects = entity.getActivePotionEffects();
         if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
