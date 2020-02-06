@@ -33,35 +33,29 @@ public class ImiCommands extends CommandReceiver {
     @SubCommand(isDefaultCommand = true)
     public void onImi(CommandSender sender, Arguments arguments) {
         if (!(sender instanceof Player)) return;
-        if (sender.hasPermission("infernal_mobs.imi")) {
-            toggleState(((Player) sender));
-        }
+        toggleState(((Player) sender));
     }
 
     @SubCommand(value = "all", permission = "imi.command")
     public void onAll(CommandSender sender, Arguments arguments) {
-        if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.ALL);
     }
 
     @SubCommand(value = "me", permission = "imi.command")
     public void onSelfOnly(CommandSender sender, Arguments arguments) {
-        if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.SELF_ONLY);
     }
 
     @SubCommand(value = "near", permission = "imi.command")
     public void onNearby(CommandSender sender, Arguments arguments) {
-        if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.NEARBY);
     }
 
     @SubCommand(value = "off", permission = "imi.command")
     public void onOff(CommandSender sender, Arguments arguments) {
-        if (!sender.hasPermission("infernal_mobs.imi")) return;
         if (!(sender instanceof Player)) return;
         setState(((Player) sender), BroadcastMode.OFF);
     }
