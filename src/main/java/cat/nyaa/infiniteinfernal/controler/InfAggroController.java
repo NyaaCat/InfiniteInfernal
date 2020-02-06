@@ -14,9 +14,7 @@ import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +51,7 @@ public class InfAggroController implements IAggroControler {
                     return finalAggroBase * correctFactor;
                 });
 
+                Map<UUID, Double> aggroMap = new HashMap<>();
                 Stream<LivingEntity> livingEntityStream = players.stream()
                         .filter(player -> {
                             if(!Utils.validGamemode(player))return false;
@@ -63,8 +62,9 @@ public class InfAggroController implements IAggroControler {
 //                            double baseAggro = InfPlugin.plugin.config().levelConfigs.get(iMob.getLevel()).attr.aggro;
                             double baseAggro = finalAggroBase;
                             double aggroDistance = baseAggro * correctFactor;
+                            aggroMap.put(player.getUniqueId(), aggroDistance);
                             return distance < Math.min(Math.min(maxRange, aggroDistance), Math.max(minRange, aggroDistance));
-                        }).map(player -> player);
+                        }).sorted(Comparator.comparingDouble(player -> (aggroMap.getOrDefault(player.getUniqueId(), 0d) * 100) + player.getLocation().distance(iMob.getEntity().getLocation()))).map(player -> player);
                 if (disorderCorrection != null){
                     double correction = Utils.getCorrection(disorderCorrection, iMob);
                     if (correction>0){
