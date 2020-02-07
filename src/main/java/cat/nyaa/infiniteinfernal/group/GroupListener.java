@@ -66,23 +66,23 @@ public class GroupListener implements Listener {
         }
         if (lootMode.equals(Group.LootMode.ROLL)) {
             Player player = Utils.randomPick(collect);
+            if (player == null) return;
             List<ItemStack> drops = event.getDrops();
             if (!drops.isEmpty()) {
                 drops.forEach(itemStack -> {
-                            if (itemStack.getType().equals(AIR))return;
+                            if (itemStack.getType().equals(AIR)) return;
                             Utils.addToPlayer(player, itemStack);
                             String format = I18n.format("group.drop.roll");
                             format = format.replaceAll("\\{playerName}", player.getName());
                             new Message("").append(format, itemStack)
                                     .broadcast(Message.MessageType.CHAT, player1 -> Utils.shouldReceiveMessage(killer, player1));
-                    }
+                        }
                 );
                 drops.clear();
             }
         }
 
     }
-
 
 
 }
