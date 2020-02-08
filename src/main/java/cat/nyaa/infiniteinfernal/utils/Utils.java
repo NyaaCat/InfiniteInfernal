@@ -171,11 +171,13 @@ public class Utils {
         return center;
     }
 
-    private static Location findValidSpawnLocationInY(Location targetLocation) {
-        for (int j = 0; j > -15; j--) {
-            Location clone = targetLocation.clone().add(0, j, 0);
-            if (isValidLocation(clone)) {
-                return clone;
+    public static Location findValidSpawnLocationInY(Location targetLocation) {
+        if (targetLocation.getBlock().getType().isAir()) {
+            for (int j = 0; j > -15; j--) {
+                Location clone = targetLocation.clone().add(0, j, 0);
+                if (isValidLocation(clone)) {
+                    return clone;
+                }
             }
         }
         for (int j = 0; j < 10; j++) {
