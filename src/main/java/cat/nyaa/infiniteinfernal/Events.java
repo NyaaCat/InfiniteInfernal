@@ -16,6 +16,7 @@ import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.*;
@@ -23,6 +24,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -33,7 +36,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Events implements Listener {
     private InfPlugin plugin;
@@ -354,6 +359,29 @@ public class Events implements Listener {
             }
         }.runTaskLater(InfPlugin.plugin, 1);
     }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = false)
+    public void onChunkUnload(ChunkUnloadEvent event){
+        clearChunkEntities(event.getChunk());
+    }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = false)
+    public void onChunkLoad(ChunkLoadEvent event){
+        clearChunkEntities(event.getChunk());
+    }
+
+    private void clearChunkEntities(Chunk chunk) {
+        Entity[] entities = chunk.getEntities();
+        Stream.of(entities).filter(entity -> entity instanceof LivingEntity)
+                .filter(entity -> {
+                    Set<String> scoreboardTags = entity.getScoreboardTags();
+                    List<String> tags = InfPlugin.plugin.config().tags;
+                    return scoreboardTags.contains("inf_damage_indicator") ||
+                            scoreboardTags.stream().anyMatch(tags::contains);
+                })
+                .forEach(entity -> entity.remove());
+    }
+
 
     @EventHandler
     private void onTarget(EntityTargetEvent ev) {
