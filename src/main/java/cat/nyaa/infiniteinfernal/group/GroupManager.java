@@ -30,7 +30,7 @@ public class GroupManager {
     public static GroupManager getInstance() {
         if (INSTANCE == null) {
             synchronized (GroupManager.class) {
-                if (INSTANCE == null){
+                if (INSTANCE == null) {
                     INSTANCE = new GroupManager();
                 }
             }
@@ -63,15 +63,15 @@ public class GroupManager {
     }
 
     public void invite(Player inviter, Player player, Group target) {
-        String inviterName = inviter == null? "server" : inviter.getName();
+        String inviterName = inviter == null ? "server" : inviter.getName();
         InviteSession inviteSession = new InviteSession(inviter, player, target);
         inviteSessionMap.put(player.getUniqueId(), inviteSession);
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
-                if (inviteSessionMap.containsKey(player.getUniqueId())){
+                if (inviteSessionMap.containsKey(player.getUniqueId())) {
                     InviteSession session = inviteSessionMap.get(player.getUniqueId());
-                    if (session.equals(inviteSession)){
+                    if (session.equals(inviteSession)) {
                         inviteSessionMap.remove(player.getUniqueId());
                         new Message("").append(I18n.format("group.invite.timeout")).send(player);
                         new Message("").append(I18n.format("group.invite.timeout")).send(session.inviter);
@@ -90,7 +90,7 @@ public class GroupManager {
     }
 
     void join(Player player, Group group) {
-        if (group.getMembers().size()>=InfPlugin.plugin.config().groupCapacity){
+        if (group.getMembers().size() >= InfPlugin.plugin.config().groupCapacity) {
             Message append = new Message("").append(I18n.format("group.join.capacity"));
             group.broadcast(append);
             append.send(player);
@@ -104,9 +104,14 @@ public class GroupManager {
 
     void checkAndLeave(Player player) {
         Group group1 = GroupManager.getInstance().getPlayerGroup(player);
-        if (group1 != null){
-            group1.leaveMember(player.getUniqueId());
-            playerGroupMap.remove(player);
+        if (group1 != null) {
+            if (group1.getMembers().size() == 1) {
+                group1.disband();
+                disband(group1);
+            }else {
+                group1.leaveMember(player.getUniqueId());
+                playerGroupMap.remove(player);
+            }
         }
     }
 
@@ -122,14 +127,14 @@ public class GroupManager {
 
     public void autoJoin(Player player) {
         Group group = quitCache.getIfPresent(player.getUniqueId());
-        if (group != null){
+        if (group != null) {
             join(player, group);
         }
     }
 
     public void savePlayerState(Player player) {
         Group playerGroup = getPlayerGroup(player);
-        if (playerGroup!=null){
+        if (playerGroup != null) {
             quitCache.put(player.getUniqueId(), playerGroup);
             playerGroup.broadcast(new Message("").append(I18n.format("group.leave.success", player.getName())));
             checkAndLeave(player);

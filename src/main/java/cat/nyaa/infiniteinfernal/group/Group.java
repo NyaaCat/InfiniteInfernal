@@ -48,7 +48,7 @@ public class Group {
         return members.contains(sender.getUniqueId());
     }
 
-    public void leaveMember(UUID player) {
+    void leaveMember(UUID player) {
         members.remove(player);
         admins.remove(player);
     }
