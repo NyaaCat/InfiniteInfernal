@@ -52,7 +52,7 @@ public class AbilitySet implements IAbilitySet {
 
     @Override
     public boolean containsPassive() {
-        return abilities.stream().anyMatch(iAbility -> AbilityPassive.class.isAssignableFrom(iAbility.getClass()));
+        return abilities.stream().anyMatch(iAbility -> AbilityPassive.class.isAssignableFrom(iAbility.getClass()) || AbilityAttack.class.isAssignableFrom(iAbility.getClass()));
     }
 
     @Override

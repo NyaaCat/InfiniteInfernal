@@ -1,11 +1,13 @@
 package cat.nyaa.infiniteinfernal.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.List;
@@ -24,7 +26,12 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
         if (!Utils.possibility(attackChance))return;
-        launch(target, mob);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                launch(target, mob);
+            }
+        }.runTaskLater(InfPlugin.plugin, 1);
     }
 
     @Override
