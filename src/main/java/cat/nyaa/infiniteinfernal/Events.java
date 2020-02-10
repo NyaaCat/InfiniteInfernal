@@ -15,10 +15,7 @@ import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -217,6 +214,7 @@ public class Events implements Listener {
         World world = ev.getEntity().getWorld();
         if (!enabledInWorld(world))return;
 
+        Difficulty difficulty = world.getDifficulty();
         if (!(ev.getEntity() instanceof LivingEntity)) return;
         IMob iMob;
         if (!MobManager.instance().isIMob(ev.getDamager())) {
@@ -225,6 +223,11 @@ public class Events implements Listener {
             List<MetadataValue> metadata = damager.getMetadata(AbilityProjectile.INF_PROJECTILE_KEY);
             if (metadata.size() >= 1) {
                 double damage = metadata.get(0).asDouble();
+                if (difficulty.equals(Difficulty.HARD)) {
+                    damage *= 1.5;
+                }else if (difficulty.equals(Difficulty.EASY)){
+                    damage *= 0.6;
+                }
                 ev.setDamage(damage);
                 ProjectileSource shooter = ((Projectile) damager).getShooter();
                 if (shooter == null) return;
@@ -234,7 +237,13 @@ public class Events implements Listener {
                 if (!(shooter instanceof LivingEntity)) return;
                 iMob = MobManager.instance().toIMob((Entity) shooter);
                 if (iMob != null) {
-                    ev.setDamage(iMob.getDamage());
+                    double damage = iMob.getDamage();
+                    if (difficulty.equals(Difficulty.HARD)) {
+                        damage *= 1.5;
+                    }else if (difficulty.equals(Difficulty.EASY)){
+                        damage *= 0.6;
+                    }
+                    ev.setDamage(damage);
                 } else {
                     return;
                 }
