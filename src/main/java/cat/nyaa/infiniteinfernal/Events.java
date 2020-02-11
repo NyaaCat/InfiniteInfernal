@@ -83,7 +83,7 @@ public class Events implements Listener {
             event.setCancelled(true);
         }
     }
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onDot(EntityDamageEvent event) {
         World world = event.getEntity().getWorld();
         if (!enabledInWorld(world))return;
@@ -209,7 +209,7 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onImobAttackLivingEntity(EntityDamageByEntityEvent ev) {
         World world = ev.getEntity().getWorld();
         if (!enabledInWorld(world))return;
@@ -267,7 +267,7 @@ public class Events implements Listener {
         attackAbilities.forEach(abilityAttack -> abilityAttack.onAttack(iMob, ((LivingEntity) ev.getEntity())));
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onNatualMobSpawn(CreatureSpawnEvent event) {
         World world = event.getEntity().getWorld();
         if (!enabledInWorld(world))return;
@@ -289,7 +289,7 @@ public class Events implements Listener {
         InfPlugin.plugin.getSpawnControler().handleSpawnEvent(event);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onIMobNearDeath(IMobNearDeathEvent ev) {
         World world = ev.getMob().getEntity().getWorld();
         if (!enabledInWorld(world))return;
