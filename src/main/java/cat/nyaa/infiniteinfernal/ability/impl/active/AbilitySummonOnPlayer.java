@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +41,10 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
             Entity entity = location.getWorld().spawnEntity(location, type);
             if (!nbt.equals("")){
                 NmsUtils.setEntityTag(entity,nbt);
+            }
+            LivingEntity target = iMob.getTarget();
+            if (target != null && entity instanceof Mob){
+                ((Mob) entity).setTarget(target);
             }
         }
         counter++;
