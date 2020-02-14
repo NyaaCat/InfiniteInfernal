@@ -156,6 +156,7 @@ public class InfSpawnControler implements ISpawnControler {
             centerSpawnLocation(spawnLocation);
             IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
             registerMob(iMob);
+            iMob.autoRetarget();
             return iMob;
         } else return null;
     }
