@@ -117,9 +117,9 @@ public class MobManager {
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
-                InfPlugin.plugin.config().tags.forEach(spawn::addScoreboardTag);
                 Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
                 customMob.makeInfernal(spawn);
+                InfPlugin.plugin.config().tags.forEach(spawn::addScoreboardTag);
                 registerMob(customMob);
                 return customMob;
             }
