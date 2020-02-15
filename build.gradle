@@ -18,10 +18,6 @@ repositories {
         url 'https://ci.nyaacat.com/maven/'
     }
     maven {
-        name 'NyaaCentral'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
-    }
-    maven {
         name 'sk89q'
         url "http://maven.sk89q.com/repo/"
     }
@@ -40,9 +36,7 @@ dependencies {
     compile('cat.nyaa:nyaacore:7.0-SNAPSHOT')
     compileOnly "org.spigotmc:spigot-api:1.15-R0.1-SNAPSHOT"
 
-//    compileOnly('com.udojava:EvalEx:2.1')
-
-    implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
+    implementation 'com.meowj:LangUtils:2.3-SNAPSHOT'
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
