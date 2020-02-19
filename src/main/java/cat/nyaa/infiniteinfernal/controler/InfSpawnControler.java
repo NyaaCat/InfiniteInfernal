@@ -156,7 +156,9 @@ public class InfSpawnControler implements ISpawnControler {
             centerSpawnLocation(spawnLocation);
             IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
             if (iMob != null) {
-                registerMob(iMob);
+                if (iMob.isDynamicHealth()) {
+                    iMob.tweakHealth();
+                }
                 iMob.autoRetarget();
             }
             return iMob;
@@ -168,13 +170,6 @@ public class InfSpawnControler implements ISpawnControler {
         int blockZ = spawnLocation.getBlockZ();
         spawnLocation.setX(blockX + 0.5);
         spawnLocation.setZ(blockZ + 0.5);
-    }
-
-    private void registerMob(IMob iMob) {
-        if (iMob == null) return;
-        World world = iMob.getEntity().getWorld();
-        int maxSpawnDistance = getMaxSpawnDistance(world);
-        MobManager.instance().updateNearbyList(iMob, maxSpawnDistance + 48);
     }
 
     @Override

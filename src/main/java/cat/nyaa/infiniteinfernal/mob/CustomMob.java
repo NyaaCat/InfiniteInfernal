@@ -126,6 +126,7 @@ public class CustomMob implements IMob {
             health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
         }
         enableDynamicHealth = config.enableDynamicHealth;
+        dynamicHealthExpression = config.dynamicHealthExpression;
     }
 
     @Override
@@ -310,7 +311,7 @@ public class CustomMob implements IMob {
         double originMax = maxHealthAttr.getBaseValue();
         if (maxHealth.doubleValue() <= originMax)return;
 
-        double originPercentile = originHealth / originHealth;
+        double originPercentile = originHealth / originMax;
         maxHealthAttr.setBaseValue(maxHealth.doubleValue());
         getEntity().setHealth(originPercentile * maxHealth.doubleValue());
     }
@@ -415,7 +416,7 @@ public class CustomMob implements IMob {
 
         @Override
         public String getString() {
-            return name;
+            return null;
         }
     }
 }

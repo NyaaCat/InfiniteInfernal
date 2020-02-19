@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.*;
+import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
@@ -121,6 +122,9 @@ public class MobManager {
                 customMob.makeInfernal(spawn);
                 InfPlugin.plugin.config().tags.forEach(spawn::addScoreboardTag);
                 registerMob(customMob);
+                if (customMob.isDynamicHealth()){
+                    customMob.tweakHealth();
+                }
                 return customMob;
             }
         }
@@ -372,6 +376,11 @@ public class MobManager {
         bossBarIMobMap.put(mob.getBossBar(), mob);
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.add(mob);
+
+        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
+        if (worldConfig != null) {
+            MobManager.instance().updateNearbyList(mob, worldConfig.spawnRangeMax + 48);
+        }
     }
 
     public void removeMob(IMob mob, boolean isKilled) {

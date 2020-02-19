@@ -44,7 +44,7 @@ dependencies {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
     }
-    compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.4.0"
+//    compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.4.0"
 }
 
 task apiJar(type: Jar) {

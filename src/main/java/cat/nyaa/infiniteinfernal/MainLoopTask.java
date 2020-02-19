@@ -74,6 +74,9 @@ public class MainLoopTask {
         }
         iMob.showParticleEffect();
         iMob.autoRetarget();
+        if (iMob.isDynamicHealth()) {
+            iMob.tweakHealth();
+        }
         List<Player> playersNearMob = mobManager.getPlayersNearMob(iMob);
         if (iCorrector != null) {
             EntityEquipment equipment = iMob.getEntity().getEquipment();
