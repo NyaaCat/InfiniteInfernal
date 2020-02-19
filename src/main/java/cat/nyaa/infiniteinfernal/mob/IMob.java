@@ -19,31 +19,31 @@ public interface IMob {
     LivingEntity getEntity();
     EntityType getEntityType();
     KeyedBossBar getBossBar();
+    LivingEntity getTarget();
+
     int getLevel();
     double getDamage();
     double getMaxHealth();
     double getSpecialChance();
-    void makeInfernal(LivingEntity entity);
+    int getExp();
     boolean isAutoSpawn();
     boolean dropVanilla();
     String getName();
     String getTaggedName();
 
     void showParticleEffect();
-
+    void makeInfernal(LivingEntity entity);
     void autoRetarget();
     void retarget(LivingEntity entity);
 
-    LivingEntity getTarget();
     Map<LivingEntity, Aggro> getNonPlayerTargets();
-    boolean isTarget(LivingEntity target);
 
+    boolean isTarget(LivingEntity target);
     MobConfig getConfig();
+
     void onDeath();
 
-    int getExp();
-
     EntityDamageEvent getLastDamageCause();
-
     void setLastDamageCause(EntityDamageEvent event);
+
 }
