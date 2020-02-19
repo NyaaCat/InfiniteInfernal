@@ -862,7 +862,10 @@ public class AdminCommands extends CommandReceiver {
                 "nbt",
                 "ability",
                 "spawn",
-                "loot"
+                "loot",
+                "healthOverride",
+                "enableDynamicHealth",
+                "dynamicHealthExpression"
         );
 
         @SubCommand(value = "mob", permission = "im.modify.mob", tabCompleter = "mobCompleter")
@@ -903,6 +906,24 @@ public class AdminCommands extends CommandReceiver {
                     break;
                 case "loot":
                     modified = mobCommandLoot(sender, arguments, mobConfig, id);
+                    break;
+                case "healthOverride":
+                    double healthOverride = arguments.nextDouble();
+                    mobConfig.healthOverride = healthOverride;
+                    modified = true;
+                    new Message(I18n.format("modify.mob.health_override.success")).send(sender);
+                    break;
+                case "enableDynamicHealth":
+                    boolean enabled = arguments.nextBoolean();
+                    mobConfig.enableDynamicHealth = enabled;
+                    modified = true;
+                    new Message(I18n.format("modify.mob.dynamic_health.success")).send(sender);
+                    break;
+                case "dynamicHealthExpression":
+                    String healthExpr = arguments.nextString();
+                    mobConfig.dynamicHealthExpression = healthExpr;
+                    modified = true;
+                    new Message(I18n.format("modify.mob.dynamic_health_expression.success")).send(sender);
                     break;
             }
             if (modified) {

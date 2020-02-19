@@ -28,6 +28,7 @@ public interface IMob {
     int getExp();
     boolean isAutoSpawn();
     boolean dropVanilla();
+    boolean isDynamicHealth();
     String getName();
     String getTaggedName();
 
@@ -35,6 +36,7 @@ public interface IMob {
     void makeInfernal(LivingEntity entity);
     void autoRetarget();
     void retarget(LivingEntity entity);
+    void tweakHealth();
 
     Map<LivingEntity, Aggro> getNonPlayerTargets();
 

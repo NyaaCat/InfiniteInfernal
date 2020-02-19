@@ -16,6 +16,7 @@ import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
+import com.udojava.evalex.Expression;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -28,6 +29,7 @@ import org.bukkit.entity.Mob;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -49,6 +51,10 @@ public class CustomMob implements IMob {
     private String name;
     private String taggedName;
     private EntityDamageEvent LastDamageCause = null;
+    private double health;
+    private boolean enableDynamicHealth;
+    private String dynamicHealthExpression = "";
+    private double followDistance = 48;
 
     public CustomMob(MobConfig config, int level) {
         this.config = config;
@@ -113,7 +119,13 @@ public class CustomMob implements IMob {
         this.name = config.name;
         this.specialChance = config.loot.special.chance;
         this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, entityType, name, level);
-
+        double healthOverride = config.healthOverride;
+        if (healthOverride > 0){
+            health =  healthOverride;
+        }else {
+            health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
+        }
+        enableDynamicHealth = config.enableDynamicHealth;
     }
 
     @Override
@@ -160,7 +172,7 @@ public class CustomMob implements IMob {
 
     @Override
     public double getMaxHealth() {
-        return InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
+        return health;
     }
 
     @Override
@@ -194,10 +206,11 @@ public class CustomMob implements IMob {
             LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
             double aggro = levelConfig.attr.aggro;
             if (entityType.equals(EntityType.GUARDIAN) || entityType.equals(EntityType.ELDER_GUARDIAN)) {
-                followRangeAttr.setBaseValue(aggro * 0.60);
+                followDistance = aggro * 0.60;
             }else {
-                followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
+                followDistance = worldConfig.aggro.range.max;
             }
+            followRangeAttr.setBaseValue(followDistance);
         } else {
         }
         entity.setHealth(getMaxHealth());
@@ -227,6 +240,11 @@ public class CustomMob implements IMob {
     @Override
     public boolean dropVanilla() {
         return dropVanilla;
+    }
+
+    @Override
+    public boolean isDynamicHealth() {
+        return enableDynamicHealth;
     }
 
     @Override
@@ -283,6 +301,52 @@ public class CustomMob implements IMob {
     }
 
     @Override
+    public void tweakHealth() {
+        if (getEntity() == null) return;
+        Expression expression = createExpression();
+        BigDecimal maxHealth = expression.eval();
+        double originHealth = getEntity().getHealth();
+        AttributeInstance maxHealthAttr = getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        double originMax = maxHealthAttr.getBaseValue();
+        if (maxHealth.doubleValue() <= originMax)return;
+
+        double originPercentile = originHealth / originHealth;
+        maxHealthAttr.setBaseValue(maxHealth.doubleValue());
+        getEntity().setHealth(originPercentile * maxHealth.doubleValue());
+    }
+
+    private Expression createExpression(){
+        MobManager instance = MobManager.instance();
+        Expression expression = new Expression(dynamicHealthExpression);
+        expression.and("health", new NamedLazyNumber("health", getEntity().getHealth()));
+        expression.and("maxHealth", new NamedLazyNumber("maxHealth", health));
+        expression.and("playerCount", new NamedLazyNumber("playerCount", instance.getPlayersNearMob(this).stream()
+                .filter(player -> player.getLocation().distance(this.getEntity().getLocation()) <= this.followDistance)
+                .count())
+        );
+        expression.and("aggroRange", new NamedLazyNumber("aggroRange", followDistance));
+        return expression;
+    }
+
+    private boolean checkExpression(){
+        try{
+            MobManager instance = MobManager.instance();
+            Expression expression = new Expression(dynamicHealthExpression);
+            expression.and("health", new NamedLazyNumber("health", getEntity().getHealth()));
+            expression.and("maxHealth", new NamedLazyNumber("maxHealth", health));
+            expression.and("playerCount", new NamedLazyNumber("playerCount", instance.getPlayersNearMob(this).stream()
+                    .filter(player -> player.getLocation().distance(this.getEntity().getLocation()) <= this.followDistance)
+                    .count())
+            );
+            expression.and("aggroRange", new NamedLazyNumber("aggroRange", followDistance));
+            BigDecimal eval = expression.eval();
+            return Double.isFinite(eval.doubleValue());
+        } catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
     public LivingEntity getTarget() {
 //        return entity instanceof Mob ? ((Mob) entity).getTarget() : null;
         return currentTarget;
@@ -333,5 +397,25 @@ public class CustomMob implements IMob {
     @Override
     public void setLastDamageCause(EntityDamageEvent event) {
         LastDamageCause = event;
+    }
+
+    private class NamedLazyNumber implements Expression.LazyNumber{
+        private final String name;
+        private final double val;
+
+        public NamedLazyNumber(String name, double val){
+            this.name = name;
+            this.val = val;
+        }
+
+        @Override
+        public BigDecimal eval() {
+            return new BigDecimal(val);
+        }
+
+        @Override
+        public String getString() {
+            return name;
+        }
     }
 }

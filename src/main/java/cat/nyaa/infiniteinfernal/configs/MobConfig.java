@@ -20,6 +20,12 @@ public class MobConfig extends NamedFileConfig implements Weightable {
     @Serializable(name = "nbttags")
     public String nbtTags = "";
     @Serializable
+    public double healthOverride = -1;
+    @Serializable
+    public boolean enableDynamicHealth = false;
+    @Serializable
+    public String dynamicHealthExpression = "";
+    @Serializable
     public MobSpawnConfig spawn = new MobSpawnConfig();
     @Serializable
     public MobLootConfig loot = new MobLootConfig();
