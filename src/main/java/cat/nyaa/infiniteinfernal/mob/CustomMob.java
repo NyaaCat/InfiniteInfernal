@@ -302,7 +302,7 @@ public class CustomMob implements IMob {
 
     @Override
     public void tweakHealth() {
-        if (getEntity() == null) return;
+        if (getEntity() == null || dynamicHealthExpression.equals("")) return;
         Expression expression = createExpression();
         BigDecimal maxHealth = expression.eval();
         double originHealth = getEntity().getHealth();
