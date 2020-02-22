@@ -1,2 +1,2 @@
 # InfiniteInfernal
-Infinite Infernal Custom mob control
+Infinite Infernal Custom Mob Control
