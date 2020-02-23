@@ -142,7 +142,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
                 .findAny().orElse(null);
         if (target == null) return;
         double orig = event.getDamage();
-        double damage = orig * thornsPercentage / 100d;
+        double damage = Math.max(mob.getDamage(), orig * thornsPercentage / 100d);
         if (thorns.contains(mob.getEntity().getUniqueId())) {
             Context.instance().putTemp(mob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY, damage);
             beamConfig.length = mob.getEntity().getEyeLocation().distance(target.getLocation());
