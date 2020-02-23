@@ -16,6 +16,7 @@ import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -102,7 +103,7 @@ public class Events implements Listener {
         if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
             return;
         }
-        entity.setHealth(Math.max(entity.getHealth() - damage, 0.01));
+        entity.setHealth(Math.max(Math.min(entity.getHealth() - damage, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

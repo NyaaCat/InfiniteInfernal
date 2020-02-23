@@ -308,7 +308,8 @@ public class CustomMob implements IMob {
         BigDecimal maxHealth = expression.eval();
         double originHealth = getEntity().getHealth();
         AttributeInstance maxHealthAttr = getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        double originMax = maxHealthAttr.getBaseValue();
+        if (maxHealthAttr == null) return;
+        double originMax = maxHealthAttr.getValue();
         if (maxHealth.doubleValue() <= originMax)return;
 
         double originPercentile = originHealth / originMax;
