@@ -25,6 +25,7 @@ repositories {
         name 'ProtocolLib'
         url "http://repo.dmulloy2.net/nexus/repository/public/"
     }
+    maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
 tasks.withType(JavaCompile) {
