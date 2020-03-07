@@ -77,10 +77,10 @@ public class AbilityUltraStrike extends ActiveAbility {
         };
         bukkitRunnable.runTaskTimer(InfPlugin.plugin, 0, 1);
 
-        for (int i = 0; i < delay / 20; i++) {
+        for (int i = 0; i < 2; i++) {
             Bukkit.getScheduler().runTaskLater(InfPlugin.plugin, () -> {
                 world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
-            }, i * 20);
+            }, i * (delay / 2));
         }
     }
 
@@ -92,9 +92,15 @@ public class AbilityUltraStrike extends ActiveAbility {
                 .forEach(entity -> {
                     if (!entity.equals(iMob)) {
                         double damage = iMob.getDamage();
-                        damage = damage * this.damageMultiplier;
+
                         double distance = entity.getLocation().distance(location);
-                        damage = Math.max(0, (1 - (distance / ((double) explodeRange))) * damage);
+                        double v = distance / explodeRange;
+                        if (v > 1) return;
+                        double distanceCorrection = Math.pow(v, 3);
+
+                        damage = damage * this.damageMultiplier * (1 - distanceCorrection);
+
+                        damage = Math.max(0, damage);
                         entity.damage(damage, iMob.getEntity());
                     }
                 });
