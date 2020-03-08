@@ -62,7 +62,7 @@ public class AbilityShingeki extends ActiveAbility {
             @Override
             public void run() {
                 if (world != null) {
-                    Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 3, 3, 3);
+                    Collection<Entity> nearbyEntities = world.getNearbyEntities(location, radius, radius, radius);
                     for (int i = 0; i < 5; i++) {
                         new BukkitRunnable() {
                             @Override
