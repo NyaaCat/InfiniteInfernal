@@ -26,6 +26,7 @@ public class AbilityShingeki extends ActiveAbility {
     @Serializable
     public double damageAmplifier = 2.0;
 
+    @Serializable
     public double radius = 5;
 
     @Override
