@@ -57,7 +57,12 @@ public class AbilityShingeki extends ActiveAbility {
 
     private void strike(Location location, IMob iMob) {
         World world = location.getWorld();
-        showEffect(location);
+
+	Location bott = location.clone().add(0,0.5,0);
+	Location upper = location.clone().add(0,5.5,0);
+	
+        showEffect(bott);
+        showEffect(upper);
         new BukkitRunnable() {
             @Override
             public void run() {
