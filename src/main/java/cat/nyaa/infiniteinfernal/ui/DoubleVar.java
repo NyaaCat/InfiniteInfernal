@@ -7,6 +7,14 @@ public abstract class DoubleVar extends BaseVar<Double> {
         damageIndicate = 0d;
     }
 
+    @Override
+    public void setValue(Double val) {
+        super.setValue(val);
+        if (val.isNaN() || val.isInfinite()){
+            value = 0d;
+        }
+    }
+
     public void drop(double drop, int tick){
         Double orig = this.value;
         setValue(Math.max(0, Math.min(this.value - drop, max)));
