@@ -69,18 +69,24 @@ task apiJar(type: Jar) {
 
 }
 
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.java.srcDirs
+}
+
 publishing {
     publications {
         mavenRelease(MavenPublication) {
             from components.java
             afterEvaluate {
-                artifacts = [jar]
+                artifacts = [jar, sourcesJar]
             }
             groupId "cat.nyaa"
             artifactId "infiniteinfernal"
             version "$mavenVersion"
         }
     }
+
     repositories {
         maven {
             url "$mavenDirectory"
