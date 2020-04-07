@@ -1,11 +1,25 @@
+import org.gradle.api.publish.maven.MavenPublication
+
 plugins {
     id 'java'
+    id 'maven-publish'
+
 }
 
 group 'NyaaCat'
-version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+String majorVersion = 1
+String minorVersion = 1
+
+String buildNumber = System.getenv("BUILD_NUMBER") == null ? "SNAPSHOT" : System.getenv("BUILD_NUMBER")
+
+
+version = "$majorVersion.$minorVersion-$buildNumber"
+
+boolean releasing = false
+
+String mavenDirectory = System.getenv("MAVEN_DIR") == null ? "$projectDir/repo"   : System.getenv("MAVEN_DIR")
+String mavenVersion = releasing ? version : "$majorVersion.$minorVersion-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -54,3 +68,24 @@ task apiJar(type: Jar) {
     include('**/cat/nyaa/infiniteinfernal/')
 
 }
+
+publishing {
+    publications {
+        mavenRelease(MavenPublication) {
+            from components.java
+            afterEvaluate {
+                artifacts = [jar]
+            }
+            groupId "cat.nyaa"
+            artifactId "infinitinfernal"
+            version "$mavenVersion"
+        }
+    }
+    repositories {
+        maven {
+            url "$mavenDirectory"
+        }
+    }
+}
+
+
