@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.ability.AbilitySpawn;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import co.aikar.taskchain.BukkitTaskChainFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
@@ -92,7 +93,11 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
                 } else {
                     Entity entity = ev.getEntity();
                     if (entity instanceof LivingEntity) {
-                       createCacheAndClearEffect((LivingEntity) entity);
+                        BukkitTaskChainFactory.create(InfPlugin.plugin).newChain()
+                                .delay(1)
+                                .sync(() -> {
+                                    createCacheAndClearEffect((LivingEntity) entity);
+                                }).execute();
                     }
                 }
             }
