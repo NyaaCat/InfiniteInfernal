@@ -36,6 +36,9 @@ public class WorldConfig implements ISerializable {
     @Serializable(name = "spawn-range-max")
     public int spawnRangeMax = 120;
 
+    @Serializable(name = "spawn-interval")
+    public int mobSpawnInteval = 20;
+
     @Serializable(name = "mob-active-interval")
     public int mobTickInterval = 60;
 

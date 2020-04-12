@@ -42,9 +42,14 @@ public class MainLoopTask {
             }
 
             int interval = value.mobTickInterval;
+            int mobSpawnInteval = value.mobSpawnInteval;
             MainLoopRunnable runnable = new MainLoopRunnable(world, interval);
             runnables.add(runnable);
             runnable.runTaskTimer(InfPlugin.plugin, 0, interval);
+
+            SpawnTask spawnTask = new SpawnTask(world, mobSpawnInteval);
+            runnables.add(spawnTask);
+            spawnTask.runTaskTimer(InfPlugin.plugin, 0, mobSpawnInteval);
         });
         BukkitRunnable nearbyRunnable = new BukkitRunnable() {
             @Override
@@ -136,28 +141,6 @@ public class MainLoopTask {
             if (!mobs.isEmpty()) {
                 infernalTicker.submitInfernalTickMobs(mobs);
             }
-            List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
-            players.stream().forEach(player -> {
-                if (InfPlugin.wgEnabled) {
-                    if (WorldGuardUtils.instance().isPlayerInProtectedRegion(player)) {
-                        return;
-                    }
-                }
-                AtomicInteger tried = new AtomicInteger(0);
-                class SpawnTask extends BukkitRunnable {
-                    @Override
-                    public void run() {
-                        IMob iMob = InfPlugin.plugin.spawnControler.spawnIMob(player, false);
-                        if (iMob == null) {
-                            if ((tried.getAndAdd(1) >= 20)) {
-                                return;
-                            }
-                            new SpawnTask().runTaskLater(InfPlugin.plugin, 1);
-                        }
-                    }
-                }
-                new SpawnTask().runTask(InfPlugin.plugin);
-            });
         }
 
         @Override
@@ -221,6 +204,32 @@ public class MainLoopTask {
 
         public int getMaxQueueSize() {
             return maxQueueSize;
+        }
+    }
+
+    private static class SpawnTask extends BukkitRunnable {
+
+        private final World world;
+        private final int mobSpawnInteval;
+
+        public SpawnTask(World world, int mobSpawnInteval) {
+            super();
+            this.world = world;
+            this.mobSpawnInteval = mobSpawnInteval;
+        }
+
+        @Override
+        public void run() {
+            if (!InfPlugin.plugin.config.isEnabledInWorld(world))return;
+            List<Player> players = world.getPlayers().stream().filter(player -> !player.getGameMode().equals(GameMode.SPECTATOR)).collect(Collectors.toList());
+            players.stream().forEach(player -> {
+                if (InfPlugin.wgEnabled) {
+                    if (WorldGuardUtils.instance().isPlayerInProtectedRegion(player)) {
+                        return;
+                    }
+                }
+                InfPlugin.plugin.spawnControler.spawnIMob(player, false);
+            });
         }
     }
 }
