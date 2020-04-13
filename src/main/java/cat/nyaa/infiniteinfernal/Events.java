@@ -220,7 +220,7 @@ public class Events implements Listener {
         IMob iMob;
         if (!MobManager.instance().isIMob(ev.getDamager())) {
             Entity damager = ev.getDamager();
-            if (!(damager instanceof Projectile)) return;
+            if (!(damager instanceof Projectile) || ev.getCause().equals(EntityDamageEvent.DamageCause.MAGIC)) return;
             List<MetadataValue> metadata = damager.getMetadata(AbilityProjectile.INF_PROJECTILE_KEY);
             if (metadata.size() >= 1) {
                 double damage = metadata.get(0).asDouble();

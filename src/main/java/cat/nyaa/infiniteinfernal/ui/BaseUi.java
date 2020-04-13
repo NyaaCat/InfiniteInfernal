@@ -98,6 +98,7 @@ public class BaseUi {
 
     public void refreshIfAuto() {
         Player player = Bukkit.getPlayer(uuid);
+        if(player == null) return;
         World world = player.getWorld();
         if ((InfPlugin.plugin.config().enableActionbarInfo && !InfPlugin.plugin.config().isEnabledInWorld(world)) && Database.getInstance().getPlayerData(player).actionbarReceiveMode.equals(UiReceiveMode.AUTO.name())) {
             refreshUi(player);
