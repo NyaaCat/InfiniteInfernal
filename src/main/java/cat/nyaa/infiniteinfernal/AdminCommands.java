@@ -45,6 +45,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -1547,21 +1549,26 @@ public class AdminCommands extends CommandReceiver {
                 } else if (List.class.isAssignableFrom(fieldType)) {
                     ArrayList<String> o = new Gson().fromJson(arg, new TypeToken<ArrayList<String>>() {
                     }.getType());
-                    List o1 = ((List) field.get(iAbility));
-                    Object ref = o1.stream().findAny().orElse(null);
-                    if (ref != null) {
-                        Class<?> aClass1 = ref.getClass();
-                        if (Number.class.isAssignableFrom(aClass1)) {
-                            try {
-                                List<Number> collect = o.stream().map(s1 -> ((Number) Double.parseDouble(s1)))
-                                        .collect(Collectors.toList());
-                                ((List<Number>) o1).addAll(collect);
-                            } catch (Exception e) {
-                                throw new UnsupportedOperationException();
+                    Type genericType = field.getGenericType();
+                    Type actualTypeArgument = null;
+                    if(genericType instanceof ParameterizedType){
+                        actualTypeArgument = ((ParameterizedType) genericType).getActualTypeArguments()[0];
+                    }
+                    if (actualTypeArgument != null) {
+                        try {
+                            Class<?> aClass1 = Class.forName(actualTypeArgument.getTypeName());
+                             if (Number.class.isAssignableFrom(aClass1)) {
+                                    List<Number> collect = o.stream().map(s1 -> ((Number) Double.parseDouble(s1)))
+                                            .collect(Collectors.toList());
+                                    field.set(iAbility, collect);
+
                             }
-                        }
-                        if (String.class.isAssignableFrom(aClass1)) {
-                            ((List<String>) o1).addAll(o);
+
+                            if (String.class.isAssignableFrom(aClass1)) {
+                                field.set(iAbility, o);
+                            }
+                        } catch (Exception e) {
+                            throw new UnsupportedOperationException();
                         }
                     } else {
                         throw new UnsupportedOperationException();
