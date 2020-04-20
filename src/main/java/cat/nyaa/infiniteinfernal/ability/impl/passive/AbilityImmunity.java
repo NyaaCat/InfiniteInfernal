@@ -1,9 +1,7 @@
 package cat.nyaa.infiniteinfernal.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.ability.AbilityDeath;
-import cat.nyaa.infiniteinfernal.ability.AbilityPassive;
-import cat.nyaa.infiniteinfernal.ability.AbilitySpawn;
+import cat.nyaa.infiniteinfernal.ability.*;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -22,10 +20,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, AbilityDeath {
@@ -39,35 +34,34 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
 
     private static Listener listener;
 
-    private void createCacheAndClearEffect(LivingEntity target) {
+    private void createCache(IMob iMob, LivingEntity target) {
         if (cache == null) {
             cache = cacheBuilder.build();
         }
-        List<PotionEffectType> peT;
-        peT = cache.getIfPresent(CACHE_EFFECT);
-        if (peT == null) {
-            peT = new ArrayList<>(effects.size());
+        Set<PotionEffectType> peT = new HashSet<>();
+        UUID uniqueId = target.getUniqueId();
+        List<IAbilitySet> abilities = iMob.getAbilities();
+        List<AbilityImmunity> immunities = new ArrayList<>();
+        if (abilities != null){
+            abilities.forEach(iAbilitySet -> {
+                List<AbilityImmunity> abilitiesInSet = iAbilitySet.getAbilitiesInSet(AbilityImmunity.class);
+                immunities.addAll(abilitiesInSet);
+            });
         }
-        if (peT.isEmpty()) {
-            if (!effects.isEmpty()) {
-                List<PotionEffectType> finalPeT = peT;
-                effects.forEach(s -> {
+        immunities.stream().flatMap(abilityImmunity -> abilityImmunity.effects.stream())
+                .forEach(s -> {
                     PotionEffectType potionEffect = Utils.parseEffect(s, getName());
-                    finalPeT.add(potionEffect);
-                    clearEffect(target, potionEffect);
+                    peT.add(potionEffect);
                 });
-            }
-            cache.put(CACHE_EFFECT, peT);
-        }
+        cache.put(uniqueId, peT);
         peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
     }
 
-    CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder()
-            .concurrencyLevel(2)
+    private static CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder()
             .initialCapacity(100)
             .expireAfterAccess(60 , TimeUnit.SECONDS);
 
-    Cache<String, List<PotionEffectType>> cache = cacheBuilder.build();
+    private static Cache<UUID, Set<PotionEffectType>> cache = cacheBuilder.build();
 
     public void clearEffect(LivingEntity entity, PotionEffectType type) {
         entity.removePotionEffect(type);
@@ -77,8 +71,9 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
         listener = new Listener() {
             @EventHandler(priority = EventPriority.LOW)
             public void onPotion(EntityPotionEffectEvent ev) {
-                List<PotionEffectType> potions = cache.getIfPresent(CACHE_EFFECT);
-                IMob iMob = MobManager.instance().toIMob(ev.getEntity());
+                Entity entity1 = ev.getEntity();
+                Set<PotionEffectType> potions = cache.getIfPresent(entity1.getUniqueId());
+                IMob iMob = MobManager.instance().toIMob(entity1);
                 if (iMob == null)return;
                 if(!affected.contains(iMob))return;
                 PotionEffect newEffect = ev.getNewEffect();
@@ -96,7 +91,7 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
                         BukkitTaskChainFactory.create(InfPlugin.plugin).newChain()
                                 .delay(1)
                                 .sync(() -> {
-                                    createCacheAndClearEffect((LivingEntity) entity);
+                                    createCache(iMob, (LivingEntity) entity);
                                 }).execute();
                     }
                 }
@@ -121,7 +116,7 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
             inited = true;
         }
         affected.add(iMob);
-        createCacheAndClearEffect(iMob.getEntity());
+        createCache(iMob, iMob.getEntity());
         new BukkitRunnable(){
             @Override
             public void run() {
