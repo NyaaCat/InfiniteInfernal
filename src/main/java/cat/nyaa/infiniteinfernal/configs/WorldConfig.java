@@ -139,6 +139,8 @@ public class WorldConfig implements ISerializable {
             public List<String> inc = new ArrayList<>();
             @Serializable
             public List<String> dec = new ArrayList<>();
+            @Serializable
+            public double max = 100;
         }
     }
 

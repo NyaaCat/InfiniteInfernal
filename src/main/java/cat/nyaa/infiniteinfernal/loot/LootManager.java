@@ -168,27 +168,7 @@ public class LootManager {
                     }
                 });
             }
-//            Collection<PotionEffect> activePotionEffects = killer.getActivePotionEffects();
-//            Map<Enchantment, Integer> enchantments = killer.getInventory().getItemInMainHand().getEnchantments();
-//            activePotionEffects.stream().parallel()
-//                    .forEach(potionEffect -> {
-//                        PotionEffectType type = potionEffect.getType();
-//                        if (incEffects.containsKey(type)) {
-//                            weightShift.addAndGet(incEffects.get(type) * potionEffect.getAmplifier());
-//                        }
-//                        if (decEffects.containsKey(type)) {
-//                            weightShift.addAndGet(-(decEffects.get(type) * potionEffect.getAmplifier()));
-//                        }
-//                    });
-//            enchantments.forEach((enchantment, level) -> {
-//                if (incEnchants.containsKey(enchantment)) {
-//                    weightShift.addAndGet(incEnchants.get(enchantment) * level);
-//                }
-//                if (decEnchants.containsKey(enchantment)) {
-//                    weightShift.addAndGet(-(decEnchants.get(enchantment) * level));
-//                }
-//            });
-            return weightShift.get();
+            return Math.max(weightShift.get(), overall.max);
         } catch (Exception ex) {
             throw new IllegalConfigException();
         }
