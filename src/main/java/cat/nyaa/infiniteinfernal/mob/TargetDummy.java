@@ -296,7 +296,11 @@ public class TargetDummy implements IMob {
 
         private void updateBossbar() {
             String dpsTitle = InfPlugin.plugin.config().dpsTitle;
-            dpsTitle = dpsTitle.replaceAll("\\{playerName}", getPlayer().getName());
+            Player player = getPlayer();
+            if (player == null){
+                return;
+            }
+            dpsTitle = dpsTitle.replaceAll("\\{playerName}", player.getName());
             dpsTitle = dpsTitle.replaceAll("\\{dps}", String.format("%.2f",dps));
             dpsTitle = dpsTitle.replaceAll("\\{total}", String.format("%.2f",total));
             dpsTitle = dpsTitle.replaceAll("\\{max}", String.format("%.2f", maxDps));
