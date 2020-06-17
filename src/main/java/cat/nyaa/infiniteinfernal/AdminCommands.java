@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.mob.TargetDummy;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.nyaacore.ILocalizer;
@@ -35,10 +36,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -72,6 +70,7 @@ public class AdminCommands extends CommandReceiver {
         createCommand = new CreateCommand(plugin, i18n);
         modifyCommand = new ModifyCommand(plugin, i18n);
         deleteCommand = new DeleteCommand(plugin, i18n);
+        targetDummyCommands = new TargetDummyCommand(plugin, i18n);
         this.groupCommands = groupCommands;
     }
 
@@ -98,14 +97,17 @@ public class AdminCommands extends CommandReceiver {
                 return;
             }
         }
+
         String worldName = arguments.nextString();
-        double x = arguments.nextDouble();
-        double y = arguments.nextDouble();
-        double z = arguments.nextDouble();
+        Location location = nextCoordinate(sender, arguments);
+        if (location == null) throw new BadCommandException();
         String top = arguments.top();
         Integer level = top == null ? null : Integer.valueOf(top);
         World world = Bukkit.getWorld(worldName);
-        MobManager.instance().spawnMobByName(mobName, new Location(world, x, y, z), level);
+        if (world!=null){
+            location.setWorld(world);
+        }
+        MobManager.instance().spawnMobByName(mobName, location, level);
     }
 
     @SubCommand(value = "addloot", permission = "im.addloot", tabCompleter = "addLootCompleter")
@@ -278,6 +280,9 @@ public class AdminCommands extends CommandReceiver {
         MobManager.instance().initMobs();
     }
 
+    @SubCommand(value = "targetDummy", permission = "im.admin")
+    TargetDummyCommand targetDummyCommands;
+
     public List<String> enableCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
@@ -312,6 +317,7 @@ public class AdminCommands extends CommandReceiver {
                 break;
             case 3:
                 completeStr.add("x");
+                completeStr.add("~");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getX()));
                 } else if (sender instanceof BlockCommandSender) {
@@ -320,6 +326,7 @@ public class AdminCommands extends CommandReceiver {
                 break;
             case 4:
                 completeStr.add("y");
+                completeStr.add("~");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getY()));
                 } else if (sender instanceof BlockCommandSender) {
@@ -328,6 +335,7 @@ public class AdminCommands extends CommandReceiver {
                 break;
             case 5:
                 completeStr.add("z");
+                completeStr.add("~");
                 if (sender instanceof Player) {
                     completeStr.add(String.valueOf(((Player) sender).getLocation().getZ()));
                 } else if (sender instanceof BlockCommandSender) {
@@ -389,7 +397,7 @@ public class AdminCommands extends CommandReceiver {
         return filtered(arguments, completeStr);
     }
 
-    private Set<String> getMobNames() {
+    private static Set<String> getMobNames() {
         return MobManager.instance().getMobConfigNames();
     }
 
@@ -2012,5 +2020,144 @@ public class AdminCommands extends CommandReceiver {
         }
 
     }
+
+    public static class TargetDummyCommand extends CommandReceiver {
+        /**
+         * @param plugin for logging purpose only
+         * @param _i18n
+         */
+        public TargetDummyCommand(Plugin plugin, ILocalizer _i18n) {
+            super(plugin, _i18n);
+        }
+
+        @SubCommand(value = "spawn", permission = "im.admin", tabCompleter = "spawnCompleter")
+        public void onSpawn(CommandSender sender, Arguments arguments) {
+            String mobName = arguments.nextString();
+            if (arguments.top() == null) {
+                if (sender instanceof Player) {
+                    Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
+                    Location location = Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1);
+                    if (location != null) {
+                        MobManager.instance().spawnMobByName(mobName, location, null);
+                    }
+                    return;
+                }
+            }
+
+            String worldName = arguments.nextString();
+            Location location = nextCoordinate(sender, arguments);
+            if (location == null) throw new BadCommandException();
+            String top = arguments.top();
+            Integer level = top == null ? null : Integer.valueOf(top);
+            World world = Bukkit.getWorld(worldName);
+            if (world!=null){
+                location.setWorld(world);
+            }
+            MobManager.instance().spawnTargetDummy(mobName, location, level);
+        }
+
+        @SubCommand(value = "kill", permission = "im.admin")
+        public void onKill(CommandSender sender, Arguments arguments) {
+            Location location = null;
+            if (sender instanceof LivingEntity) {
+                location = ((LivingEntity) sender).getLocation();
+            }else if (sender instanceof BlockCommandSender){
+                location = ((BlockCommandSender) sender).getBlock().getLocation();
+            }else throw new BadCommandException();
+            double radius = 5;
+            if (arguments.top()!=null){
+                radius = arguments.nextDouble();
+            }
+
+            location.getWorld().getNearbyEntities(location, radius, radius, radius).stream()
+                    .filter(entity -> TargetDummy.isTargetDummy(entity))
+                    .map(entity -> TargetDummy.toTargetDummy(entity))
+                    .forEach(targetDummy -> {
+                        MobManager.instance().removeMob(targetDummy, false);
+                        targetDummy.remove();
+                    });
+        }
+        public List<String> spawnCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(getMobNames());
+                    break;
+                case 2:
+                    completeStr.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                    break;
+                case 3:
+                    completeStr.add("x");
+                    completeStr.add("~");
+                    if (sender instanceof Player) {
+                        completeStr.add(String.valueOf(((Player) sender).getLocation().getX()));
+                    } else if (sender instanceof BlockCommandSender) {
+                        completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getX()));
+                    }
+                    break;
+                case 4:
+                    completeStr.add("y");
+                    completeStr.add("~");
+                    if (sender instanceof Player) {
+                        completeStr.add(String.valueOf(((Player) sender).getLocation().getY()));
+                    } else if (sender instanceof BlockCommandSender) {
+                        completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getY()));
+                    }
+                    break;
+                case 5:
+                    completeStr.add("z");
+                    completeStr.add("~");
+                    if (sender instanceof Player) {
+                        completeStr.add(String.valueOf(((Player) sender).getLocation().getZ()));
+                    } else if (sender instanceof BlockCommandSender) {
+                        completeStr.add(String.valueOf(((BlockCommandSender) sender).getBlock().getZ()));
+                    }
+                    break;
+                case 6:
+                    completeStr.add("level");
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        @Override
+        public String getHelpPrefix() {
+            return null;
+        }
+    }
+
+    private static Location nextCoordinate(CommandSender sender, Arguments arguments) {
+        Location location = null;
+        if (sender instanceof LivingEntity) {
+            location = ((LivingEntity) sender).getLocation();
+        }else if (sender instanceof BlockCommandSender){
+            location = ((BlockCommandSender) sender).getBlock().getLocation();
+        }
+        if (location == null)return null;
+        location = location.clone() ;
+        location.setX(parseCoor(location.getX(), arguments));
+        location.setY(parseCoor(location.getY(), arguments));
+        location.setZ(parseCoor(location.getZ(), arguments));
+        return location;
+    }
+
+    private static double parseCoor(double orig, Arguments arguments) {
+        String next = arguments.next();
+        if (next.contains("~")){
+            String sub = next.substring(0,next.indexOf("~"));
+            String add = next.substring(next.indexOf("~")+1);
+            if(!sub.equals("")) {
+                orig -= Double.parseDouble(sub);
+            }
+            if (!add.equals("")) {
+                orig += Double.parseDouble(add);
+            }
+        }else {
+            return Double.parseDouble(next);
+        }
+        return orig;
+    }
+
+
     //</editor-fold>
 }

@@ -9,7 +9,7 @@ plugins {
 group 'NyaaCat'
 
 String majorVersion = 1
-String minorVersion = 1
+String minorVersion = 2
 
 String buildNumber = System.getenv("BUILD_NUMBER") == null ? "SNAPSHOT" : System.getenv("BUILD_NUMBER")
 

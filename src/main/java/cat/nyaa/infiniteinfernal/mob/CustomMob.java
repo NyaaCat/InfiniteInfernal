@@ -121,7 +121,7 @@ public class CustomMob implements IMob {
         this.taggedName = Utils.getTaggedName(pluginConfig.nameTag, entityType, name, level);
         double healthOverride = config.healthOverride;
         if (healthOverride > 0){
-            health =  healthOverride;
+            health = healthOverride;
         }else {
             health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
         }

@@ -122,6 +122,7 @@ public class MobManager {
                 customMob.makeInfernal(spawn);
                 InfPlugin.plugin.config().tags.forEach(spawn::addScoreboardTag);
                 registerMob(customMob);
+                bossBarIMobMap.put(customMob.getBossBar(), customMob);
                 if (customMob.isDynamicHealth()){
                     customMob.tweakHealth();
                 }
@@ -204,6 +205,33 @@ public class MobManager {
                         .forEach(Entity::remove);
             }
         });
+    }
+
+    public TargetDummy spawnTargetDummy(String mobName, Location location, Integer level) {
+        MobConfig config = nameCfgMap.get(mobName);
+        if (config == null) return null;
+        EntityType entityType = config.type;
+        World world = location.getWorld();
+        if (world != null) {
+            Class<? extends Entity> entityClass = entityType.getEntityClass();
+            if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
+                if (level == null) {
+                    level = randomLevel(location);
+                    if (level == null) return null;
+                }
+                Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
+                TargetDummy customMob = new TargetDummy(config, location);
+                Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
+                customMob.respawn();
+                InfPlugin.plugin.config().tags.forEach(customMob.getEntity()::addScoreboardTag);
+                registerMob(customMob);
+                if (customMob.isDynamicHealth()){
+                    customMob.tweakHealth();
+                }
+                return customMob;
+            }
+        }
+        return null;
     }
 
     static class FluidLocationWrapper {
@@ -373,7 +401,6 @@ public class MobManager {
     public void registerMob(IMob mob) {
         World world = mob.getEntity().getWorld();
         uuidMap.put(mob.getEntity().getUniqueId(), mob);
-        bossBarIMobMap.put(mob.getBossBar(), mob);
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.add(mob);
 

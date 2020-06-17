@@ -33,6 +33,9 @@ public class BossbarManager {
 
     public void update(IMob iMob) {
         KeyedBossBar bossBar = iMob.getBossBar();
+        if (bossBar == null){
+            return;
+        }
         updateProgress(bossBar, iMob.getEntity());
         if (iMob.getEntity().isDead()) {
             bossBar.removeAll();

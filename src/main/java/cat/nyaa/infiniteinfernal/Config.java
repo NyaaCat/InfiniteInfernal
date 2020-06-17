@@ -91,6 +91,18 @@ public class Config extends PluginConfigure {
     @Serializable
     public boolean enabled = true;
 
+    @Serializable(name = "dps.title")
+    public String dpsTitle = "&e{playerName}'s &aDPS: &c{dps} &atotal: &c{total} &amax: &c{max}";
+
+    @Serializable(name = "dps.default.health")
+    public double dpsDefaultHealth = 2048;
+
+    @Serializable(name = "dps.refresh_interval")
+    public int dpsRefreshInterval = 200;
+
+    @Serializable(name = "dps.entity_tag")
+    public String dpsTag = "";
+
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
     public DirConfigs<LevelConfig> levelConfigs;
