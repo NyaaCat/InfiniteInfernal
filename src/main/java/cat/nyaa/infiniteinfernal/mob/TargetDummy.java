@@ -56,6 +56,15 @@ public class TargetDummy implements IMob {
         this.lastUpdatedCounter = new DpsCounter(this, getMaxHealth());
     }
 
+    public static void clearAll() {
+        Set<UUID> uuids = targetDummyMap.keySet();
+        if (!uuids.isEmpty()) {
+            for (UUID uuid : uuids) {
+                targetDummyMap.get(uuid).remove();
+            }
+        }
+    }
+
     private void init() {
         Bukkit.getPluginManager().registerEvents(listener, InfPlugin.plugin);
         Ticker.getInstance().register(new DummyTicker((tickEvent)->false));

@@ -12,6 +12,7 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.mob.TargetDummy;
 import cat.nyaa.infiniteinfernal.ui.UiEvents;
 import cat.nyaa.infiniteinfernal.ui.UiManager;
 import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
@@ -133,6 +134,7 @@ public class InfPlugin extends JavaPlugin {
             bossbarManager.start(10);
         }
         MobManager.instance().initMobs();
+        TargetDummy.clearAll();
     }
 
     @Override
