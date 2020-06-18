@@ -48,4 +48,5 @@ public interface IMob {
     EntityDamageEvent getLastDamageCause();
     void setLastDamageCause(EntityDamageEvent event);
 
+    void updateBossBar(KeyedBossBar bossBar, LivingEntity entity);
 }

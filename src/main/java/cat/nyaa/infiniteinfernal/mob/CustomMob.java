@@ -401,6 +401,21 @@ public class CustomMob implements IMob {
         LastDamageCause = event;
     }
 
+    @Override
+    public void updateBossBar(KeyedBossBar bossBar, LivingEntity entity) {
+        double health = entity.getHealth();
+        double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double progress = health / maxHealth;
+        bossBar.setProgress(Math.min(Math.max(0, progress), Math.min(progress, 1)));
+        if (progress < 0.33) {
+            bossBar.setColor(BarColor.RED);
+        } else if (progress < 0.66) {
+            bossBar.setColor(BarColor.YELLOW);
+        } else {
+            bossBar.setColor(BarColor.BLUE);
+        }
+    }
+
     private class NamedLazyNumber implements Expression.LazyNumber{
         private final String name;
         private final double val;

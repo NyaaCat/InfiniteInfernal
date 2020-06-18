@@ -5,13 +5,9 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BossBar;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -36,23 +32,9 @@ public class BossbarManager {
         if (bossBar == null){
             return;
         }
-        updateProgress(bossBar, iMob.getEntity());
+        iMob.updateBossBar(bossBar, iMob.getEntity());
         if (iMob.getEntity().isDead()) {
             bossBar.removeAll();
-        }
-    }
-
-    private void updateProgress(KeyedBossBar bossBar, LivingEntity entity) {
-        double health = entity.getHealth();
-        double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-        double progress = health / maxHealth;
-        bossBar.setProgress(Math.min(Math.max(0, progress), Math.min(progress, 1)));
-        if (progress < 0.33) {
-            bossBar.setColor(BarColor.RED);
-        } else if (progress < 0.66) {
-            bossBar.setColor(BarColor.YELLOW);
-        } else {
-            bossBar.setColor(BarColor.BLUE);
         }
     }
 
@@ -158,7 +140,7 @@ public class BossbarManager {
                     if (!nearbyPlayers.isEmpty()) {
                         updater.registerIMob(iMob, nearbyPlayers);
                     }
-                    updateProgress(bossBar, entity);
+                    iMob.updateBossBar(bossBar, entity);
                 });
                 updater.commit();
             }

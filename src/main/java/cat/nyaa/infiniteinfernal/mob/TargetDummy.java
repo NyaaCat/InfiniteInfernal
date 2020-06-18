@@ -57,7 +57,7 @@ public class TargetDummy implements IMob {
     }
 
     public static void clearAll() {
-        Set<UUID> uuids = targetDummyMap.keySet();
+        Set<UUID> uuids = new HashSet<>(targetDummyMap.keySet());
         if (!uuids.isEmpty()) {
             for (UUID uuid : uuids) {
                 targetDummyMap.get(uuid).remove();
@@ -306,6 +306,7 @@ public class TargetDummy implements IMob {
                 @Override
                 public void run() {
                     dps -= damage;
+                    updateBossbar();
                 }
             }.runTaskLater(InfPlugin.plugin, 20);
         }
@@ -514,5 +515,10 @@ public class TargetDummy implements IMob {
     @Override
     public void setLastDamageCause(EntityDamageEvent event) {
 
+    }
+
+    @Override
+    public void updateBossBar(KeyedBossBar bossBar, LivingEntity entity) {
+        lastUpdatedCounter.updateBossbar();
     }
 }
