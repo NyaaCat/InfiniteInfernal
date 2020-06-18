@@ -282,16 +282,16 @@ public class TargetDummy implements IMob {
 
         public void submitDamage(final double damage){
             // finalDamage = damage * 10?
-            damage /= 10;
-            total += damage;
-            dps += damage;
+            double finalDamage = damage / 10;
+            total += finalDamage;
+            dps += finalDamage;
             maxDps = Math.max(dps, maxDps);
             cleaner.reset();
             active = true;
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    dps -= damage;
+                    dps -= finalDamage;
                 }
             }.runTaskLater(InfPlugin.plugin, 20);
         }
