@@ -5,7 +5,9 @@ import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
+import cat.nyaa.infiniteinfernal.utils.ticker.TickEvent;
 import cat.nyaa.infiniteinfernal.utils.ticker.TickTask;
+import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,6 +27,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class TargetDummy implements IMob {
     private static Map<UUID, TargetDummy> targetDummyMap = new HashMap<>();
@@ -54,7 +58,7 @@ public class TargetDummy implements IMob {
 
     private void init() {
         Bukkit.getPluginManager().registerEvents(listener, InfPlugin.plugin);
-        new DummyTicker().runTaskTimer(InfPlugin.plugin, 0, 1);
+        Ticker.getInstance().register(new DummyTicker((tickEvent)->false));
     }
 
     void respawn() {
@@ -157,6 +161,14 @@ public class TargetDummy implements IMob {
     static class DummyTicker extends TickTask {
         Queue<TargetDummy> dummyQueue = new LinkedList<>();
 
+        public DummyTicker() {
+            super();
+        }
+
+        public DummyTicker(Predicate<TickEvent> shouldRemove) {
+            super(shouldRemove);
+        }
+
         @Override
         public void run(int ticked) {
             if (!InfPlugin.plugin.config().enabled){
@@ -171,7 +183,10 @@ public class TargetDummy implements IMob {
                     return;
                 }
                 TargetDummy poll = dummyQueue.poll();
-                poll.tick();
+                if (poll == null){
+                    return;
+                }
+                poll.tick(ticked);
             }
         }
 
@@ -181,38 +196,29 @@ public class TargetDummy implements IMob {
 
     }
 
-    private void tick() {
+    private void tick(int ticked) {
         refreshHealth();
+        if(lastUpdatedCounter == null || !lastUpdatedCounter.isActive()){
+            return;
+        }
         refreshBossBar();
+        if (ticked%10 == 0){
+            refreshTitle();
+        }
+    }
+
+    private void refreshTitle() {
+        if (lastUpdatedCounter != null) {
+            if (lastUpdatedCounter.isActive()) {
+                lastUpdatedCounter.updateTitle();
+            }
+        }
     }
 
     private void refreshBossBar() {
-        List<Player> playersNearMob = MobManager.instance().getPlayersNearMob(this);
         if(lastUpdatedCounter != null){
             lastUpdatedCounter.updateBossbar();
-            if (!trackedPlayers.isEmpty()){
-                lastUpdatedCounter.bossBar.getPlayers();
-                for (Player trackedPlayer : trackedPlayers) {
-                    lastUpdatedCounter.bossBar.addPlayer(trackedPlayer);
-                }
-            }
         }
-
-        if (!playersNearMob.isEmpty()) {
-            for (Player player : playersNearMob) {
-                UUID uniqueId = player.getUniqueId();
-                DpsCounter dpsCounter = dpsCounterMap.computeIfAbsent(uniqueId, uuid -> new DpsCounter(uuid, this, getMaxHealth()));
-                if (dpsCounter.isActive()) {
-                    dpsCounter.updateBossbar();
-                    KeyedBossBar bossBar = dpsCounter.bossBar;
-                    bossBar.addPlayer(player);
-                }else {
-                    dpsCounter.bossBar.removeAll();
-                }
-            }
-        }
-
-
     }
 
     static class DpsCounter implements IDpsMeter{
@@ -294,7 +300,7 @@ public class TargetDummy implements IMob {
             }.runTaskLater(InfPlugin.plugin, 20);
         }
 
-        private void updateBossbar() {
+        private void updateTitle(){
             String dpsTitle = InfPlugin.plugin.config().dpsTitle;
             Player player = getPlayer();
             if (player == null){
@@ -305,6 +311,9 @@ public class TargetDummy implements IMob {
             dpsTitle = dpsTitle.replaceAll("\\{total}", String.format("%.2f",total));
             dpsTitle = dpsTitle.replaceAll("\\{max}", String.format("%.2f", maxDps));
             bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', dpsTitle));
+        }
+
+        private void updateBossbar() {
             double max = Math.max(0, Math.min(1, dps / this.maxVal));
             bossBar.setProgress(max);
             if (max<0.25){
