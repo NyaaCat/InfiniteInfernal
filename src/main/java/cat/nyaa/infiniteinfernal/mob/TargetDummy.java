@@ -281,6 +281,8 @@ public class TargetDummy implements IMob {
         }
 
         public void submitDamage(final double damage){
+            // finalDamage = damage * 10?
+            damage /= 10;
             total += damage;
             dps += damage;
             maxDps = Math.max(dps, maxDps);
