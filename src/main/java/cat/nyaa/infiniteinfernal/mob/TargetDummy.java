@@ -213,20 +213,18 @@ public class TargetDummy implements IMob {
 
     private void tick(int ticked) {
         refreshHealth();
-        if(lastUpdatedCounter == null || !lastUpdatedCounter.isActive()){
+        if(lastUpdatedCounter == null){
             return;
         }
-        refreshBossBar();
         if (ticked%10 == 0){
             refreshTitle();
         }
+        refreshBossBar();
     }
 
     private void refreshTitle() {
         if (lastUpdatedCounter != null) {
-            if (lastUpdatedCounter.isActive()) {
-                lastUpdatedCounter.updateTitle();
-            }
+            lastUpdatedCounter.updateTitle();
         }
     }
 
