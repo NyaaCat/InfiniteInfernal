@@ -4,7 +4,9 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
+import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -63,45 +65,31 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
 
     private void createCacheAndClearEffect(LivingEntity target) {
         if (duration != durationWatcher) {
-            cache = CacheBuilder.newBuilder()
-                    .concurrencyLevel(2)
-                    .initialCapacity(100)
-                    .expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS).build();
+            cache = cacheBuilder.build();
         }
-        List<PotionEffectType> peT;
-        peT = cache.getIfPresent(CACHE_EFFECT);
+        Set<PotionEffectType> peT;
+        peT = cache.getIfPresent(target.getUniqueId());
         if (peT == null) {
-            peT = new ArrayList<>(effects.size());
+            peT = effects.stream().map(s -> Utils.parseEffect(s, getName())).collect(Collectors.toSet());
         }
-        if (peT.isEmpty()) {
-            if (!effects.isEmpty()) {
-                List<PotionEffectType> finalPeT = peT;
-                effects.forEach(s -> {
-                    PotionEffectType potionEffect = Utils.parseEffect(s, getName());
-                    finalPeT.add(potionEffect);
-                    clearEffect(target, potionEffect);
-                });
-            }
-            cache.put(CACHE_EFFECT, peT);
-            peT.forEach(potionEffectType -> clearEffect(target, potionEffectType));
-        }else {
-            List<PotionEffectType> finalPeT1 = peT;
-            class ClearTask extends BukkitRunnable{
-                private LivingEntity target;
+        Set<PotionEffectType> finalPeT1 = peT;
+        class ClearTask extends BukkitRunnable{
+            private LivingEntity target;
 
-                private ClearTask(LivingEntity target){
-                    this.target = target;
-                }
-                @Override
-                public void run() {
-                    if (affected.contains(target.getUniqueId())){
-                        finalPeT1.forEach(potionEffectType -> clearEffect(target, potionEffectType));
-                        new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
-                    }
+            private ClearTask(LivingEntity target){
+                this.target = target;
+            }
+
+            @Override
+            public void run() {
+                if (affected.contains(target.getUniqueId())){
+                    finalPeT1.forEach(potionEffectType -> clearEffect(target, potionEffectType));
+                    new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
                 }
             }
-            new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
         }
+        cache.put(target.getUniqueId(), peT);
+        new ClearTask(target).runTaskLater(InfPlugin.plugin, 1);
     }
 
     CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder()
@@ -109,7 +97,7 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
             .initialCapacity(100)
             .expireAfterAccess((long) (((double) duration) / 20d), TimeUnit.SECONDS);
 
-    Cache<String, List<PotionEffectType>> cache = cacheBuilder.build();
+    private Cache<UUID, Set<PotionEffectType>> cache = cacheBuilder.build();
 
     public void clearEffect(LivingEntity entity, PotionEffectType type) {
         entity.removePotionEffect(type);
@@ -119,7 +107,9 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
         listener = new Listener() {
             @EventHandler
             public void onPotion(EntityPotionEffectEvent ev) {
-                List<PotionEffectType> potions = cache.getIfPresent(CACHE_EFFECT);
+                Entity entity1 = ev.getEntity();
+                Set<PotionEffectType> potions = cache.getIfPresent(entity1.getUniqueId());
+                IMob iMob = MobManager.instance().toIMob(entity1);
                 if(!affected.contains(ev.getEntity().getUniqueId()))return;
                 PotionEffect newEffect = ev.getNewEffect();
                 PotionEffect oldEffect = ev.getOldEffect();
