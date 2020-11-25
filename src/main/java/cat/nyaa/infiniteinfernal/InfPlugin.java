@@ -140,7 +140,6 @@ public class InfPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         super.onDisable();
-        config.save();
         LootManager.disable();
         MobManager.disable();
     }

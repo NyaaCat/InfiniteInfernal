@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
@@ -439,7 +440,7 @@ public class MobManager {
             if (bossBar != null) {
                 bossBar.setProgress(0);
                 bossBar.setColor(BarColor.RED);
-                bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', mob.getTaggedName().concat(" ").concat(InfPlugin.plugin.config().bossbar.killSuffix)));
+                bossBar.setTitle(HexColorUtils.hexColored( mob.getTaggedName().concat(" ").concat(InfPlugin.plugin.config().bossbar.killSuffix)));
                 new BukkitRunnable() {
                     @Override
                     public void run() {

@@ -15,6 +15,7 @@ import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import com.udojava.evalex.Expression;
 import org.bukkit.*;
@@ -255,7 +256,7 @@ public class CustomMob implements IMob {
 
     @Override
     public String getTaggedName() {
-        return ChatColor.translateAlternateColorCodes('&', taggedName);
+        return HexColorUtils.hexColored( taggedName);
     }
 
     @Override

@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -69,7 +70,7 @@ public class InfMessager implements IMessager {
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{drop\\.item}", "{itemName}")
                         .replaceAll("\\{drop\\.amount}", "{amount}");
-                message.append(ChatColor.translateAlternateColorCodes('&', str), lootItem.getItemStack());
+                message.append(HexColorUtils.hexColored( str), lootItem.getItemStack());
                 break;
             case SPETIAL_DROP:
                 str = Utils.randomPick(specialDrop);
@@ -81,7 +82,7 @@ public class InfMessager implements IMessager {
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{drop\\.special}", "{itemName}")
                         .replaceAll("\\{drop\\.amount}", "{amount}");
-                message.append(ChatColor.translateAlternateColorCodes('&', str), lootItem.getItemStack());
+                message.append(HexColorUtils.hexColored( str), lootItem.getItemStack());
                 break;
             case NO_DROP:
                 str = Utils.randomPick(noDrop);
@@ -91,7 +92,7 @@ public class InfMessager implements IMessager {
                 }
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName());
-                message.append(ChatColor.translateAlternateColorCodes('&', str));
+                message.append(HexColorUtils.hexColored( str));
                 break;
             case MOB_KILLED:
                 if (!(killer instanceof LivingEntity)){
@@ -106,7 +107,7 @@ public class InfMessager implements IMessager {
                 str = str.replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{player\\.item}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&', str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
+                message.append(HexColorUtils.hexColored( str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
                 break;
             case PLAYER_KILLED:
                 str = Utils.randomPick(mobKill);
@@ -118,7 +119,7 @@ public class InfMessager implements IMessager {
                 str = str.replaceAll("\\{mob\\.name}", deadMob.getTaggedName())
                         .replaceAll("\\{player\\.name}", killer.getName())
                         .replaceAll("\\{mob\\.item}", "{itemName}");
-                message.append(ChatColor.translateAlternateColorCodes('&', str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
+                message.append(HexColorUtils.hexColored( str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
                 break;
         }
         return message;

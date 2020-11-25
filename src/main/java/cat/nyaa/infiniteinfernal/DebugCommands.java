@@ -16,6 +16,7 @@ import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
@@ -72,7 +73,7 @@ public class DebugCommands extends CommandReceiver {
                 item.setVisible(false);
                 item.setSmall(true);
                 item.setCollidable(false);
-                item.setCustomName(ChatColor.translateAlternateColorCodes('&', String.format("&c&l%.2f", v)));
+                item.setCustomName(HexColorUtils.hexColored( String.format("&c&l%.2f", v)));
                 item.setCustomNameVisible(true);
                 item.addScoreboardTag("inf_damage_indicator");
             });

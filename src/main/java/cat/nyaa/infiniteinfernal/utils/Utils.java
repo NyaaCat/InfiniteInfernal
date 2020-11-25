@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -378,7 +379,7 @@ public class Utils {
             item.setVisible(false);
             item.setSmall(true);
             item.setCollidable(false);
-            item.setCustomName(ChatColor.translateAlternateColorCodes('&', String.format(format, damage)));
+            item.setCustomName(HexColorUtils.hexColored( String.format(format, damage)));
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -430,7 +431,7 @@ public class Utils {
     }
 
     public static String colored(String str) {
-        return ChatColor.translateAlternateColorCodes('&', str);
+        return HexColorUtils.hexColored(str);
     }
 
     public static List<String> filtered(Arguments arguments, List<String> completeStr) {
