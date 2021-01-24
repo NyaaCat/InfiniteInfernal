@@ -7,10 +7,7 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Biome;
@@ -102,6 +99,9 @@ public class Config extends PluginConfigure {
 
     @Serializable(name = "dps.entity_tag")
     public String dpsTag = "";
+
+    @Serializable(name = "mobParticle")
+    public Particle mobParticle = Particle.LAVA;
 
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;

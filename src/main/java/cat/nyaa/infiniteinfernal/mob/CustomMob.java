@@ -264,7 +264,8 @@ public class CustomMob implements IMob {
         LivingEntity entity = getEntity();
         World world = entity.getWorld();
         Location location = entity.getLocation();
-        world.spawnParticle(Particle.LAVA, location, 10, 0, 0, 0, 1, null, true);
+        Particle mobParticle = InfPlugin.plugin.config().mobParticle;
+        world.spawnParticle(mobParticle, location, 10, 0, 0, 0, 1, null, true);
     }
 
     @Override
