@@ -5,10 +5,7 @@ import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilitySet;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.configs.MobConfig;
-import cat.nyaa.infiniteinfernal.configs.WorldConfig;
+import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.controler.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
@@ -264,8 +261,18 @@ public class CustomMob implements IMob {
         LivingEntity entity = getEntity();
         World world = entity.getWorld();
         Location location = entity.getLocation();
-        Particle mobParticle = InfPlugin.plugin.config().mobParticle;
-        world.spawnParticle(mobParticle, location, 10, 0, 0, 0, 1, null, true);
+        final ParticleConfig mobParticle1 = InfPlugin.plugin.config().mobParticle;
+        world.spawnParticle(
+                mobParticle1.type,
+                location,
+                mobParticle1.amount,
+                mobParticle1.deltaX,
+                mobParticle1.deltaY,
+                mobParticle1.deltaZ,
+                mobParticle1.speed,
+                mobParticle1.extraData,
+                mobParticle1.forced
+        );
     }
 
     @Override

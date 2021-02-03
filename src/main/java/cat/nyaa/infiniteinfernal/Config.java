@@ -101,7 +101,13 @@ public class Config extends PluginConfigure {
     public String dpsTag = "";
 
     @Serializable(name = "mobParticle")
-    public Particle mobParticle = Particle.LAVA;
+    public ParticleConfig mobParticle;
+
+    {
+        mobParticle = new ParticleConfig();
+        mobParticle.type = Particle.LAVA;
+        mobParticle.amount = 10;
+    }
 
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
