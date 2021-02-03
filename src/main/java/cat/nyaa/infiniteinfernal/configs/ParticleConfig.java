@@ -25,7 +25,7 @@ public class ParticleConfig implements ISerializable {
     @Serializable
     public int amount = 500;
     @Serializable
-    public String extraData = "";
+    public String extraData = null;
     @Serializable
     public boolean forced = false;
 
