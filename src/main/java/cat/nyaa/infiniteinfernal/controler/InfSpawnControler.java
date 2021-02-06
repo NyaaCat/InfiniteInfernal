@@ -12,6 +12,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -154,6 +155,9 @@ public class InfSpawnControler implements ISpawnControler {
                 }
             }
             centerSpawnLocation(spawnLocation);
+            if (!lightValid(spawnLocation)){
+                return null;
+            }
             IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
             if (iMob != null) {
                 if (iMob.isDynamicHealth()) {
@@ -163,6 +167,31 @@ public class InfSpawnControler implements ISpawnControler {
             }
             return iMob;
         } else return null;
+    }
+
+    private boolean lightValid(Location spawnLocation) {
+        final Block block = spawnLocation.getBlock();
+        final byte lightLevel = block.getLightLevel();
+        final byte lightFromBlocks = block.getLightFromBlocks();
+        final byte lightFromSky = block.getLightFromSky();
+        final WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(block.getWorld().getName());
+        if (worldConfig == null) {
+            return false;
+        }
+        final byte worldMinSkyLight = worldConfig.minSkyLight;
+        final byte worldMaxSkyLight = worldConfig.maxSkyLight;
+        final byte worldMinBlockLight = worldConfig.minBlockLight;
+        final byte worldMaxBlockLight = worldConfig.maxBlockLight;
+        final byte worldMinLight = worldConfig.minLight;
+        final byte worldMaxLight = worldConfig.maxLight;
+
+        return isInRange(lightLevel, worldMinLight, worldMaxLight)
+                && isInRange(lightFromBlocks, worldMinBlockLight, worldMaxBlockLight)
+                && isInRange(lightFromSky, worldMinSkyLight, worldMaxSkyLight);
+    }
+
+    private boolean isInRange(byte lightLevel, byte worldMinLight, byte worldMaxLight) {
+        return lightLevel > worldMinLight && lightLevel <= worldMaxLight;
     }
 
     private void centerSpawnLocation(Location spawnLocation) {

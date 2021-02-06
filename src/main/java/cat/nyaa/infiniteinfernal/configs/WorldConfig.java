@@ -60,6 +60,25 @@ public class WorldConfig implements ISerializable {
     @Serializable
     public Map<String, Double> trueDamage;
 
+    @Serializable(name = "spawn.light.sky.min")
+    public byte minSkyLight = 0;
+
+    @Serializable(name = "spawn.light.sky.max")
+    public byte maxSkyLight = 0xf;
+
+    @Serializable(name = "spawn.light.block.min")
+    public byte minBlockLight = 0;
+
+    @Serializable(name = "spawn.light.block.max")
+    public byte maxBlockLight = 0xf;
+
+    @Serializable(name = "spawn.light.total.min")
+    public byte minLight = 0;
+
+    @Serializable(name = "spawn.light.total.max")
+    public byte maxLight = 0xf;
+
+
     private void initDefault() {
         trueDamage.put(EntityDamageEvent.DamageCause.WITHER.name().toLowerCase(), 1d);
         trueDamage.put(EntityDamageEvent.DamageCause.POISON.name().toLowerCase(), 1d);
