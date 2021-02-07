@@ -191,7 +191,7 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     private boolean isInRange(byte lightLevel, byte worldMinLight, byte worldMaxLight) {
-        return lightLevel > worldMinLight && lightLevel <= worldMaxLight;
+        return lightLevel >= worldMinLight && lightLevel <= worldMaxLight;
     }
 
     private void centerSpawnLocation(Location spawnLocation) {
