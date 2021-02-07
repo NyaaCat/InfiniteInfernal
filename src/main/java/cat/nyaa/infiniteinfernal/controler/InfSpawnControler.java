@@ -178,19 +178,19 @@ public class InfSpawnControler implements ISpawnControler {
         if (worldConfig == null) {
             return false;
         }
-        final byte worldMinSkyLight = worldConfig.minSkyLight;
-        final byte worldMaxSkyLight = worldConfig.maxSkyLight;
-        final byte worldMinBlockLight = worldConfig.minBlockLight;
-        final byte worldMaxBlockLight = worldConfig.maxBlockLight;
-        final byte worldMinLight = worldConfig.minLight;
-        final byte worldMaxLight = worldConfig.maxLight;
+        final int worldMinSkyLight = worldConfig.minSkyLight;
+        final int worldMaxSkyLight = worldConfig.maxSkyLight;
+        final int worldMinBlockLight = worldConfig.minBlockLight;
+        final int worldMaxBlockLight = worldConfig.maxBlockLight;
+        final int worldMinLight = worldConfig.minLight;
+        final int worldMaxLight = worldConfig.maxLight;
 
         return isInRange(lightLevel, worldMinLight, worldMaxLight)
                 && isInRange(lightFromBlocks, worldMinBlockLight, worldMaxBlockLight)
                 && isInRange(lightFromSky, worldMinSkyLight, worldMaxSkyLight);
     }
 
-    private boolean isInRange(byte lightLevel, byte worldMinLight, byte worldMaxLight) {
+    private boolean isInRange(byte lightLevel, int worldMinLight, int worldMaxLight) {
         return lightLevel >= worldMinLight && lightLevel <= worldMaxLight;
     }
 
