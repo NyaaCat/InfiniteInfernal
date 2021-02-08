@@ -106,6 +106,7 @@ public class BaseUi {
     }
 
     public void refreshIfOn(Player poll) {
+        if (!InfPlugin.plugin.config().enableActionbarInfo) return;
         UiReceiveMode uiReceiveMode;
         Cache<UUID, UiReceiveMode> cache = UiManager.cache;
         try {

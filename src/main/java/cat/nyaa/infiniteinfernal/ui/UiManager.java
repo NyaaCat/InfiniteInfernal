@@ -64,10 +64,6 @@ public class UiManager {
         return getUi(player).status;
     }
 
-    public void refreshUi(Player player) {
-        getUi(player).refreshUi(player);
-    }
-
     public class RegenerationTask extends TickTask {
         Queue<Player> playerQueue = new LinkedList<>();
 
