@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.*;
@@ -234,7 +235,7 @@ public class MobManager {
         return null;
     }
 
-    static class FluidLocationWrapper {
+    public static class FluidLocationWrapper {
         private static final List<EntityType> skyEntities = Arrays.asList(
                 EntityType.PHANTOM,
                 EntityType.BAT,
@@ -289,38 +290,36 @@ public class MobManager {
             Block d1 = block.getRelative(BlockFace.DOWN);
             return d1.getType().equals(Material.AIR);
         }
+
+        public static boolean isSkyMob(EntityType entityType){
+            return skyEntities.contains(entityType);
+        }
+
+        public static boolean isWaterMob(EntityType entityType){
+            return waterEntities.contains(entityType);
+        }
     }
 
-    public IMob natualSpawn(MobConfig mobConfig, Location location) {
-        EntityType type = mobConfig.type;
-        FluidLocationWrapper.skyEntities.contains(type)
+    public Pair<MobConfig, Integer> selectMobConfig(Location center){
+        Integer level = randomLevel(center);
+        List<MobConfig> collect = natualSpawnLists.get(level);
+        MobConfig mobConfig = Utils.weightedRandomPick(collect);
+        return Pair.of(mobConfig, level);
     }
 
     public IMob natualSpawn(Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         if (!regions.isEmpty()) {
-            return spawnInRegion(regions, location, true);
+            return spawnInRegion(regions, location);
         }
-        Integer level = randomLevel(location);
+
+        Pair<MobConfig, Integer> mobConfigIntegerPair = selectMobConfig(location);
+        Integer level = mobConfigIntegerPair.getValue();
         List<MobConfig> collect = natualSpawnLists.get(level);
         if (collect == null) return null;
-        World world = location.getWorld();
-        if (world == null) return null;
-        Biome biome = location.getBlock().getBiome();
-        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
         if (!collect.isEmpty()) {
-            collect = collect.stream()
-                    .filter(config1 -> {
-                        List<String> biomes = config1.spawn.biomes;
-                        List<String> worlds = config1.spawn.worlds;
-                        return biomes != null && worlds != null
-                                && worlds.contains(world.getName()) && biomes.contains(biome.name());
-                    })
-                    .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
-                    .collect(Collectors.toList());
-            MobConfig mobConfig = Utils.weightedRandomPick(collect);
-            return spawnMobByConfig(mobConfig, location, level);
+            return spawnMobByConfig(mobConfigIntegerPair.getKey(), location, level);
         }
         return null;
     }
@@ -352,13 +351,17 @@ public class MobManager {
         return levelCandidates;
     }
 
-    public IMob spawnInRegion(List<RegionConfig> regions, Location center, boolean force) {
+    public IMob spawnInRegion(List<RegionConfig> regions, Location center) {
+        WeightedPair<MobConfig, Integer> mobConfig = selectConfigInRegion(regions, center);
+        return spawnMobByConfig(mobConfig.getKey(), center, mobConfig.getValue());
+    }
+
+    public WeightedPair<MobConfig, Integer> selectConfigInRegion(List<RegionConfig> regions, Location center){
         List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, center);
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
-            MobConfig mobConfig = selected.getKey();
-            return spawnMobByConfig(mobConfig, center, selected.getValue());
+            return selected;
         }
         return null;
     }
