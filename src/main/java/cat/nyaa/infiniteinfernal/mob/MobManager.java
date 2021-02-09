@@ -4,7 +4,6 @@ import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.*;
-import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
@@ -292,11 +291,16 @@ public class MobManager {
         }
     }
 
+    public IMob natualSpawn(MobConfig mobConfig, Location location) {
+        EntityType type = mobConfig.type;
+        FluidLocationWrapper.skyEntities.contains(type)
+    }
+
     public IMob natualSpawn(Location location) {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         if (!regions.isEmpty()) {
-            return spawnInRegion(regions, location);
+            return spawnInRegion(regions, location, true);
         }
         Integer level = randomLevel(location);
         List<MobConfig> collect = natualSpawnLists.get(level);
@@ -348,13 +352,13 @@ public class MobManager {
         return levelCandidates;
     }
 
-    private IMob spawnInRegion(List<RegionConfig> regions, Location location) {
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, location);
+    public IMob spawnInRegion(List<RegionConfig> regions, Location center, boolean force) {
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, center);
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
             MobConfig mobConfig = selected.getKey();
-            return spawnMobByConfig(mobConfig, location, selected.getValue());
+            return spawnMobByConfig(mobConfig, center, selected.getValue());
         }
         return null;
     }

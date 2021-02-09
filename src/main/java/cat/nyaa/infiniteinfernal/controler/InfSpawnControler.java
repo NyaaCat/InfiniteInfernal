@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.controler;
 
+import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
@@ -137,36 +138,45 @@ public class InfSpawnControler implements ISpawnControler {
 
     @Override
     public IMob spawnIMob(Player player, boolean force) {
-        World world = player.getWorld();
+        MobManager mobManager = MobManager.instance();
         Location location = player.getLocation();
-        int maxSpawnDistance = getMaxSpawnDistance(world);
-        int minSpawnDistance = getMinSpawnDistance(world);
-        Location spawnLocation;
-        if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
-        }else {
-            spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+        Config config = InfPlugin.plugin.config();
+        List<RegionConfig> regions = config.getRegionsForLocation(location);
+        if (!regions.isEmpty()) {
+            return mobManager.spawnInRegion(regions, location, force);
         }
-        if (spawnLocation== null)return null;
-        if (canSpawn(world,spawnLocation) || force) {
-            if (!force && InfPlugin.wgEnabled){
-                if (WorldGuardUtils.instance().isProtectedRegion(spawnLocation, player)) {
-                    return null;
-                }
-            }
-            centerSpawnLocation(spawnLocation);
-            if (!lightValid(spawnLocation)){
-                return null;
-            }
-            IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
-            if (iMob != null) {
-                if (iMob.isDynamicHealth()) {
-                    iMob.tweakHealth();
-                }
-                iMob.autoRetarget();
-            }
-            return iMob;
-        } else return null;
+
+
+//        World world = player.getWorld();
+//        Location location = player.getLocation();
+//        int maxSpawnDistance = getMaxSpawnDistance(world);
+//        int minSpawnDistance = getMinSpawnDistance(world);
+//        Location spawnLocation;
+//        if (Utils.possibility(0.7)){
+//            spawnLocation = Utils.randomSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
+//        }else {
+//            spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+//        }
+//        if (spawnLocation== null)return null;
+//        if (canSpawn(world,spawnLocation) || force) {
+//            if (!force && InfPlugin.wgEnabled){
+//                if (WorldGuardUtils.instance().isProtectedRegion(spawnLocation, player)) {
+//                    return null;
+//                }
+//            }
+//            centerSpawnLocation(spawnLocation);
+//            if (!lightValid(spawnLocation)){
+//                return null;
+//            }
+//            IMob iMob = MobManager.instance().natualSpawn(spawnLocation);
+//            if (iMob != null) {
+//                if (iMob.isDynamicHealth()) {
+//                    iMob.tweakHealth();
+//                }
+//                iMob.autoRetarget();
+//            }
+//            return iMob;
+//        } else return null;
     }
 
     private boolean lightValid(Location spawnLocation) {
