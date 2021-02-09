@@ -207,14 +207,13 @@ public class InfSpawnControler implements ISpawnControler {
     }
 
     private Location findLocation(World world, Location center, Predicate<Material> air) {
-        //todo filter location type & rename util method
         int maxSpawnDistance = getMaxSpawnDistance(world);
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
         if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomFloorSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
         }else {
-            spawnLocation = Utils.randomFloorSpawnLocation(center, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
         }
         return spawnLocation;
     }
