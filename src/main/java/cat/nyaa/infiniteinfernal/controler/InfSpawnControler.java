@@ -160,7 +160,7 @@ public class InfSpawnControler implements ISpawnControler {
 
         if (!regions.isEmpty()) {
             WeightedPair<MobConfig, Integer> pair = mobManager.selectConfigInRegion(regions, center);
-            if (pair == null){
+            if (pair == null || pair.getKey() == null){
                 return null;
             }
             mobConfig = pair.getKey();
@@ -171,7 +171,7 @@ public class InfSpawnControler implements ISpawnControler {
 
         if (mobSupplier == null){
             Pair<MobConfig, Integer> pair = mobManager.selectNatualMobConfig(center);
-            if (pair == null){
+            if (pair == null || pair.getKey() == null){
                 return null;
             }
             mobConfig = pair.getKey();
