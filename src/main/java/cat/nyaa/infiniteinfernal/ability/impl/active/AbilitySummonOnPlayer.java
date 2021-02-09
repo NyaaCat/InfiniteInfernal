@@ -19,6 +19,8 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
     @Serializable
     public int amount = 2;
     @Serializable
+    public double range = 24;
+    @Serializable
     public double radius = 10;
     @Serializable
     public EntityType type = EntityType.ZOMBIE;
@@ -32,7 +34,7 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
         if (maxTimes != 0 && counter >= maxTimes){
             return;
         }
-        List<LivingEntity> candidate = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(radius, radius, radius))
+        List<LivingEntity> candidate = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range))
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidate);
         if (victim == null)return;
