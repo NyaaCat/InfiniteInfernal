@@ -45,7 +45,7 @@ public class AbilityShingeki extends ActiveAbility {
             } else {
                 Location location = null;
                 for (int j = 0; j < 20; j++) {
-                    location = Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, 30);
+                    location = Utils.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, 30);
                     if (location != null) break;
                 }
                 if (location != null) {

@@ -127,7 +127,7 @@ public class Utils {
                 .map(entity -> ((LivingEntity) entity));
     }
 
-    public static Location randomSpawnLocationInFront(Location location, int minSpawnDistance, int maxSpawnDistance) {
+    public static Location randomFloorSpawnLocationInFront(Location location, int minSpawnDistance, int maxSpawnDistance) {
         Vector direction = location.getDirection().clone();
         direction.setY(0);
         if (direction.length() > 1e-4) {
@@ -138,10 +138,10 @@ public class Utils {
                 if (validSpawnLocationInY != null) return validSpawnLocationInY;
             }
         }
-        return randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+        return randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
     }
 
-    public static Location randomSpawnLocation(Location center, double innerRange, double outerRange) {
+    public static Location randomFloorSpawnLocation(Location center, double innerRange, double outerRange) {
         Location targetLocation = center;
         for (int i = 0; i < 20; i++) {
             targetLocation = randomLocation(center, innerRange, outerRange);

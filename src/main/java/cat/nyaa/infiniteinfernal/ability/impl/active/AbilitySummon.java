@@ -32,7 +32,7 @@ public class AbilitySummon extends ActiveAbility {
         for (int i = 0; i < amount; i++) {
             Location location = null;
             for (int j = 0; j < 20; j++) {
-                location = Utils.randomSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
+                location = Utils.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
                 if (location!=null){
                     break;
                 }

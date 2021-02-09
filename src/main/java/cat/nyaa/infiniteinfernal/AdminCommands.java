@@ -90,7 +90,7 @@ public class AdminCommands extends CommandReceiver {
         if (arguments.top() == null) {
             if (sender instanceof Player) {
                 Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                Location location = Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1);
+                Location location = Utils.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
                 if (location != null) {
                     MobManager.instance().spawnMobByName(mobName, location, null);
                 }
@@ -2036,7 +2036,7 @@ public class AdminCommands extends CommandReceiver {
             if (arguments.top() == null) {
                 if (sender instanceof Player) {
                     Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                    Location location = Utils.randomSpawnLocation(targetBlock.getLocation(), 0, 1);
+                    Location location = Utils.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
                     if (location != null) {
                         MobManager.instance().spawnMobByName(mobName, location, null);
                     }

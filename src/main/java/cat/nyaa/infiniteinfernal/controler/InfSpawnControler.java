@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class InfSpawnControler implements ISpawnControler {
     private final InfPlugin plugin;
@@ -214,9 +212,9 @@ public class InfSpawnControler implements ISpawnControler {
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
         if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomFloorSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance);
         }else {
-            spawnLocation = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomFloorSpawnLocation(center, minSpawnDistance, maxSpawnDistance);
         }
         return spawnLocation;
     }
@@ -226,9 +224,9 @@ public class InfSpawnControler implements ISpawnControler {
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
         if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomFloorSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
         }else {
-            spawnLocation = Utils.randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = Utils.randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
         }
         return spawnLocation;
     }
