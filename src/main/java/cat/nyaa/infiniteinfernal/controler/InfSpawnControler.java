@@ -154,24 +154,30 @@ public class InfSpawnControler implements ISpawnControler {
         Function<MobConfig, Location> locationSupplier = (mobConfig) -> findLocationByConfig(player, mobConfig, center, force);
         MobConfig mobConfig = null;
 
+        if (!canSpawnNearPlayer(player, center) && !force) {
+            return null;
+        }
+
         if (!regions.isEmpty()) {
             WeightedPair<MobConfig, Integer> pair = mobManager.selectConfigInRegion(regions, center);
+            if (pair == null){
+                return null;
+            }
             mobConfig = pair.getKey();
             final Integer level = pair.getValue();
             MobConfig finalMobConfig = mobConfig;
             mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
         }
 
-        if (mobSupplier != null){
-            Pair<MobConfig, Integer> pair = mobManager.selectMobConfig(center);
+        if (mobSupplier == null){
+            Pair<MobConfig, Integer> pair = mobManager.selectNatualMobConfig(center);
+            if (pair == null){
+                return null;
+            }
             mobConfig = pair.getKey();
             final Integer level = pair.getValue();
             MobConfig finalMobConfig = mobConfig;
             mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
-        }
-
-        if (mobSupplier == null) {
-            return null;
         }
 
         Location location = locationSupplier.apply(mobConfig);
@@ -202,6 +208,7 @@ public class InfSpawnControler implements ISpawnControler {
 
         if (spawnLocation == null)return null;
         if (recheckLocation(spawnLocation, mobConfig, force, player)){
+            centerSpawnLocation(spawnLocation);
             return spawnLocation;
         }else return null;
     }
@@ -280,8 +287,8 @@ public class InfSpawnControler implements ISpawnControler {
         final int worldMaxLight = worldConfig.maxLight;
 
         return isInRange(lightLevel, worldMinLight, worldMaxLight)
-                && isInRange(lightFromBlocks, worldMinBlockLight, worldMaxBlockLight)
-                && isInRange(lightFromSky, worldMinSkyLight, worldMaxSkyLight);
+                || isInRange(lightFromBlocks, worldMinBlockLight, worldMaxBlockLight)
+                || isInRange(lightFromSky, worldMinSkyLight, worldMaxSkyLight);
     }
 
     private boolean isInRange(byte lightLevel, int worldMinLight, int worldMaxLight) {

@@ -300,9 +300,23 @@ public class MobManager {
         }
     }
 
-    public Pair<MobConfig, Integer> selectMobConfig(Location center){
+    public Pair<MobConfig, Integer> selectNatualMobConfig(Location center){
         Integer level = randomLevel(center);
-        List<MobConfig> collect = natualSpawnLists.get(level);
+        World world = center.getWorld();
+        if (world == null) return null;
+        Biome biome = center.getBlock().getBiome();
+        final List<MobConfig> mobConfigs = natualSpawnLists.get(level);
+        if (mobConfigs == null) {
+            return null;
+        }
+        List<MobConfig> collect = mobConfigs.stream()
+                .filter(config1 -> {
+                    List<String> biomes = config1.spawn.biomes;
+                    List<String> worlds = config1.spawn.worlds;
+                    return biomes != null && worlds != null
+                            && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                }).collect(Collectors.toList());
+
         MobConfig mobConfig = Utils.weightedRandomPick(collect);
         return Pair.of(mobConfig, level);
     }
@@ -314,7 +328,7 @@ public class MobManager {
             return spawnInRegion(regions, location);
         }
 
-        Pair<MobConfig, Integer> mobConfigIntegerPair = selectMobConfig(location);
+        Pair<MobConfig, Integer> mobConfigIntegerPair = selectNatualMobConfig(location);
         Integer level = mobConfigIntegerPair.getValue();
         List<MobConfig> collect = natualSpawnLists.get(level);
         if (collect == null) return null;
