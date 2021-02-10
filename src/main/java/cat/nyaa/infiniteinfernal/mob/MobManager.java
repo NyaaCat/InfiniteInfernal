@@ -382,7 +382,6 @@ public class MobManager {
 
     private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
-        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
         regions.forEach(regionConfig -> {
             if (regionConfig.mobs.isEmpty()) {
                 return;
@@ -406,9 +405,7 @@ public class MobManager {
                             level = Utils.randomPick(MobConfig.parseLevels(mobConfig.spawn.levels));
                         }
                         if (level == null) return;
-                        if (fluidLocationWrapper.isValid(mobConfig.type)) {
-                            spawnConfs.add(new WeightedPair<>(mobConfig, level, mobWeight));
-                        }
+                        spawnConfs.add(new WeightedPair<>(mobConfig, level, mobWeight));
                     }
                 } catch (NumberFormatException e) {
                     Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.num_format", mobs));
