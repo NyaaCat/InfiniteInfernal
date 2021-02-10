@@ -243,10 +243,10 @@ public class InfSpawnControler implements ISpawnControler {
         }
         World world = location.getWorld();
         if (canSpawn(world,location) || force) {
-            Biome biome = location.getBlock().getBiome();
-            if (!isValidBiome(mobConfig, world, biome)){
-                return false;
-            }
+//            Biome biome = location.getBlock().getBiome();
+//            if (!isValidBiome(mobConfig, world, biome)){
+//                return false;
+//            }
             if (!force && InfPlugin.wgEnabled){
                 if (WorldGuardUtils.instance().isProtectedRegion(location, player)) {
                     return false;
