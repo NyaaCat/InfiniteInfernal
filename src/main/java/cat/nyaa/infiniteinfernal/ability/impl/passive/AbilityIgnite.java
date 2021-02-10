@@ -11,11 +11,11 @@ public class AbilityIgnite  extends AbilityPassive implements AbilityAttack {
     @Serializable
     public int duration = 40;
     @Serializable
-    public double chance = 100d;
+    public double chance = 1d;
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (Utils.possibility(chance / 100d)){
+        if (Utils.possibility(chance)){
             target.setFireTicks(duration);
         }
     }
