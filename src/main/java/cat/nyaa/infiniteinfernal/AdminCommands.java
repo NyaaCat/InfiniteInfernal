@@ -936,9 +936,7 @@ public class AdminCommands extends CommandReceiver {
                     new Message(I18n.format("modify.mob.dynamic_health_expression.success")).send(sender);
                     break;
             }
-            if (modified) {
-                mobConfig.save();
-            }
+            mobConfig.save();
         }
 
         // modify mob command implementations
@@ -1383,9 +1381,7 @@ public class AdminCommands extends CommandReceiver {
                     }
                     break;
             }
-            if (modified) {
-                regionConfig.save();
-            }
+            regionConfig.save();
         }
 
         private boolean checkMobFormat(String mob) {
@@ -1518,6 +1514,7 @@ public class AdminCommands extends CommandReceiver {
                 case "remove":
                     targetAbility = arguments.nextString();
                     IAbility remove = abilitySetConfig.abilities.remove(targetAbility);
+                    modified[0] = true;
                     if (remove == null) {
                         new Message(I18n.format("modify.ability.remove.not_exist", targetAbility)).send(sender);
                     } else {
@@ -1525,9 +1522,7 @@ public class AdminCommands extends CommandReceiver {
                     }
                     break;
             }
-            if (modified[0]) {
-                abilitySetConfig.save();
-            }
+            abilitySetConfig.save();
         }
 
         private boolean setField(Field field, ISerializable iAbility, String arg) throws IllegalAccessException {
