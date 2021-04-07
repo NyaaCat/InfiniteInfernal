@@ -3,14 +3,20 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.configs.*;
+import cat.nyaa.infiniteinfernal.configs.LevelConfig;
+import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.configs.NamedDirConfigs;
+import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import com.google.common.collect.ImmutableList;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -348,10 +354,10 @@ public class MobManager {
         Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
         List<WeightedPair<Integer, Integer>> levelCandidates = new ArrayList<>();
         values.forEach(levelConfig -> {
-            int from = levelConfig.spawnConfig.from;
-            int to = levelConfig.spawnConfig.to;
+            int from = levelConfig.spawnFrom;
+            int to = levelConfig.spawnTo;
             int level = levelConfig.level;
-            int weight = levelConfig.spawnConfig.weight;
+            int weight = levelConfig.spawnWeight;
             World world = location.getWorld();
             if (world == null) {
                 throw new IllegalArgumentException();
@@ -423,10 +429,8 @@ public class MobManager {
         List<IMob> iMobs = worldMobMap.computeIfAbsent(world, world1 -> new ArrayList<>());
         iMobs.add(mob);
 
-        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
-        if (worldConfig != null) {
-            MobManager.instance().updateNearbyList(mob, worldConfig.spawnRangeMax + 48);
-        }
+        final Config config = InfPlugin.plugin.config();
+        MobManager.instance().updateNearbyList(mob, config.spawnRangeMax + 48);
     }
 
     public void removeMob(IMob mob, boolean isKilled) {
@@ -513,11 +517,10 @@ public class MobManager {
                             return;
                         }
                         World world = player.getWorld();
-                        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
+                        final Config config = InfPlugin.plugin.config();
                         double nearbyDistance = 128;
-                        if (worldConfig != null) {
-                            nearbyDistance = Math.max(worldConfig.aggro.range.max * 1.5, worldConfig.spawnRangeMax * 2);
-                        }
+                        nearbyDistance = Math.max(config.aggroRangeMax * 1.5, config.spawnRangeMax * 2);
+
                         if (iMob.getEntity().getLocation().distance(player.getLocation()) < nearbyDistance) {
                             List<IMob> mobList = asyncMobsList.computeIfAbsent(player, player1 -> new ArrayList<>());
                             List<Player> playerMobList = asyncPlayersList.computeIfAbsent(iMob, iMob1 -> new ArrayList<>());
