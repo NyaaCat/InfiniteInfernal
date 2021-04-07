@@ -8,9 +8,9 @@ plugins {
 
 group 'NyaaCat'
 
-String majorVersion = 1
-String minorVersion = 2
-String minecraftVersion = "1.16.1"
+String majorVersion = 2
+String minorVersion = 0
+String minecraftVersion = "1.16.5"
 
 String buildNumber = System.getenv("BUILD_NUMBER") == null ? "SNAPSHOT" : System.getenv("BUILD_NUMBER")
 
