@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
+import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.configuration.FileConfigure;
 import org.bukkit.World;
@@ -21,8 +22,11 @@ public class BroadcastManager extends FileConfigure {
 
     public BroadcastMode getReceiveType(World world, String uuid){
         return BroadcastMode.valueOf(broadcastSettings.computeIfAbsent(uuid, s -> {
-            final Config config = InfPlugin.plugin.config();
-            return config.defaultBroadcastMode.name();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world.getName());
+            if (worldConfig!=null){
+                return worldConfig.broadcastConfig.defaultMode.name();
+            }
+            return BroadcastMode.NEARBY.name();
         }));
     }
 
@@ -37,8 +41,11 @@ public class BroadcastManager extends FileConfigure {
     }
 
     public int getNearbyRange(World world) {
-        final int broadcastRange = InfPlugin.plugin.config().broadcastRange;
-        return broadcastRange;
+        WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(world);
+        if (worldConfig!=null){
+            return worldConfig.broadcastConfig.range;
+        }
+        return 160;
     }
 
     public void toggle(Player sender) {

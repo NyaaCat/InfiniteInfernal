@@ -5,10 +5,7 @@ import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilitySet;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.configs.MobConfig;
-import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
+import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.controler.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
@@ -127,7 +124,7 @@ public class CustomMob implements IMob {
         if (healthOverride > 0){
             health = healthOverride;
         }else {
-            health = InfPlugin.plugin.config().levelConfigs.get(level).health;
+            health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
         }
         enableDynamicHealth = config.enableDynamicHealth;
         dynamicHealthExpression = config.dynamicHealthExpression;
@@ -172,7 +169,7 @@ public class CustomMob implements IMob {
 
     @Override
     public double getDamage() {
-        return InfPlugin.plugin.config().levelConfigs.get(level).damage;
+        return InfPlugin.plugin.config().levelConfigs.get(level).attr.damage;
     }
 
     @Override
@@ -206,13 +203,14 @@ public class CustomMob implements IMob {
         } else {
         }
         if (followRangeAttr != null) {
-            final Config config = InfPlugin.plugin.config();
-            LevelConfig levelConfig = config.levelConfigs.get(getLevel());
-            double aggro = levelConfig.aggro;
+            World entityWorld = entity.getWorld();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
+            double aggro = levelConfig.attr.aggro;
             if (entityType.equals(EntityType.GUARDIAN) || entityType.equals(EntityType.ELDER_GUARDIAN)) {
                 followDistance = aggro * 0.60;
             }else {
-                followDistance = config.aggroRangeMax;
+                followDistance = worldConfig.aggro.range.max;
             }
             followRangeAttr.setBaseValue(followDistance);
         } else {
@@ -389,7 +387,7 @@ public class CustomMob implements IMob {
                 Bukkit.getLogger().log(Level.WARNING, "no level config for \"" + getLevel() + "\"");
                 exp = 0;
             } else {
-                exp = levelConfig.exp;
+                exp = levelConfig.attr.exp;
             }
         }
         return exp;

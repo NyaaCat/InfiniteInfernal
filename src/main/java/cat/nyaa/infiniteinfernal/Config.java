@@ -1,22 +1,35 @@
 package cat.nyaa.infiniteinfernal;
 
+import cat.nyaa.infiniteinfernal.ability.AbilityDummy;
 import cat.nyaa.infiniteinfernal.ability.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
+import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import static cat.nyaa.infiniteinfernal.ability.AbilityCollection.ACTIVE_CLASSES;
+import static cat.nyaa.infiniteinfernal.ability.AbilityCollection.PASSIVE_CLASSES;
 
 public class Config extends PluginConfigure {
     InfPlugin plugin;
@@ -29,6 +42,7 @@ public class Config extends PluginConfigure {
         regionConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
         addEffects = new LinkedHashMap<>();
     }
+
 
     @Override
     protected JavaPlugin getPlugin() {
@@ -55,6 +69,9 @@ public class Config extends PluginConfigure {
 
     @Serializable
     public int groupCapacity= 8;
+
+    @Serializable
+    public Map<String, WorldConfig> worlds = new LinkedHashMap<>();
 
     @Serializable(name = "player.base.mana")
     public double defaultMana = 20;
@@ -85,129 +102,6 @@ public class Config extends PluginConfigure {
 
     @Serializable(name = "mobParticle")
     public ParticleConfig mobParticle;
-
-    @Serializable
-    public List<String> enabledWorld = new ArrayList<>();
-    @Serializable
-    public List<String> disableNaturalSpawning = new ArrayList<>();
-
-    @Serializable(name = "max-mob-per-player")
-    public int maxMobPerPlayer = 10;
-
-    @Serializable(name = "max-mob-in-world")
-    public int maxMobInWorld = 240;
-
-    @Serializable(name = "spawn-range-min")
-    public int spawnRangeMin = 60;
-
-    @Serializable(name = "spawn-range-max")
-    public int spawnRangeMax = 120;
-
-    @Serializable(name = "spawn-interval")
-    public int mobSpawnInteval = 20;
-
-    @Serializable(name = "mob-active-interval")
-    public int mobTickInterval = 60;
-
-    @Serializable(name = "spawn.light.sky.min")
-    public int spawnMinSkyLight = 0;
-
-    @Serializable(name = "spawn.light.sky.max")
-    public int spawnMaxSkyLight = 0xf;
-
-    @Serializable(name = "spawn.light.block.min")
-    public int spawnMinBlockLight = 0;
-
-    @Serializable(name = "spawn.light.block.max")
-    public int spawnMaxBlockLight = 0xf;
-
-    @Serializable(name = "spawn.light.total.min")
-    public int spawnMinLight = 0;
-
-    @Serializable(name = "spawn.light.total.max")
-    public int spawnMaxLight = 0xf;
-
-    @Serializable(name = "aggro.range.max")
-    public double aggroRangeMax = 128;
-    @Serializable(name = "aggro.range.min")
-    public double aggroRangeMin = 10;
-
-    @Serializable(name = "aggro.base")
-    public int aggroBase = 10;
-
-    @Serializable(name = "aggro.modifiers.dec")
-    public String aggroDec = "effect:INVISIBILITY:2";
-    @Serializable(name = "aggro.modifiers.inc")
-    public String aggroInc = "attribute:GENERIC_LUCK:-2";
-
-    @Serializable(name = "loot.global")
-    public int lootGlobal = 70;
-    @Serializable(name = "loot.modifiers.overall.inc")
-    public List<String> lootOverallInc = new ArrayList<>();
-    @Serializable(name = "loot.modifiers.overall.dec")
-    public List<String> lootOverallDec = new ArrayList<>();
-    @Serializable(name = "loot.modifiers.overall.max")
-    public double lootOverallMax = 100;
-    @Serializable(name = "loot.modifiers.dynamic.inc")
-    public List<String> lootDynamicInc = new ArrayList<>();
-    @Serializable(name = "loot.modifiers.dynamic.dec")
-    public List<String> lootDynamicDec = new ArrayList<>();
-    @Serializable(name = "loot.modifiers.overall.max")
-    public double lootDynamicMax = 100;
-
-    {
-        String inc = "attribute:GENERIC_LUCK:10";
-        String dec = "effect:UNLUCK:5";
-        lootOverallInc.add(inc);
-        lootOverallDec.add(dec);
-        lootDynamicInc.add(inc);
-        lootDynamicDec.add(dec);
-    }
-
-    @Serializable(name = "friendly_fire_punish.enabled")
-    public boolean friendlyFirePunishEnabled = false;
-    @Serializable(name = "friendly_fire_punish.debuff")
-    public String friendlyFirePunishDebuff = "UNLUCK:4:600";
-
-    @Serializable(name = "broadcast.default")
-    public BroadcastMode defaultBroadcastMode = BroadcastMode.NEARBY;
-    @Serializable(name = "broadcast.range")
-    public int broadcastRange = 160;
-
-    @Serializable
-    public boolean enableTrueDamage = true;
-
-    @Serializable
-    public double despawnRange = 128;
-
-    @Serializable
-    public Map<String, Double> trueDamage = new HashMap<>();
-
-    {
-        trueDamage.put(EntityDamageEvent.DamageCause.WITHER.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.POISON.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.FIRE_TICK.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.FIRE.name().toLowerCase(), 2d);
-        trueDamage.put(EntityDamageEvent.DamageCause.LAVA.name().toLowerCase(), 4d);
-        trueDamage.put(EntityDamageEvent.DamageCause.LIGHTNING.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.FIRE_TICK.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.MAGIC.name().toLowerCase(), -1.01d);
-        trueDamage.put(EntityDamageEvent.DamageCause.SUFFOCATION.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.VOID.name().toLowerCase(), 4d);
-        trueDamage.put(EntityDamageEvent.DamageCause.DROWNING.name().toLowerCase(), 2d);
-        trueDamage.put(EntityDamageEvent.DamageCause.HOT_FLOOR.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.STARVATION.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.DRAGON_BREATH.name().toLowerCase(), 1d);
-        trueDamage.put(EntityDamageEvent.DamageCause.CONTACT.name().toLowerCase(), 1d);
-    }
-
-    public double getTruedamage(String type) {
-        return trueDamage.getOrDefault(type, 0d);
-    }
-
-    public boolean isTrueDamageEnabled() {
-        return enableTrueDamage;
-    }
 
     {
         mobParticle = new ParticleConfig();
@@ -246,29 +140,155 @@ public class Config extends PluginConfigure {
         mobConfigs.clear();
         regionConfigs.clear();
         addEffectInstance = null;
+
+        if (worlds.size() == 0) {
+            Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
+            initConfigs();
+            generateConfigForWorlds();
+        }
         this.loadStandaloneConfigs();
         save();
     }
 
-    {
-        tags.add("[infernal]");
+    private void generateConfigForWorlds() {
+        List<World> worlds = Bukkit.getWorlds();
+        if (!worlds.isEmpty()) {
+            String inc = "attribute:GENERIC_LUCK:10";
+            String dec = "effect:UNLUCK:5";
+            AtomicBoolean firstEnable = new AtomicBoolean(true);
+            worlds.forEach(world -> {
+                if (this.worlds.get(world.getName()) == null) {
+                    WorldConfig value = new WorldConfig();
+                    value.enabled = firstEnable.getAndSet(false);
+                    value.looting.dynamic.dec.add(dec);
+                    value.looting.dynamic.inc.add(inc);
+                    value.looting.overall.dec.add(dec);
+                    value.looting.overall.inc.add(inc);
+                    this.worlds.put(world.getName(), value);
+                }
+            });
+        } else {
+            Bukkit.getLogger().log(Level.SEVERE, "No world detected!");
+        }
+    }
+
+    private void initConfigs() {
+        tags.add("[infernal] ");
         for (int i = 0; i < 12; i++) {
             LevelConfig config = new LevelConfig(i);
-            config.level = i;
-            config.spawnWeight = i;
-            config.spawnFrom = 200 * i;
-            config.spawnTo = 200 * (i + 1);
-            config.aggro = 10 + 0.5 * i;
-            config.damage = 20 * i;
-            config.damageResist = 0;
-            config.exp = 10 * i;
-            config.health = 20 * i;
-            config.prefix = "level " + i;
             levelConfigs.add(config);
+            config.level = i;
+            config.spawnConfig.weight = i;
+            config.spawnConfig.from = 200 * i;
+            config.spawnConfig.to = 200 * (i + 1);
+            config.attr.aggro = 10 + 0.5 * i;
+            config.attr.damage = 20 * i;
+            config.attr.damageResist = 0;
+            config.attr.exp = 10 * i;
+            config.attr.health = 20 * i;
+            config.prefix = "level " + i;
         }
         addEffects.put("target_lost", "effect:BLINDNESS:10");
         addEffects.put("disorder", "effect:CONFUSION:10");
         addEffects.put("dementia", "effect:SLOW_DIGGING:10");
+        AbilitySetConfig actives = new AbilitySetConfig("a");
+        AbilitySetConfig passives = new AbilitySetConfig("b");
+        AbilitySetConfig dummies = new AbilitySetConfig("c");
+        addAbilities(actives, ACTIVE_CLASSES);
+        addAbilities(passives, PASSIVE_CLASSES);
+        dummies.abilities.put("dummy", new AbilityDummy());
+        abilityConfigs.add(actives);
+        abilityConfigs.add(passives);
+        abilityConfigs.add(dummies);
+        ItemStack sampleItem = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta = sampleItem.getItemMeta();
+        if (itemMeta != null) {
+            itemMeta.setDisplayName("inf-sample");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample");
+            itemMeta.setLore(lore);
+            itemMeta.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem.setItemMeta(itemMeta);
+        }
+        ItemStack extraSampleItem = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta1 = sampleItem.getItemMeta();
+        if (itemMeta1 != null) {
+            itemMeta1.setDisplayName("inf-extra-sample");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-extra-sample");
+            itemMeta1.setLore(lore);
+            itemMeta1.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta1.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            extraSampleItem.setItemMeta(itemMeta1);
+        }
+        ItemStack sampleItem5 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta2 = sampleItem.getItemMeta();
+        if (itemMeta2 != null) {
+            itemMeta2.setDisplayName("inf-sample-5");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-5");
+            itemMeta2.setLore(lore);
+            itemMeta2.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta2.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem5.setItemMeta(itemMeta2);
+        }
+        ItemStack sampleItem10 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta3 = sampleItem.getItemMeta();
+        if (itemMeta3 != null) {
+            itemMeta3.setDisplayName("inf-sample-10");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-10");
+            itemMeta3.setLore(lore);
+            itemMeta3.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta3.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem10.setItemMeta(itemMeta3);
+        }
+        ItemStack sampleItem20 = new ItemStack(Material.ACACIA_BUTTON);
+        ItemMeta itemMeta4 = sampleItem.getItemMeta();
+        if (itemMeta4 != null) {
+            itemMeta4.setDisplayName("inf-sample-20");
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("inf-sample-20");
+            itemMeta4.setLore(lore);
+            itemMeta4.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            itemMeta4.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            sampleItem20.setItemMeta(itemMeta4);
+        }
+        LootManager.instance().addLoot("inf-sample-10", true, sampleItem10);
+        LootManager.instance().addLoot("inf-sample-20", true, sampleItem20);
+        LootManager.instance().addLoot("inf-sample-5", true, sampleItem5);
+        LootManager.instance().setDrop("inf-sample-10", 1, 10);
+        LootManager.instance().setDrop("inf-sample-20", 1, 20);
+        LootManager.instance().setDrop("inf-sample-5", 1, 5);
+        LootManager.instance().setDrop("inf-sample-10", 2, 10);
+        LootManager.instance().setDrop("inf-sample-20", 2, 20);
+        LootManager.instance().setDrop("inf-sample-5", 2, 5);
+        LootManager.instance().setDrop("inf-sample-10", 3, 10);
+        LootManager.instance().setDrop("inf-sample-20", 3, 20);
+        LootManager.instance().setDrop("inf-sample-5", 3, 5);
+        LootManager.instance().addLoot("inf-extra-sample", true, extraSampleItem);
+        MobConfig mobConfig = new MobConfig("sample");
+        mobConfig.type = EntityType.ZOMBIE;
+        mobConfig.abilities.add(actives.getPrefix() + "-" + actives.getName());
+        mobConfig.abilities.add(passives.getPrefix() + "-" + passives.getName());
+        mobConfig.abilities.add("set-2");
+        mobConfig.name = "Zombie-King";
+        for (Biome value : Biome.values()) {
+            mobConfig.spawn.biomes.add(value.name());
+        }
+        mobConfig.spawn.worlds.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+        mobConfig.spawn.levels.add("1-3");
+        mobConfig.spawn.levels.add("5");
+        mobConfig.loot.vanilla = false;
+        mobConfig.loot.special.list.add("inf-extra-sample:10");
+        mobConfigs.add(mobConfig);
+        Bukkit.getWorlds().stream().forEach(world -> {
+            RegionConfig config = new RegionConfig("sample-region", new RegionConfig.Region(new Location(world, 0, 0, 0), new Location(world, 100, 100, 100)));
+            config.mobs.add("mob-0:10");
+            regionConfigs.add(config);
+        });
+        save();
     }
 
     private void addAbilities(AbilitySetConfig actives, Class<? extends IAbility>[] activeClasses) {
@@ -320,7 +340,11 @@ public class Config extends PluginConfigure {
     }
 
     public boolean isEnabledInWorld(World world){
-        return enabled && enabledWorld.contains(world.getName());
+        if (!enabled)return false;
+        if (worlds.containsKey(world.getName())) {
+            return worlds.get(world.getName()).enabled;
+        }
+        return false;
     }
 
     private void initAddEffectInstance() {
@@ -333,35 +357,19 @@ public class Config extends PluginConfigure {
         }));
     }
 
-    private ICorrector aggroDecCorrector;
-    private ICorrector aggroIncCorrector;
-
-    public ICorrector getAggroDec() {
-        if (aggroDecCorrector == null){
-            aggroDecCorrector = CorrectionParser.parseStr(aggroDec);
+    public double getTrueDamageFor(String type, World world) {
+        WorldConfig worldConfig = worlds.get(world.getName());
+        if (worldConfig == null) {
+            return 0;
         }
-        return aggroDecCorrector;
+        return worldConfig.getTruedamage(type);
     }
 
-    public ICorrector getAggroInc(){
-        if (aggroIncCorrector == null){
-            aggroIncCorrector = CorrectionParser.parseStr(aggroInc);
+    public boolean enableTrueDamage(World world) {
+        WorldConfig worldConfig = worlds.get(world.getName());
+        if (worldConfig == null) {
+            return false;
         }
-        return aggroIncCorrector;
-    }
-
-    public void clearCache(){
-        aggroDecCorrector = null;
-        aggroIncCorrector = null;
-
-    }
-
-    public List<World> getEnabledWorlds() {
-        return Bukkit.getWorlds().stream().filter(world -> enabledWorld.contains(world.getName()))
-                .collect(Collectors.toList());
-    }
-
-    public boolean isAutoSpawnDisabledInWorld(World world){
-        return enabled && disableNaturalSpawning.contains(world.getName());
+        return worldConfig.isTrueDamageEnabled();
     }
 }

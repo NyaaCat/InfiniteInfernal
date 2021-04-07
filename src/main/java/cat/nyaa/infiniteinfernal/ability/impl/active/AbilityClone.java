@@ -3,10 +3,12 @@ package cat.nyaa.infiniteinfernal.ability.impl.active;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
@@ -66,8 +68,9 @@ public class AbilityClone extends ActiveAbility {
             maxHealthAttr.setBaseValue(from.getMaxHealth());
         }else{}
         if(followRangeAttr != null){
-            final double aggroRangeMax = InfPlugin.plugin.config().aggroRangeMax;
-            followRangeAttr.setBaseValue(aggroRangeMax);
+            World entityWorld = clonedEntity.getWorld();
+            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
+            followRangeAttr.setBaseValue(worldConfig.aggro.range.max);
         }else{}
         if (clonedEntity instanceof Mob && from.getEntity() instanceof Mob) {
             ((Mob) clonedEntity).setTarget(((Mob) from.getEntity()).getTarget());

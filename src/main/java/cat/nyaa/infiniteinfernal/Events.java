@@ -89,11 +89,11 @@ public class Events implements Listener {
         World world = event.getEntity().getWorld();
         if (!enabledInWorld(world))return;
 
-        if (!InfPlugin.plugin.config().isTrueDamageEnabled())return;
+        if (!InfPlugin.plugin.config().enableTrueDamage(world))return;
 
         EntityDamageEvent.DamageCause cause = event.getCause();
         String type = cause.name().toLowerCase();
-        double damage = InfPlugin.plugin.config().getTruedamage(type);
+        double damage = InfPlugin.plugin.config().getTrueDamageFor(type, world);
         if (damage == -1.01d){
             damage = event.getDamage();
         }
@@ -117,7 +117,7 @@ public class Events implements Listener {
             IMob iMob = MobManager.instance().toIMob(entity);
             LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
             double damageResist;
-            damageResist = levelConfig == null? 0 : levelConfig.damageResist;
+            damageResist = levelConfig == null? 0 : levelConfig.attr.damageResist;
             if(damageResist!=0){
                 double origDamage = event.getDamage();
                 double resist = origDamage * (damageResist / 100d);
@@ -167,7 +167,7 @@ public class Events implements Listener {
 
             LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
             double damageResist;
-            damageResist = levelConfig == null? 0 : levelConfig.damageResist;
+            damageResist = levelConfig == null? 0 : levelConfig.attr.damageResist;
             if(damageResist!=0){
                 double origDamage = event.getDamage();
                 double resist = origDamage * (damageResist / 100d);
