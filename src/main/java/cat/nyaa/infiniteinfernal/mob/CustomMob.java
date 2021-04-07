@@ -5,7 +5,10 @@ import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.ability.AbilitySet;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.configs.*;
+import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import cat.nyaa.infiniteinfernal.configs.LevelConfig;
+import cat.nyaa.infiniteinfernal.configs.MobConfig;
+import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.controler.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
@@ -15,7 +18,10 @@ import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import com.udojava.evalex.Expression;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.boss.BarColor;
@@ -121,7 +127,7 @@ public class CustomMob implements IMob {
         if (healthOverride > 0){
             health = healthOverride;
         }else {
-            health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
+            health = InfPlugin.plugin.config().levelConfigs.get(level).health;
         }
         enableDynamicHealth = config.enableDynamicHealth;
         dynamicHealthExpression = config.dynamicHealthExpression;
@@ -166,7 +172,7 @@ public class CustomMob implements IMob {
 
     @Override
     public double getDamage() {
-        return InfPlugin.plugin.config().levelConfigs.get(level).attr.damage;
+        return InfPlugin.plugin.config().levelConfigs.get(level).damage;
     }
 
     @Override
@@ -200,14 +206,13 @@ public class CustomMob implements IMob {
         } else {
         }
         if (followRangeAttr != null) {
-            World entityWorld = entity.getWorld();
-            WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
-            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
-            double aggro = levelConfig.attr.aggro;
+            final Config config = InfPlugin.plugin.config();
+            LevelConfig levelConfig = config.levelConfigs.get(getLevel());
+            double aggro = levelConfig.aggro;
             if (entityType.equals(EntityType.GUARDIAN) || entityType.equals(EntityType.ELDER_GUARDIAN)) {
                 followDistance = aggro * 0.60;
             }else {
-                followDistance = worldConfig.aggro.range.max;
+                followDistance = config.aggroRangeMax;
             }
             followRangeAttr.setBaseValue(followDistance);
         } else {
@@ -384,7 +389,7 @@ public class CustomMob implements IMob {
                 Bukkit.getLogger().log(Level.WARNING, "no level config for \"" + getLevel() + "\"");
                 exp = 0;
             } else {
-                exp = levelConfig.attr.exp;
+                exp = levelConfig.exp;
             }
         }
         return exp;

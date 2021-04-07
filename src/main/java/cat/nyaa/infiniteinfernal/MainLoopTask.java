@@ -2,7 +2,6 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.AbilityActive;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
@@ -19,8 +18,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -33,16 +34,17 @@ public class MainLoopTask {
         if (dementia != null) {
             iCorrector = CorrectionParser.parseStr(dementia);
         }
-        Map<String, WorldConfig> worlds = InfPlugin.plugin.config.worlds;
-        worlds.forEach((wn, value) -> {
-            World world = Bukkit.getWorld(wn);
+
+        final Config config = InfPlugin.plugin.config();
+        final List<World> enabledWorlds = InfPlugin.plugin.config().getEnabledWorlds();
+        enabledWorlds.forEach(world -> {
             if (world == null) {
-                Bukkit.getLogger().log(Level.WARNING, "world " + wn + " don't exists, skipping");
+                Bukkit.getLogger().log(Level.WARNING, "world don't exists, skipping");
                 return;
             }
 
-            int interval = value.mobTickInterval;
-            int mobSpawnInteval = value.mobSpawnInteval;
+            int interval = config.mobTickInterval;
+            int mobSpawnInteval = config.mobSpawnInteval;
             MainLoopRunnable runnable = new MainLoopRunnable(world, interval);
             runnables.add(runnable);
             runnable.runTaskTimer(InfPlugin.plugin, 0, interval);
@@ -51,6 +53,7 @@ public class MainLoopTask {
             runnables.add(spawnTask);
             spawnTask.runTaskTimer(InfPlugin.plugin, 0, mobSpawnInteval);
         });
+
         BukkitRunnable nearbyRunnable = new BukkitRunnable() {
             @Override
             public void run() {
