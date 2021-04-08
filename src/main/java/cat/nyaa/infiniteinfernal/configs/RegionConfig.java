@@ -32,7 +32,7 @@ public class RegionConfig extends NamedFileConfig {
     public List<String> mobs = new ArrayList<>();
 
     @Serializable
-    public boolean followGlobalLevel = false;
+    public String level = "";
 
     @Serializable
     public int maxSpawnAmountOverride = -1;

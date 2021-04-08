@@ -25,6 +25,62 @@ public class MobConfig extends NamedFileConfig implements Weightable {
     public boolean enableDynamicHealth = false;
     @Serializable
     public String dynamicHealthExpression = "";
+
+    @Serializable(name = "attr.health")
+    private double health = 20;
+
+    @Serializable(name = "attr.attackDamage")
+    private double attackDamage = 20;
+
+    @Serializable(name = "attr.damageResist")
+    private double damageResist = 20;
+
+    @Serializable(name = "attr.movementSpeed")
+    private double movementSpeed = 20;
+
+    @Serializable(name = "spawn.levels")
+    private List<String> spawnLevels = new ArrayList<>();
+
+    public double getHealth() {
+        return health;
+    }
+
+    public void setHealth(double health) {
+        this.health = health;
+    }
+
+    public double getAttackDamage() {
+        return attackDamage;
+    }
+
+    public void setAttackDamage(double attackDamage) {
+        this.attackDamage = attackDamage;
+    }
+
+    public double getDamageResist() {
+        return damageResist;
+    }
+
+    public void setDamageResist(double damageResist) {
+        this.damageResist = damageResist;
+    }
+
+    public double getMovementSpeed() {
+        return movementSpeed;
+    }
+
+    public void setMovementSpeed(double movementSpeed) {
+        this.movementSpeed = movementSpeed;
+    }
+
+    public List<String> getSpawnLevels() {
+        return spawnLevels;
+    }
+
+    public void setSpawnLevels(List<String> spawnLevels) {
+        this.spawnLevels = spawnLevels;
+    }
+
     @Serializable
     public MobSpawnConfig spawn = new MobSpawnConfig();
     @Serializable
