@@ -42,9 +42,8 @@ public class CommonLootItem implements ILootItem, ISerializable {
         return nbt;
     }
 
-
     @Override
-    public int getWeight(int level) {
+    public int getWeight(String level) {
         return LootManager.getWeightForLevel(this, level);
     }
 

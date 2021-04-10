@@ -3,7 +3,6 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.NamedDirConfigs;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
@@ -45,7 +44,7 @@ public class MobManager {
     Map<BossBar, IMob> bossBarIMobMap = new LinkedHashMap<>();
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
-    Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
+    Map<String, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
 
     private MobManager() {
         this.load();
@@ -86,7 +85,7 @@ public class MobManager {
         mobConfigs.values().stream()
                 .filter(config -> config.spawn.autoSpawn)
                 .forEach(config -> {
-                    List<Integer> validLevels = MobConfig.parseLevels(config.spawn.levels);
+                    List<String> validLevels = config.getSpawnLevels();
                     if ((!validLevels.isEmpty())) {
                         validLevels.forEach(level -> {
                             List<MobConfig> natualSpawnList = this.natualSpawnLists.computeIfAbsent(level, integer -> new ArrayList<>());
@@ -111,17 +110,13 @@ public class MobManager {
         instance = null;
     }
 
-    public IMob spawnMobByConfig(MobConfig config, Location location, Integer level) {
+    public IMob spawnMobByConfig(MobConfig config, Location location, String level) {
         if (config == null) return null;
         EntityType entityType = config.type;
         World world = location.getWorld();
         if (world != null) {
             Class<? extends Entity> entityClass = entityType.getEntityClass();
             if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
-                if (level == null) {
-                    level = randomLevel(location);
-                    if (level == null) return null;
-                }
                 CustomMob customMob = new CustomMob(config, level);
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 LivingEntity spawn = (LivingEntity) world.spawn(location, entityClass);
@@ -143,7 +138,7 @@ public class MobManager {
         return Collections.unmodifiableCollection(uuidMap.values());
     }
 
-    public IMob spawnMobByName(String name, Location location, Integer level) {
+    public IMob spawnMobByName(String name, Location location, String level) {
         MobConfig mobConfig = nameCfgMap.get(name);
         return spawnMobByConfig(mobConfig, location, level);
     }
@@ -157,47 +152,27 @@ public class MobManager {
         return mobConfigs.keys();
     }
 
-    public List<WeightedPair<MobConfig, Integer>> getSpawnableMob(Location location) {
+    public List<WeightedPair<MobConfig, String>> getSpawnableMob(Location location) {
         World world = location.getWorld();
         if (world == null) return new ArrayList<>();
-        Biome biome = location.getBlock().getBiome();
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         if (!regions.isEmpty()) {
             return getSpawnConfigsForRegion(regions, location);
         }
-        List<WeightedPair<Integer, Integer>> validLevels = getValidLevels(location);
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
-        validLevels.stream().forEach(pair -> {
-            Integer level = pair.getKey();
-            if (level != null) {
-                List<MobConfig> collect = natualSpawnLists.get(level);
-                FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
-                if (!collect.isEmpty()) {
-                    collect.stream()
-                            .filter(config1 -> {
-                                List<String> biomes = config1.spawn.biomes;
-                                List<String> worlds = config1.spawn.worlds;
-                                return biomes != null && worlds != null
-                                        && worlds.contains(world.getName()) && biomes.contains(biome.name());
-                            })
-                            .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
-                            .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, mobConfig.getWeight(), mobConfig.getWeight())));
-                }
-            }
-        });
-        return spawnConfs;
+        //todo default spawn logic
+        return null;
     }
 
     public Collection<MobConfig> getMobConfigs() {
         return InfPlugin.plugin.config().mobConfigs.values();
     }
 
-    public List<MobConfig> getMobsForLevel(int level) {
+    public List<MobConfig> getMobsForLevel(String level) {
         return natualSpawnLists.get(level);
     }
 
-    public Set<Integer> getLevels() {
+    public Set<String> getLevels() {
         return natualSpawnLists.keySet();
     }
 
@@ -214,7 +189,7 @@ public class MobManager {
         });
     }
 
-    public TargetDummy spawnTargetDummy(String mobName, Location location, Integer level) {
+    public TargetDummy spawnTargetDummy(String mobName, Location location, String level) {
         MobConfig config = nameCfgMap.get(mobName);
         if (config == null) return null;
         EntityType entityType = config.type;
@@ -222,10 +197,7 @@ public class MobManager {
         if (world != null) {
             Class<? extends Entity> entityClass = entityType.getEntityClass();
             if (entityClass != null && LivingEntity.class.isAssignableFrom(entityClass)) {
-                if (level == null) {
-                    level = randomLevel(location);
-                    if (level == null) return null;
-                }
+
                 Context.instance().put(MOB_SPAWN_CONTEXT, IS_IMOB, true);
                 TargetDummy customMob = new TargetDummy(config, location);
                 Context.instance().removeTemp(MOB_SPAWN_CONTEXT, IS_IMOB);
@@ -306,21 +278,21 @@ public class MobManager {
         }
     }
 
-    public Pair<MobConfig, Integer> selectNatualMobConfig(Location center){
-        Integer level = randomLevel(center);
+    public Pair<MobConfig, String> selectNatualMobConfig(Location center){
+        String level = null;
+        //todo build level
         World world = center.getWorld();
         if (world == null) return null;
-        Biome biome = center.getBlock().getBiome();
         final List<MobConfig> mobConfigs = natualSpawnLists.get(level);
         if (mobConfigs == null) {
             return null;
         }
+
+        Biome biome = center.getBlock().getBiome();
         List<MobConfig> collect = mobConfigs.stream()
+                //todo implement biomes
                 .filter(config1 -> {
-                    List<String> biomes = config1.spawn.biomes;
-                    List<String> worlds = config1.spawn.worlds;
-                    return biomes != null && worlds != null
-                            && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                    return true;
                 }).collect(Collectors.toList());
 
         MobConfig mobConfig = Utils.weightedRandomPick(collect);
@@ -334,8 +306,8 @@ public class MobManager {
             return spawnInRegion(regions, location);
         }
 
-        Pair<MobConfig, Integer> mobConfigIntegerPair = selectNatualMobConfig(location);
-        Integer level = mobConfigIntegerPair.getValue();
+        Pair<MobConfig, String> mobConfigIntegerPair = selectNatualMobConfig(location);
+        String level = mobConfigIntegerPair.getValue();
         List<MobConfig> collect = natualSpawnLists.get(level);
         if (collect == null) return null;
         if (!collect.isEmpty()) {
@@ -344,54 +316,30 @@ public class MobManager {
         return null;
     }
 
-    private Integer randomLevel(Location location) {
-        List<WeightedPair<Integer, Integer>> levelCandidates = getValidLevels(location);
-        WeightedPair<Integer, Integer> integerIntegerWeightedPair = Utils.weightedRandomPick(levelCandidates);
-        return integerIntegerWeightedPair == null ? null : integerIntegerWeightedPair.getKey();
-    }
-
-    private List<WeightedPair<Integer, Integer>> getValidLevels(Location location) {
-        Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
-        List<WeightedPair<Integer, Integer>> levelCandidates = new ArrayList<>();
-        values.forEach(levelConfig -> {
-            int from = levelConfig.spawnFrom;
-            int to = levelConfig.spawnTo;
-            int level = levelConfig.level;
-            int weight = levelConfig.spawnWeight;
-            World world = location.getWorld();
-            if (world == null) {
-                throw new IllegalArgumentException();
-            }
-            double distance = location.distance(world.getSpawnLocation());
-            if (distance < from || distance >= to) {
-                return;
-            }
-            levelCandidates.add(new WeightedPair<>(level, level, weight));
-        });
-        return levelCandidates;
-    }
-
     public IMob spawnInRegion(List<RegionConfig> regions, Location center) {
-        WeightedPair<MobConfig, Integer> mobConfig = selectConfigInRegion(regions, center);
+        WeightedPair<MobConfig, String> mobConfig = selectConfigInRegion(regions, center);
         return spawnMobByConfig(mobConfig.getKey(), center, mobConfig.getValue());
     }
 
-    public WeightedPair<MobConfig, Integer> selectConfigInRegion(List<RegionConfig> regions, Location center){
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, center);
+    public WeightedPair<MobConfig, String> selectConfigInRegion(List<RegionConfig> regions, Location center){
+        List<WeightedPair<MobConfig, String>> spawnConfs = getSpawnConfigsForRegion(regions, center);
         if (!spawnConfs.isEmpty()) {
-            WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
+            WeightedPair<MobConfig, String> selected = Utils.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
             return selected;
         }
         return null;
     }
 
-    private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+    private List<WeightedPair<MobConfig, String>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
+        //todo finish string level for this
+        List<WeightedPair<MobConfig, String>> spawnConfs = new ArrayList<>();
+        Biome biome = location.getBlock().getBiome();
         regions.forEach(regionConfig -> {
             if (regionConfig.mobs.isEmpty()) {
                 return;
             }
+            final String level = regionConfig.getLevel();
             regionConfig.mobs.forEach(mobs -> {
                 try {
                     String[] split = mobs.split(":");
@@ -399,18 +347,11 @@ public class MobManager {
                     int mobWeight = Integer.parseInt(split[1]);
                     MobConfig mobConfig = nameCfgMap.get(mobId);
                     if (mobConfig == null) {
-                        Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
+                        Bukkit.getLogger().log(Level.WARNING, I18n.format("error.mob.spawn_no_id", mobs));
                         return;
                     }
                     World world = location.getWorld();
                     if (world != null && mobConfig.spawn.worlds.contains(world.getName())) {
-                        Integer level = 0;
-                        if (regionConfig.followGlobalLevel) {
-                            level = randomLevel(location);
-                        } else {
-                            level = Utils.randomPick(MobConfig.parseLevels(mobConfig.spawn.levels));
-                        }
-                        if (level == null) return;
                         spawnConfs.add(new WeightedPair<>(mobConfig, level, mobWeight));
                     }
                 } catch (NumberFormatException e) {

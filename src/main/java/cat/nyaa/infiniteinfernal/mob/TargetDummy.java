@@ -11,7 +11,6 @@ import cat.nyaa.infiniteinfernal.utils.ticker.Ticker;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BarColor;
@@ -29,7 +28,6 @@ import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class TargetDummy implements IMob {
     private static Map<UUID, TargetDummy> targetDummyMap = new HashMap<>();
@@ -402,12 +400,22 @@ public class TargetDummy implements IMob {
     }
 
     @Override
-    public int getLevel() {
-        return 0;
+    public String getLevel() {
+        return "dummy";
     }
 
     @Override
     public double getDamage() {
+        return 0;
+    }
+
+    @Override
+    public double getDamageResist() {
+        return 0;
+    }
+
+    @Override
+    public double getMovementSpeed() {
         return 0;
     }
 

@@ -30,7 +30,7 @@ public class EnchantmentBookLootItem implements ILootItem {
     }
 
     @Override
-    public int getWeight(int level) {
+    public int getWeight(String level) {
         //todo
         return LootManager.getWeightForLevel(this, level);
     }

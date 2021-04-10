@@ -21,9 +21,9 @@ public class LootManager {
     private static LootManager instance;
     private LootConfig lootConfig;
     private final InfPlugin plugin;
-    private Map<Integer, List<ILootItem>> commonDrops = new LinkedHashMap<>();
+    private Map<String, List<ILootItem>> commonDrops = new LinkedHashMap<>();
     private Map<String, ILootItem> lootItemMap = new LinkedHashMap<>();
-    private Map<ILootItem, Map<Integer, Integer>> itemWeightMap = new LinkedHashMap<>();
+    private Map<ILootItem, Map<String, Integer>> itemWeightMap = new LinkedHashMap<>();
 
     private LootManager(InfPlugin plugin) {
         this.plugin = plugin;
@@ -49,14 +49,14 @@ public class LootManager {
         instance = null;
     }
 
-    public void addCommonLoot(ILootItem lootItem, int level, int weight) {
+    public void addCommonLoot(ILootItem lootItem, String level, int weight) {
         List<ILootItem> lootItems = commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
-        Map<Integer, Integer> levelWeightMap = itemWeightMap.computeIfAbsent(lootItem, integer -> new HashMap<>());
+        Map<String, Integer> levelWeightMap = itemWeightMap.computeIfAbsent(lootItem, integer -> new HashMap<>());
         lootItems.add(lootItem);
         levelWeightMap.put(level, weight);
     }
 
-    public List<ILootItem> getLevelDrops(int level) {
+    public List<ILootItem> getLevelDrops(String level) {
         return commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
     }
 
@@ -76,14 +76,14 @@ public class LootManager {
         return lootItemMap.get(name);
     }
 
-    public void setDrop(String item, int level, int weight) {
+    public void setDrop(String item, String level, int weight) {
         ILootItem lootItem = lootItemMap.get(item);
         if (lootItem == null) {
             throw new RuntimeException();
         }
         List<ILootItem> iLootItems = commonDrops.computeIfAbsent(level, integer -> new ArrayList<>());
         iLootItems.add(lootItem);
-        Map<Integer, Integer> weightMap = itemWeightMap.computeIfAbsent(lootItem, iLootItem -> new LinkedHashMap<>());
+        Map<String, Integer> weightMap = itemWeightMap.computeIfAbsent(lootItem, iLootItem -> new LinkedHashMap<>());
         weightMap.put(level, weight);
         save();
     }
@@ -173,10 +173,10 @@ public class LootManager {
     }
 
 
-    public static int getWeightForLevel(ILootItem lootItem, int level) {
-        Map<ILootItem, Map<Integer, Integer>> itemWeightMap = instance.itemWeightMap;
+    public static int getWeightForLevel(ILootItem lootItem, String level) {
+        Map<ILootItem, Map<String, Integer>> itemWeightMap = instance.itemWeightMap;
         if (itemWeightMap.containsKey(lootItem)) {
-            Map<Integer, Integer> levelWeightMap = itemWeightMap.get(lootItem);
+            Map<String, Integer> levelWeightMap = itemWeightMap.get(lootItem);
             return levelWeightMap.getOrDefault(level, 0);
         } else {
             return 0;
@@ -229,7 +229,7 @@ public class LootManager {
                     return;
                 }
                 try {
-                    Integer level = Integer.valueOf(split[1]);
+                    String level = split[1];
                     List<ILootItem> items = new ArrayList<>(lootWeight.weightMap.size());
                     lootWeight.weightMap.forEach((s, weight) -> {
                         ILootItem iLootItem = instance.lootItemMap.get(s);
@@ -237,7 +237,7 @@ public class LootManager {
                             instance.plugin.getLogger().log(Level.WARNING, "no item \"" + s + "\" found, skipping");
                             return;
                         }
-                        Map<Integer, Integer> levelWeight = instance.itemWeightMap.computeIfAbsent(iLootItem, iLootItem1 -> new LinkedHashMap<>());
+                        Map<String, Integer> levelWeight = instance.itemWeightMap.computeIfAbsent(iLootItem, iLootItem1 -> new LinkedHashMap<>());
                         levelWeight.put(level, weight);
                         items.add(iLootItem);
                     });
@@ -250,7 +250,7 @@ public class LootManager {
         }
     }
 
-    public List<ILootItem> getLoots(int id) {
+    public List<ILootItem> getLoots(String id) {
         return commonDrops.computeIfAbsent(id, integer -> new ArrayList<>());
     }
 

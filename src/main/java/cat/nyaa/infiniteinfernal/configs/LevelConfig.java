@@ -1,8 +1,8 @@
 package cat.nyaa.infiniteinfernal.configs;
 
-public class LevelConfig extends IdFileConfig {
+public class LevelConfig extends NamedFileConfig {
     @Serializable
-    public int level = 1;
+    public String level = "1";
 
     @Serializable
     public String prefix = "";
@@ -18,7 +18,7 @@ public class LevelConfig extends IdFileConfig {
     @Serializable(name = "attr.aggro")
     public double aggro = 48;
 
-    public LevelConfig(int id) {
+    public LevelConfig(String id) {
         super(id);
     }
 
@@ -28,8 +28,7 @@ public class LevelConfig extends IdFileConfig {
     }
 
     @Override
-    public String getDir() {
+    protected String getFileDirName() {
         return "levels";
     }
-
 }

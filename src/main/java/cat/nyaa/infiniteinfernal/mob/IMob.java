@@ -21,14 +21,16 @@ public interface IMob {
     KeyedBossBar getBossBar();
     LivingEntity getTarget();
 
-    int getLevel();
     double getDamage();
+    double getDamageResist();
+    double getMovementSpeed();
     double getMaxHealth();
     double getSpecialChance();
     int getExp();
     boolean isAutoSpawn();
     boolean dropVanilla();
     boolean isDynamicHealth();
+    String getLevel();
     String getName();
     String getTaggedName();
 

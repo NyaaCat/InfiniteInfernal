@@ -37,6 +37,10 @@ public class RegionConfig extends NamedFileConfig {
     @Serializable
     public int maxSpawnAmountOverride = -1;
 
+    public String getLevel() {
+        return level;
+    }
+
     @Override
     public String getPrefix() {
         return "";

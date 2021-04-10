@@ -116,14 +116,15 @@ public class Events implements Listener {
         if (MobManager.instance().isIMob(entity)) {
             IMob iMob = MobManager.instance().toIMob(entity);
             LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
-            double damageResist;
-            damageResist = levelConfig == null? 0 : levelConfig.damageResist;
-            if(damageResist!=0){
-                double origDamage = event.getDamage();
-                double resist = origDamage * (damageResist / 100d);
-                event.setDamage(Math.max(0, origDamage - resist));
-            }
+            double damageResistAmplifier;
+            damageResistAmplifier = levelConfig == null? 1 : levelConfig.damageResistAmplifier;
+            double origDamage = event.getDamage();
+
+            double damageResist = iMob.getDamageResist() * damageResistAmplifier;
+            double resist = origDamage * (damageResist / 100d);
+            event.setDamage(Math.max(0, origDamage - resist));
             iMob.setLastDamageCause(event);
+
             List<IAbilitySet> abilities = iMob.getAbilities();
 
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
@@ -166,13 +167,16 @@ public class Events implements Listener {
             List<IAbilitySet> abilities = iMob.getAbilities();
 
             LevelConfig levelConfig = InfPlugin.plugin.config.levelConfigs.get(iMob.getLevel());
-            double damageResist;
-            damageResist = levelConfig == null? 0 : levelConfig.damageResist;
-            if(damageResist!=0){
-                double origDamage = event.getDamage();
-                double resist = origDamage * (damageResist / 100d);
-                event.setDamage(Math.max(0, origDamage - resist));
-            }
+            double damageResistAmplifier;
+            damageResistAmplifier = levelConfig == null? 1 : levelConfig.damageResistAmplifier;
+            double origDamage = event.getDamage();
+
+            double damageResist = iMob.getDamageResist() * damageResistAmplifier;
+            double resist = origDamage * (damageResist / 100d);
+            event.setDamage(Math.max(0, origDamage - resist));
+            iMob.setLastDamageCause(event);
+
+
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));

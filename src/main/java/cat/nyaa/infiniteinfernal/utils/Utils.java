@@ -76,7 +76,7 @@ public class Utils {
         return next == null ? null : next.getKey();
     }
 
-    public static String getTaggedName(String nameTag, EntityType type, String name, int level) {
+    public static String getTaggedName(String nameTag, EntityType type, String name, String level) {
         String levelPrefix = InfPlugin.plugin.config().levelConfigs.get(level).prefix;
         return nameTag.replaceAll("\\{level\\.prefix}", levelPrefix)
                 .replaceAll("\\{mob\\.name}", name)

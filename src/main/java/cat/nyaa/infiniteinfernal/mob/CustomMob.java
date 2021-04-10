@@ -44,7 +44,6 @@ public class CustomMob implements IMob {
     private Map<ILootItem, Integer> specialLoots;
     private List<IAbilitySet> abilities;
     private Map<LivingEntity, Aggro> nonPlayerTargets = new LinkedHashMap<>();
-    private int level;
     private double specialChance;
     private boolean autoSpawn;
     private boolean dropVanilla;
@@ -52,6 +51,7 @@ public class CustomMob implements IMob {
     private LivingEntity entity;
     private KeyedBossBar bossBar;
     private LivingEntity currentTarget = null;
+    private String level;
     private String name;
     private String taggedName;
     private EntityDamageEvent LastDamageCause = null;
@@ -60,7 +60,11 @@ public class CustomMob implements IMob {
     private String dynamicHealthExpression = "";
     private double followDistance = 48;
 
-    public CustomMob(MobConfig config, int level) {
+    private double damage;
+    private double damageResist;
+    private double movementSpeed;
+
+    public CustomMob(MobConfig config, String level) {
         this.config = config;
         generateFromConfig(config, level);
     }
@@ -78,7 +82,7 @@ public class CustomMob implements IMob {
         return Objects.hash(entity);
     }
 
-    private void generateFromConfig(MobConfig config, int level) {
+    private void generateFromConfig(MobConfig config, String level) {
         Config pluginConfig = InfPlugin.plugin.config();
         //common loots
         commonLoots = new ArrayList<>();
@@ -127,7 +131,7 @@ public class CustomMob implements IMob {
         if (healthOverride > 0){
             health = healthOverride;
         }else {
-            health = InfPlugin.plugin.config().levelConfigs.get(level).health;
+            health = config.getHealth();
         }
         enableDynamicHealth = config.enableDynamicHealth;
         dynamicHealthExpression = config.dynamicHealthExpression;
@@ -166,13 +170,23 @@ public class CustomMob implements IMob {
     }
 
     @Override
-    public int getLevel() {
+    public String getLevel() {
         return level;
     }
 
     @Override
     public double getDamage() {
-        return InfPlugin.plugin.config().levelConfigs.get(level).damage;
+        return damage;
+    }
+
+    @Override
+    public double getDamageResist() {
+        return damageResist;
+    }
+
+    @Override
+    public double getMovementSpeed() {
+        return movementSpeed;
     }
 
     @Override

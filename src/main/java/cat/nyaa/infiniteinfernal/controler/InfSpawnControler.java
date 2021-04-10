@@ -145,23 +145,23 @@ public class InfSpawnControler implements ISpawnControler {
         }
 
         if (!regions.isEmpty()) {
-            WeightedPair<MobConfig, Integer> pair = mobManager.selectConfigInRegion(regions, center);
+            WeightedPair<MobConfig, String> pair = mobManager.selectConfigInRegion(regions, center);
             if (pair == null || pair.getKey() == null){
                 return null;
             }
             mobConfig = pair.getKey();
-            final Integer level = pair.getValue();
+            final String level = pair.getValue();
             MobConfig finalMobConfig = mobConfig;
             mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
         }
 
         if (mobSupplier == null){
-            Pair<MobConfig, Integer> pair = mobManager.selectNatualMobConfig(center);
+            Pair<MobConfig, String> pair = mobManager.selectNatualMobConfig(center);
             if (pair == null || pair.getKey() == null){
                 return null;
             }
             mobConfig = pair.getKey();
-            final Integer level = pair.getValue();
+            final String level = pair.getValue();
             MobConfig finalMobConfig = mobConfig;
             mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
         }

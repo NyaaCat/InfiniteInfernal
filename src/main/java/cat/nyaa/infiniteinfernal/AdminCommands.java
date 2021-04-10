@@ -102,7 +102,7 @@ public class AdminCommands extends CommandReceiver {
         Location location = nextCoordinate(sender, arguments);
         if (location == null) throw new BadCommandException();
         String top = arguments.top();
-        Integer level = top == null ? null : Integer.valueOf(top);
+        String level = top;
         World world = Bukkit.getWorld(worldName);
         if (world!=null){
             location.setWorld(world);
@@ -197,7 +197,7 @@ public class AdminCommands extends CommandReceiver {
     @SubCommand(value = "setdrop", permission = "im.setdrop", tabCompleter = "setDropCompleter")
     public void onSetDrop(CommandSender sender, Arguments arguments) {
         String itemName = arguments.nextString();
-        int level = arguments.nextInt();
+        String level = arguments.nextString();
         int weight = arguments.nextInt();
         ILootItem lootItem = LootManager.instance().getLoot(itemName);
         if (lootItem == null) {
@@ -571,7 +571,7 @@ public class AdminCommands extends CommandReceiver {
 
         @SubCommand(value = "level", permission = "im.inspect.level", tabCompleter = "levelCompleter")
         public void levelCommand(CommandSender sender, Arguments arguments) {
-            int level = arguments.nextInt();
+            String level = arguments.nextString();
 
             LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(level);
             List<MobConfig> mobsForLevel = MobManager.instance().getMobsForLevel(level);
@@ -615,7 +615,7 @@ public class AdminCommands extends CommandReceiver {
         @SubCommand(value = "loot", permission = "im.inspect.loot", tabCompleter = "lootCompleter")
         public void lootCommand(CommandSender sender, Arguments arguments) {
             String id = arguments.nextString();
-            int level = Integer.parseInt(id);
+            String level = id;
             List<ILootItem> loots = LootManager.instance().getLoots(level);
             if (!loots.isEmpty()) {
                 new Message("").append(I18n.format("inspect.level.success", level))
@@ -668,8 +668,8 @@ public class AdminCommands extends CommandReceiver {
             });
         }
 
-        private void sendLevelConfig(CommandSender sender, int level, LevelConfig levelConfig, List<MobConfig> mobsForLevel) {
-            new Message(I18n.format("inspect.info.level", level)).send(sender);
+        private void sendLevelConfig(CommandSender sender, String level, LevelConfig levelConfig, List<MobConfig> mobsForLevel) {
+            new Message(I18n.format("inspect.level.info", level)).send(sender);
             YamlConfiguration section = new YamlConfiguration();
             levelConfig.serialize(section);
             new Message(section.saveToString()).send(sender);
@@ -728,15 +728,7 @@ public class AdminCommands extends CommandReceiver {
             mobConfig.name = displayName;
             mobConfig.spawn.biomes = Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList());
             mobConfig.spawn.worlds = Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList());
-            int max = MobManager.instance().getLevels().stream().mapToInt(Integer::intValue)
-                    .max().orElse(1);
-            ArrayList<String> levels = new ArrayList<>();
-            if (max == 1) {
-                levels.add("1");
-            } else {
-                levels.add("1-" + max);
-            }
-            mobConfig.spawn.levels = levels;
+            mobConfig.spawn.levels = new ArrayList<>();
             InfPlugin.plugin.config().mobConfigs.add(id, mobConfig);
             mobConfig.save();
             MobManager.instance().load();
@@ -2043,7 +2035,7 @@ public class AdminCommands extends CommandReceiver {
             Location location = nextCoordinate(sender, arguments);
             if (location == null) throw new BadCommandException();
             String top = arguments.top();
-            Integer level = top == null ? null : Integer.valueOf(top);
+            String level = top;
             World world = Bukkit.getWorld(worldName);
             if (world!=null){
                 location.setWorld(world);

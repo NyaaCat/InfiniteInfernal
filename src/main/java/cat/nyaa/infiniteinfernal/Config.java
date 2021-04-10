@@ -24,7 +24,7 @@ public class Config extends PluginConfigure {
     Config(InfPlugin plugin) {
         this.plugin = plugin;
         abilityConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "abilities"), AbilitySetConfig.class);
-        levelConfigs = new DirConfigs<>(new File(plugin.getDataFolder(), "levels"), LevelConfig.class);
+        levelConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "levels"), LevelConfig.class);
         mobConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "mobs"), MobConfig.class);
         regionConfigs = new NamedDirConfigs<>(new File(plugin.getDataFolder(), "regions"), RegionConfig.class);
         addEffects = new LinkedHashMap<>();
@@ -217,7 +217,7 @@ public class Config extends PluginConfigure {
 
     //<STANDALONE CONFIGS>
     public NamedDirConfigs<AbilitySetConfig> abilityConfigs;
-    public DirConfigs<LevelConfig> levelConfigs;
+    public NamedDirConfigs<LevelConfig> levelConfigs;
     public NamedDirConfigs<MobConfig> mobConfigs;
     public NamedDirConfigs<RegionConfig> regionConfigs;
 
@@ -253,16 +253,10 @@ public class Config extends PluginConfigure {
     {
         tags.add("[infernal]");
         for (int i = 0; i < 12; i++) {
-            LevelConfig config = new LevelConfig(i);
-            config.level = i;
-            config.spawnWeight = i;
-            config.spawnFrom = 200 * i;
-            config.spawnTo = 200 * (i + 1);
+            LevelConfig config = new LevelConfig(String.valueOf(i));
+            config.level = String.valueOf(i);
             config.aggro = 10 + 0.5 * i;
-            config.damage = 20 * i;
-            config.damageResist = 0;
             config.exp = 10 * i;
-            config.health = 20 * i;
             config.prefix = "level " + i;
             levelConfigs.add(config);
         }
