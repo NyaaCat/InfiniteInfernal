@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.ability.IAbility;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -185,4 +185,8 @@ public class BaseUi {
         };
         buffList.addAll(Arrays.asList(potionTypes));
     }
+
+    public static Set<PotionEffectType> getBuffList(){
+        return buffList;
+    }
 }

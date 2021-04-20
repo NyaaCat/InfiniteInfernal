@@ -1,11 +1,17 @@
 package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.api.InfVarApi;
-import cat.nyaa.infiniteinfernal.bossbar.BossbarManager;
+import cat.nyaa.infiniteinfernal.commands.AdminCommands;
+import cat.nyaa.infiniteinfernal.commands.DebugCommands;
+import cat.nyaa.infiniteinfernal.commands.ImbCommands;
+import cat.nyaa.infiniteinfernal.commands.ImiCommands;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
-import cat.nyaa.infiniteinfernal.controler.ISpawnControler;
-import cat.nyaa.infiniteinfernal.controler.InfSpawnControler;
+import cat.nyaa.infiniteinfernal.event.internal.MainLooper;
+import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
+import cat.nyaa.infiniteinfernal.mob.controller.ISpawnControler;
+import cat.nyaa.infiniteinfernal.mob.controller.InfSpawnControler;
 import cat.nyaa.infiniteinfernal.data.Database;
+import cat.nyaa.infiniteinfernal.event.handler.MainEventHandler;
 import cat.nyaa.infiniteinfernal.group.GroupCommands;
 import cat.nyaa.infiniteinfernal.group.GroupListener;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
@@ -13,7 +19,7 @@ import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.mob.TargetDummy;
-import cat.nyaa.infiniteinfernal.ui.UiEvents;
+import cat.nyaa.infiniteinfernal.event.handler.UiEvents;
 import cat.nyaa.infiniteinfernal.ui.UiManager;
 import cat.nyaa.infiniteinfernal.ui.impl.VarMana;
 import cat.nyaa.infiniteinfernal.ui.impl.VarRage;
@@ -30,7 +36,7 @@ public class InfPlugin extends JavaPlugin {
     public static InfPlugin plugin;
     public static boolean wgEnabled = false;
 
-    Events events;
+    MainEventHandler events;
     UiEvents uiEvents;
     Config config;
     MessageConfig messageConfig;
@@ -61,7 +67,7 @@ public class InfPlugin extends JavaPlugin {
         plugin = this;
         config = new Config(this);
         config.load();
-        events = new Events(this);
+        events = new MainEventHandler(this);
         uiEvents = new UiEvents();
         i18n = new I18n(this, config.language);
         i18n.load();
@@ -102,7 +108,7 @@ public class InfPlugin extends JavaPlugin {
         if (config.bossbar.enabled) {
             bossbarManager.start(10);
         }
-        MainLoopTask.start();
+        MainLooper.start();
         Ticker.getInstance().init(this);
         UiManager.getInstance();
         MobManager.instance().initMobs();
@@ -123,7 +129,7 @@ public class InfPlugin extends JavaPlugin {
         i18n = new I18n(this, config.language);
         i18n.load();
         LootManager.instance().load();
-        MainLoopTask.start();
+        MainLooper.start();
 
         mobManager.load();
         broadcastManager.load();

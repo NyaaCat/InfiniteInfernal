@@ -1,9 +1,9 @@
 package cat.nyaa.infiniteinfernal.mob;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
-import cat.nyaa.infiniteinfernal.controler.Aggro;
+import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.utils.ticker.TickEvent;
 import cat.nyaa.infiniteinfernal.utils.ticker.TickTask;

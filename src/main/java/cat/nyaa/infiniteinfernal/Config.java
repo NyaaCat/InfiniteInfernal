@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal;
 
-import cat.nyaa.infiniteinfernal.ability.IAbility;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;

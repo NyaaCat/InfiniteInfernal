@@ -1,8 +1,8 @@
 package cat.nyaa.infiniteinfernal.mob;
 
-import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
-import cat.nyaa.infiniteinfernal.controler.Aggro;
+import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
