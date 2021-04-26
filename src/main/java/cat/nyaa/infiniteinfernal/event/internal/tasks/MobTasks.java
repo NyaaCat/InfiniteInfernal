@@ -3,27 +3,24 @@ package cat.nyaa.infiniteinfernal.event.internal.tasks;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.hook.HookUtil;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class MobTasks extends BukkitRunnable {
     private final World world;
-    AsyncInfernalTicker infernalTicker;
-    BukkitRunnable runnable;
+    AsyncMobTicker infernalTicker;
 
     public MobTasks(World world) {
         this.world = world;
         int interval = InfPlugin.plugin.config().mobTickInterval;
-        this.infernalTicker = new AsyncInfernalTicker(interval);
-        runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                infernalTicker.tick();
-            }
-        };
-        runnable.runTaskTimer(InfPlugin.plugin, 0, 1);
+        this.infernalTicker = new AsyncMobTicker(interval);
+
+        infernalTicker.runTaskTimer(InfPlugin.plugin, 0, 1);
     }
 
     @Override
@@ -39,6 +36,39 @@ public class MobTasks extends BukkitRunnable {
     @Override
     public synchronized void cancel() throws IllegalStateException {
         super.cancel();
-        runnable.cancel();
+        infernalTicker.cancel();
+    }
+
+
+    public class AsyncMobTicker extends BukkitRunnable{
+        private final int interval;
+        Queue<IMob> mobEffectQueue;
+        private int nextTickTasks = 0;
+
+        AsyncMobTicker(int interval) {
+            this.interval = interval;
+            mobEffectQueue = new LinkedList<>();
+        }
+
+        public void submitInfernalTickMobs(List<IMob> mobs) {
+            if (mobs == null || mobs.isEmpty()) return;
+            mobs.forEach(mob -> mobEffectQueue.offer(mob));
+            nextTickTasks = (int) Math.ceil((mobs.size()) / (double) interval);
+        }
+
+        @Override
+        public void run() {
+            if (mobEffectQueue.isEmpty()) return;
+            for (int i = 0; i < nextTickTasks; i++) {
+                if (mobEffectQueue.isEmpty()) return;
+                IMob iMob = mobEffectQueue.poll();
+
+                mobEffect(iMob);
+            }
+        }
+
+        private void mobEffect(IMob iMob) {
+            HookUtil.runHook("mobTick", iMob);
+        }
     }
 }

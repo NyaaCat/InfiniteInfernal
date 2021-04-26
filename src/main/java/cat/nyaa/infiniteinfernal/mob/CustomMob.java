@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.mob.ability.AbilityActive;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
@@ -14,7 +15,10 @@ import cat.nyaa.infiniteinfernal.mob.controller.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
+import cat.nyaa.infiniteinfernal.utils.hook.Hook;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import com.udojava.evalex.Expression;
@@ -30,12 +34,16 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class CustomMob implements IMob {
     public static final NamespacedKey CUSTOM_MOB_BOSSBAR = new NamespacedKey(InfPlugin.plugin, "bossbar");
@@ -67,6 +75,79 @@ public class CustomMob implements IMob {
     public CustomMob(MobConfig config, String level) {
         this.config = config;
         generateFromConfig(config, level);
+    }
+
+    private static ICorrector iCorrector = null;
+
+    protected boolean checkAbility(){
+        LivingEntity target = this.getTarget();
+        if (target == null || !target.getWorld().equals(this.getEntity().getWorld()))
+            return false;
+
+        String dementia = InfPlugin.plugin.config().addEffects.get("dementia");
+        if (dementia != null) {
+            iCorrector = CorrectionParser.parseStr(dementia);
+        }
+
+        if (iCorrector != null) {
+            EntityEquipment equipment = this.getEntity().getEquipment();
+            ItemStack itemInMainHand = null;
+            if (equipment != null) {
+                itemInMainHand = equipment.getItemInMainHand();
+            }
+            double correction = iCorrector.getCorrection(this.getEntity(), itemInMainHand);
+            if (Utils.possibility(correction / 100d)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected void triggerAbility() {
+        List<IAbilitySet> abilities = this.getAbilities().stream()
+                .filter(IAbilitySet::containsActive)
+                .collect(Collectors.toList());
+        IAbilitySet iAbilitySet = Utils.weightedRandomPick(abilities);
+        if (iAbilitySet == null) {
+            return;
+        }
+        iAbilitySet.getAbilitiesInSet().stream()
+                .filter(iAbility -> iAbility instanceof AbilityActive)
+                .map(iAbility -> ((AbilityActive) iAbility))
+                .forEach(abilityTick -> abilityTick.active(this));
+    }
+
+    @Hook("mobTick")
+    public void runAbility(){
+        if (!checkAbility()){
+            return;
+        }
+        this.triggerAbility();
+    }
+
+    @Hook("mobTick")
+    public void despawnIf(){
+        MobManager mobManager = MobManager.instance();
+        List<Player> playersNearMob = mobManager.getPlayersNearMob(this);
+        if (playersNearMob.size() == 0) {
+            mobManager.removeMob(this, false);
+        }
+    }
+
+    @Hook("mobTick")
+    public void tweakIfDynamic(){
+        if (this.isDynamicHealth()) {
+            this.tweakHealth();
+        }
+    }
+
+    @Hook("mobTick")
+    public void checkSanity(){
+        LivingEntity entity = this.getEntity();
+        if (entity == null || entity.isDead()) {
+            MobManager mobManager = MobManager.instance();
+            mobManager.removeMob(this, false);
+        }
     }
 
     @Override
@@ -275,6 +356,7 @@ public class CustomMob implements IMob {
         return HexColorUtils.hexColored( taggedName);
     }
 
+    @Hook("mobTick")
     @Override
     public void showParticleEffect() {
         LivingEntity entity = getEntity();
@@ -284,6 +366,7 @@ public class CustomMob implements IMob {
         Utils.spawnParticle(mobParticle1, world, location);
     }
 
+    @Hook("mobTick")
     @Override
     public void autoRetarget() {
         new BukkitRunnable() {
