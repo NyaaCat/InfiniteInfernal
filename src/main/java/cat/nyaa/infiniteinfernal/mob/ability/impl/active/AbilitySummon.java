@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.Location;
@@ -32,7 +33,7 @@ public class AbilitySummon extends ActiveAbility {
         for (int i = 0; i < amount; i++) {
             Location location = null;
             for (int j = 0; j < 20; j++) {
-                location = Utils.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
+                location = LocationUtil.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, radius);
                 if (location!=null){
                     break;
                 }

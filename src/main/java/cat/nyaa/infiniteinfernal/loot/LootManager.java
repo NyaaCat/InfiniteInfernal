@@ -5,8 +5,9 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.LootConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
-import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.correction.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.bukkit.Material;
@@ -97,7 +98,7 @@ public class LootManager {
         final Config config = InfPlugin.plugin.config();
         double overallShift = getShift(killer, config.lootOverallInc, config.lootOverallDec, config.lootOverallMax);
         double global = config.lootGlobal * (1+ (overallShift/100d));
-        if (!Utils.possibility(global / 100d)) {
+        if (!RandomUtil.possibility(global / 100d)) {
             return null;
         }
         Map<ILootItem, Integer> loots = iMob.getLoots();
@@ -106,20 +107,20 @@ public class LootManager {
         }
         double dynamicShift = getShift(killer, config.lootDynamicInc, config.lootDynamicDec, config.lootDynamicMax);
         Map<ILootItem, Integer> balanced = balance(loots, overallShift, dynamicShift);
-        return Utils.weightedRandomPick(balanced);
+        return RandomUtil.weightedRandomPick(balanced);
     }
 
     public static ILootItem makeSpecialDrop(Player killer, IMob iMob) {
         Config config = InfPlugin.plugin.config();
         double overallShift = getShift(killer, config.lootOverallInc, config.lootOverallDec, config.lootOverallMax);
         double specialChance = iMob.getSpecialChance() * (1+ (overallShift/100d));
-        if (!Utils.possibility(specialChance / 100d)) {
+        if (!RandomUtil.possibility(specialChance / 100d)) {
             return null;
         }
         Map<ILootItem, Integer> specialLoots = iMob.getSpecialLoots();
         double dynamicShift = getShift(killer, config.lootDynamicInc, config.lootDynamicDec, config.lootDynamicMax);
         Map<ILootItem, Integer> balanced = balance(specialLoots, 0, dynamicShift);
-        return Utils.weightedRandomPick(balanced);
+        return RandomUtil.weightedRandomPick(balanced);
     }
 
     private static Map<ILootItem, Integer> balance(Map<ILootItem, Integer> loots, double overallShift, double dynamicShift) {

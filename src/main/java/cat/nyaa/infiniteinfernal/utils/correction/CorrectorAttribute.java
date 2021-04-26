@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.correction;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;

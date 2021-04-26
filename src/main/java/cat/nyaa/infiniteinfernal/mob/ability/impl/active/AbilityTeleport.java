@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,7 +18,7 @@ public class AbilityTeleport extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        Location to = Utils.randomNonNullLocation(mobEntity.getLocation(), 0, radius);
+        Location to = LocationUtil.randomNonNullLocation(mobEntity.getLocation(), 0, radius);
         teleport(mobEntity, to);
     }
 

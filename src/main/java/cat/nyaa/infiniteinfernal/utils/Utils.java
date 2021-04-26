@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
@@ -26,56 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
-    private static Random random = new Random();
-
-    public static <T> T randomPick(List<T> list) {
-        return list.isEmpty() ? null : list.get(random.nextInt(list.size()));
-    }
-
-    public static <T extends Weightable> T weightedRandomPick(List<T> list) {
-        int sum = list.stream().mapToInt(Weightable::getWeight)
-                .sum();
-        if (sum == 0) {
-            if (list.size() > 0) return list.get(0);
-            else return null;
-        }
-        int selected = random.nextInt(sum);
-        Iterator<Integer> iterator = list.stream().mapToInt(Weightable::getWeight).iterator();
-        int count = 0;
-        int selectedItem = 0;
-        while (iterator.hasNext()) {
-            Integer next = iterator.next();
-            int nextCount = count + next;
-            if (count <= selected && nextCount > selected) {
-                return list.get(selectedItem);
-            }
-            count = nextCount;
-            selectedItem++;
-        }
-        return list.get(list.size() - 1);
-    }
-
-    public static <T> T weightedRandomPick(Map<T, Integer> weightMap) {
-        int sum = weightMap.values().stream().mapToInt(Integer::intValue)
-                .sum();
-        if (sum == 0) {
-            return weightMap.keySet().stream().findFirst().orElse(null);
-        }
-        int selected = random.nextInt(sum);
-        Iterator<Map.Entry<T, Integer>> iterator = weightMap.entrySet().stream().iterator();
-        int count = 0;
-        Map.Entry<T, Integer> next = null;
-        while (iterator.hasNext()) {
-            next = iterator.next();
-            int nextCount = count + next.getValue();
-            if (count <= selected && nextCount > selected) {
-                break;
-            }
-            count = nextCount;
-        }
-        return next == null ? null : next.getKey();
-    }
-
+   
     public static String getTaggedName(String nameTag, EntityType type, String name, String level) {
         String levelPrefix = InfPlugin.plugin.config().levelConfigs.get(level).prefix;
         return nameTag.replaceAll("\\{level\\.prefix}", levelPrefix)
@@ -83,13 +35,7 @@ public class Utils {
                 .replaceAll("\\{mob\\.type}", type.name())
                 .replaceAll("\\{level\\.level}", String.valueOf(level));
     }
-
-    public static boolean possibility(double x) {
-        if (x <= 0) return false;
-        if (x >= 1) return true;
-        return random.nextDouble() < x;
-    }
-
+    
     public static Vector unitDirectionVector(Vector from, Vector to) {
         Vector vec = to.clone().subtract(from);
         if (!Double.isFinite(vec.getX())) vec.setX(0D);
@@ -113,127 +59,11 @@ public class Utils {
         }.runTaskLater(InfPlugin.plugin, i);
     }
 
-    public static double random() {
-        return random.nextDouble();
-    }
-
-    public static LivingEntity randomSelectTarget(IMob iMob, double range) {
-        return Utils.randomPick(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range)).collect(Collectors.toList()));
-    }
-
     //todo: implement another to Aggro system
     public static Stream<LivingEntity> getValidTargets(IMob iMob, Collection<Entity> nearbyEntities) {
         return nearbyEntities.stream()
                 .filter(entity -> (entity instanceof Player && validGamemode((Player) entity)) || (iMob != null && (entity instanceof LivingEntity && iMob.isTarget((LivingEntity) entity))))
                 .map(entity -> ((LivingEntity) entity));
-    }
-
-    public static Location randomSpawnLocationInFront(Location location, int minSpawnDistance, int maxSpawnDistance, Predicate<Location> predicate) {
-        Vector direction = location.getDirection().clone();
-        direction.setY(0);
-        if (direction.length() > 1e-4) {
-            direction = cone(direction, 30);
-            for (int i = 0; i < 20; i++) {
-                Location targetLocation = location.clone().add(direction.normalize().multiply(random(minSpawnDistance, maxSpawnDistance)));
-                if (predicate.test(targetLocation)){
-                    return targetLocation;
-                }
-            }
-        }
-        return randomSpawnLocation(location, minSpawnDistance, maxSpawnDistance, predicate);
-    }
-
-    public static Location randomSpawnLocation(Location center, double innerRange, double outerRange, Predicate<Location> predicate) {
-        Location targetLocation = center;
-        for (int i = 0; i < 20; i++) {
-            targetLocation = randomLocation(center, innerRange, outerRange);
-            if (predicate.test(targetLocation)){
-                return targetLocation;
-            }
-        }
-        return null;
-    }
-
-    public static Location randomFloorSpawnLocationInFront(Location location, int minSpawnDistance, int maxSpawnDistance) {
-        Vector direction = location.getDirection().clone();
-        direction.setY(0);
-        if (direction.length() > 1e-4) {
-            direction = cone(direction, 30);
-            for (int i = 0; i < 20; i++) {
-                Location targetLocation = location.clone().add(direction.normalize().multiply(random(minSpawnDistance, maxSpawnDistance)));
-                Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-                if (validSpawnLocationInY != null) return validSpawnLocationInY;
-            }
-        }
-        return randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
-    }
-
-    public static Location randomFloorSpawnLocation(Location center, double innerRange, double outerRange) {
-        Location targetLocation = center;
-        for (int i = 0; i < 20; i++) {
-            targetLocation = randomLocation(center, innerRange, outerRange);
-            Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (validSpawnLocationInY != null) return validSpawnLocationInY;
-        }
-        if (isSky(targetLocation)) {
-            return targetLocation;
-        }
-        return null;
-    }
-
-    private static boolean isSky(Location center) {
-        Block block = center.getBlock();
-        Block up = block.getRelative(BlockFace.UP);
-        Block upup = up.getRelative(BlockFace.UP);
-        Block down = block.getRelative(BlockFace.DOWN);
-
-        return block.getType().equals(Material.AIR) && up.getType().equals(Material.AIR) && upup.getType().equals(Material.AIR) && down.getType().equals(Material.AIR);
-    }
-
-    public static Location randomNonNullLocation(Location center, double innerRange, double outerRange) {
-        for (int i = 0; i < 30; i++) {
-            Location targetLocation = randomLocation(center, innerRange, outerRange);
-            Location validSpawnLocationInY = findValidSpawnLocationInY(targetLocation);
-            if (validSpawnLocationInY != null) return validSpawnLocationInY;
-        }
-        return center;
-    }
-
-    public static Location findValidSpawnLocationInY(Location targetLocation) {
-        if (targetLocation.getBlock().getType().isAir()) {
-            for (int j = 0; j > -15; j--) {
-                Location clone = targetLocation.clone().add(0, j, 0);
-                if (isValidLocation(clone)) {
-                    return clone;
-                }
-            }
-        }
-        for (int j = 0; j < 10; j++) {
-            Location clone = targetLocation.clone().add(0, j, 0);
-            if (isValidLocation(clone)) {
-                return clone;
-            }
-        }
-        return null;
-    }
-
-    private static Location randomLocation(Location center, double innerRange, double outerRange) {
-        double r = innerRange + random() * outerRange;
-        double theta = Math.toRadians(random.nextInt(360));
-        Location targetLocation = center.clone();
-        targetLocation.add(new Vector(r * Math.cos(theta), 0, r * Math.sin(theta)));
-        return targetLocation;
-    }
-
-    private static boolean isValidLocation(Location targetLocation) {
-        World world = targetLocation.getWorld();
-        if (world == null || !world.isChunkLoaded(targetLocation.getBlockX() >> 4, targetLocation.getBlockZ() >> 4)) {
-            return false;
-        }
-        Block block = targetLocation.getBlock();
-        Block lowerBlock = block.getRelative(BlockFace.DOWN);
-        Block upperBlock = block.getRelative(BlockFace.UP);
-        return !block.getType().isSolid() && !upperBlock.getType().isSolid() && ((lowerBlock.getType().isSolid() || block.getType().equals(Material.WATER)));
     }
 
     public static void doEffect(String effect, LivingEntity target, int duration, int amplifier, String ability) {
@@ -258,30 +88,25 @@ public class Utils {
             throw new IllegalConfigException("effect " + effect + " in ability " + ability + " don't exists");
         }
     }
-
-    public static Double random(double lower, double upper) {
-        return random.nextDouble() * (upper - lower) + lower;
-    }
-
-
-    private static final Vector x_axis = new Vector(1, 0, 0);
-    private static final Vector y_axis = new Vector(0, 1, 0);
-    private static final Vector z_axis = new Vector(0, 0, 1);
+    
+    public static final Vector X_AXIS = new Vector(1, 0, 0);
+    public static final Vector Y_AXIS = new Vector(0, 1, 0);
+    public static final Vector Z_AXIS = new Vector(0, 0, 1);
 
     public static Vector cone(Vector direction, double cone) {
-        double phi = Utils.random() * 360;
-        double theta = Utils.random() * cone;
+        double phi = RandomUtil.random() * 360;
+        double theta = RandomUtil.random() * cone;
         Vector clone = direction.clone();
         Vector crossP;
 
         if (clone.length() == 0) return direction;
 
         if (clone.getX() != 0 && clone.getZ() != 0) {
-            crossP = clone.getCrossProduct(y_axis);
+            crossP = clone.getCrossProduct(Y_AXIS);
         } else if (clone.getX() != 0 && clone.getY() != 0) {
-            crossP = clone.getCrossProduct(z_axis);
+            crossP = clone.getCrossProduct(Z_AXIS);
         } else {
-            crossP = clone.getCrossProduct(x_axis);
+            crossP = clone.getCrossProduct(X_AXIS);
         }
         crossP.normalize();
 
@@ -392,11 +217,11 @@ public class Utils {
     public static void spawnDamageIndicator(LivingEntity entity, double damage, String format) {
         Location eyeLocation = entity.getEyeLocation();
         World world = entity.getWorld();
-        Double x = Utils.random(-1, 1);
-        Double y = Utils.random(-1, 1);
-        Double z = Utils.random(-1, 1);
+        Double x = RandomUtil.random(-1, 1);
+        Double y = RandomUtil.random(-1, 1);
+        Double z = RandomUtil.random(-1, 1);
         Vector vector = new Vector(x, y, z);
-//        Vector vector = new Vector(0, 0.5, 0.2).rotateAroundAxis(new Vector(0, 1, 0), Math.toRadians(Utils.random(0, 360)));
+//        Vector vector = new Vector(0, 0.5, 0.2).rotateAroundAxis(new Vector(0, 1, 0), Math.toRadians(RandomUtil.random(0, 360)));
         ArmorStand spawn = world.spawn(eyeLocation.add(vector), ArmorStand.class, item -> {
             item.addScoreboardTag("inf_damage_indicator");
 //            item.setVelocity(vector);
@@ -421,7 +246,6 @@ public class Utils {
             }
         }.runTaskLater(InfPlugin.plugin, 30);
     }
-
 
     public static double getCorrection(ICorrector targetLost, IMob iMob) {
         LivingEntity entity = iMob.getEntity();

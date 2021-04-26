@@ -6,7 +6,8 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.NamedDirConfigs;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
-import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.context.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.nyaacore.Pair;
@@ -295,7 +296,7 @@ public class MobManager {
                     return true;
                 }).collect(Collectors.toList());
 
-        MobConfig mobConfig = Utils.weightedRandomPick(collect);
+        MobConfig mobConfig = RandomUtil.weightedRandomPick(collect);
         return Pair.of(mobConfig, level);
     }
 
@@ -324,7 +325,7 @@ public class MobManager {
     public WeightedPair<MobConfig, String> selectConfigInRegion(List<RegionConfig> regions, Location center){
         List<WeightedPair<MobConfig, String>> spawnConfs = getSpawnConfigsForRegion(regions, center);
         if (!spawnConfs.isEmpty()) {
-            WeightedPair<MobConfig, String> selected = Utils.weightedRandomPick(spawnConfs);
+            WeightedPair<MobConfig, String> selected = RandomUtil.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
             return selected;
         }

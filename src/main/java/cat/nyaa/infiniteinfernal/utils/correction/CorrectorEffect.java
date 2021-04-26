@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.correction;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;

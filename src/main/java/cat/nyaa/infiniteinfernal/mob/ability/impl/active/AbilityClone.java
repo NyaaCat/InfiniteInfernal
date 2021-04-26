@@ -5,6 +5,7 @@ import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -44,7 +45,7 @@ public class AbilityClone extends ActiveAbility {
         clonedTimesMap.put(iMob, timesRemains);
         for (int i = 0; i < amount; i++) {
             Location location = mobEntity.getLocation();
-            Utils.randomNonNullLocation(location, 0, 5);
+            LocationUtil.randomNonNullLocation(location, 0, 5);
             IMob cloned = MobManager.instance().spawnMobByConfig(config, location, iMob.getLevel());
             Integer finalTimesRemains = timesRemains;
             clonedTimesMap.put(cloned, clonedTimesMap.computeIfAbsent(iMob, iMob1 -> finalTimesRemains));

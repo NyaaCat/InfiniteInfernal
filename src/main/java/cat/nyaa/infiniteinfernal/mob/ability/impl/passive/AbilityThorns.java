@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityHurt;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.context.Context;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;

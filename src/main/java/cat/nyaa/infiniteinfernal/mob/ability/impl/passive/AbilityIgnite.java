@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.LivingEntity;
 
@@ -15,7 +16,7 @@ public class AbilityIgnite  extends AbilityPassive implements AbilityAttack {
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (Utils.possibility(chance)){
+        if (RandomUtil.possibility(chance)){
             target.setFireTicks(duration);
         }
     }

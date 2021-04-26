@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -44,7 +45,7 @@ public class AbilityUltraStrike extends ActiveAbility {
                 }
                 summonUltraStrike(location, iMob);
             } else {
-                summonUltraStrike(Utils.randomNonNullLocation(iMob.getEntity().getLocation(), 0, nearbyRange), iMob);
+                summonUltraStrike(LocationUtil.randomNonNullLocation(iMob.getEntity().getLocation(), 0, nearbyRange), iMob);
             }
         }
     }

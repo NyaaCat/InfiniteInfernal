@@ -2,8 +2,8 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 import cat.nyaa.infiniteinfernal.configs.*;
-import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
-import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.correction.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

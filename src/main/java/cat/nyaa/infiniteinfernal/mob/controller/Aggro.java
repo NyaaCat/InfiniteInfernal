@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.controller;
 
-import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.List;

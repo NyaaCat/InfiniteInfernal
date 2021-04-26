@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.group;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
@@ -270,7 +271,7 @@ public class GroupCommands extends CommandReceiver {
         if (playerGroup==null)return;
         if (playerGroup.getMembers().size() <= 1)return;
         List<Player> collect = playerGroup.getMembers().stream().filter(player1 -> !player1.equals(player)).collect(Collectors.toList());
-        Player player1 = Utils.randomPick(collect);
+        Player player1 = RandomUtil.randomPick(collect);
         player.teleport(player1);
     }
 

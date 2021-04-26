@@ -3,8 +3,9 @@ package cat.nyaa.infiniteinfernal.mob.controller;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
-import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.correction.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.World;
 import org.bukkit.entity.*;
@@ -61,7 +62,7 @@ public class InfAggroController implements IAggroControler {
                             .filter(entity1 -> entity1 instanceof LivingEntity && !(entity1 instanceof ArmorStand) && !(entity1 instanceof Player))
                             .map(entity1 -> ((LivingEntity) entity1));
                     livingEntityStream = nearbyStream;
-                    return Utils.randomPick(livingEntityStream.collect(Collectors.toList()));
+                    return RandomUtil.randomPick(livingEntityStream.collect(Collectors.toList()));
                 }
             }
             return livingEntityStream.max(comparator).orElse(null);

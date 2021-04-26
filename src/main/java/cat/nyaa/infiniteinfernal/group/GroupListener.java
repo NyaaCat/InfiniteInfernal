@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.BroadcastManager;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ExperienceUtils;
@@ -65,7 +66,7 @@ public class GroupListener implements Listener {
             event.setDroppedExp(0);
         }
         if (lootMode.equals(Group.LootMode.ROLL)) {
-            Player player = Utils.randomPick(collect);
+            Player player = RandomUtil.randomPick(collect);
             if (player == null) return;
             List<ItemStack> drops = event.getDrops();
             if (!drops.isEmpty()) {

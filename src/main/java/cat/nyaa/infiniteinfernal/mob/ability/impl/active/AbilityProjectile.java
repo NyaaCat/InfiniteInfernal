@@ -87,7 +87,7 @@ public class AbilityProjectile extends ActiveAbility {
 
 //    @Override
 //    public void onAttack(IMob mob, LivingEntity target) {
-//        if (!Utils.possibility(onPlayerAttackChance)) return;
+//        if (!RandomUtil.possibility(onPlayerAttackChance)) return;
 //
 //        double speed = this.speed;
 //        if (speed <= 0.1) speed = 0.1;

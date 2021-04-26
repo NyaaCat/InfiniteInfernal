@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.correction;
 
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;

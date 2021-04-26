@@ -15,8 +15,9 @@ import cat.nyaa.infiniteinfernal.mob.controller.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
-import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
-import cat.nyaa.infiniteinfernal.utils.ICorrector;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.correction.CorrectionParser;
+import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.hook.Hook;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
@@ -96,7 +97,7 @@ public class CustomMob implements IMob {
                 itemInMainHand = equipment.getItemInMainHand();
             }
             double correction = iCorrector.getCorrection(this.getEntity(), itemInMainHand);
-            if (Utils.possibility(correction / 100d)) {
+            if (RandomUtil.possibility(correction / 100d)) {
                 return false;
             }
         }
@@ -107,7 +108,7 @@ public class CustomMob implements IMob {
         List<IAbilitySet> abilities = this.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
                 .collect(Collectors.toList());
-        IAbilitySet iAbilitySet = Utils.weightedRandomPick(abilities);
+        IAbilitySet iAbilitySet = RandomUtil.weightedRandomPick(abilities);
         if (iAbilitySet == null) {
             return;
         }

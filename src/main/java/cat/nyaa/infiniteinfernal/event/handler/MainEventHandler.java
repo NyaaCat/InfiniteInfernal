@@ -15,8 +15,9 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.utils.Context;
-import cat.nyaa.infiniteinfernal.utils.ContextKeys;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.context.Context;
+import cat.nyaa.infiniteinfernal.utils.context.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -130,7 +131,7 @@ public class MainEventHandler implements Listener {
 
             List<IAbilitySet> abilities = iMob.getAbilities();
 
-            IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
+            IAbilitySet triggeredAbilitySet = RandomUtil.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));
 
@@ -180,7 +181,7 @@ public class MainEventHandler implements Listener {
             iMob.setLastDamageCause(event);
 
 
-            IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
+            IAbilitySet triggeredAbilitySet = RandomUtil.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));
 
@@ -261,7 +262,7 @@ public class MainEventHandler implements Listener {
         }
 
         if (iMob == null) return;
-        IAbilitySet iAbilitySet = Utils.weightedRandomPick(iMob.getAbilities().stream()
+        IAbilitySet iAbilitySet = RandomUtil.weightedRandomPick(iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsPassive)
                 .collect(Collectors.toList()));
 

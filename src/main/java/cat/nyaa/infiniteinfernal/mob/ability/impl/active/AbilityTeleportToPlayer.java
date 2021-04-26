@@ -2,6 +2,8 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,27 +19,27 @@ public class AbilityTeleportToPlayer extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        LivingEntity livingEntity = Utils.randomSelectTarget(iMob, range);
+        LivingEntity livingEntity = RandomUtil.randomSelectTarget(iMob, range);
         if (livingEntity == null)return;
-        Location to = Utils.randomNonNullLocation(livingEntity.getLocation(), 0, radius);
+        Location to = LocationUtil.randomNonNullLocation(livingEntity.getLocation(), 0, radius);
         teleport(mobEntity, to);
     }
 
 //    @Override
 //    public void onHurt(IMob mob, EntityDamageEvent ev) {
 //        LivingEntity mobEntity = mob.getEntity();
-//        if (!Utils.possibility(hurtChance)) return;
+//        if (!RandomUtil.possibility(hurtChance)) return;
 //        if (!(ev instanceof EntityDamageByEntityEvent))return;
 //        Entity damager = ((EntityDamageByEntityEvent) ev).getDamager();
-//        Location to = Utils.randomLocation(damager.getLocation(), 0, radius);
+//        Location to = RandomUtil.randomLocation(damager.getLocation(), 0, radius);
 //        teleport(mobEntity, to);
 //    }
 //
 //    @Override
 //    public void onAttack(IMob mob, LivingEntity target) {
-//        if (!Utils.possibility(attackChance)) return;
+//        if (!RandomUtil.possibility(attackChance)) return;
 //        LivingEntity mobEntity = mob.getEntity();
-//        Location to = Utils.randomLocation(target.getLocation(), 0, radius);
+//        Location to = RandomUtil.randomLocation(target.getLocation(), 0, radius);
 //        teleport(mobEntity, to);
 //    }
 

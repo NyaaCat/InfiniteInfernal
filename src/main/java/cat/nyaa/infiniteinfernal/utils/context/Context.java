@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.context;
 
 import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Location;

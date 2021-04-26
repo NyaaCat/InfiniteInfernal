@@ -3,6 +3,8 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -45,7 +47,7 @@ public class AbilityShingeki extends ActiveAbility {
             } else {
                 Location location = null;
                 for (int j = 0; j < 20; j++) {
-                    location = Utils.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, 30);
+                    location = LocationUtil.randomFloorSpawnLocation(iMob.getEntity().getLocation(), 0, 30);
                     if (location != null) break;
                 }
                 if (location != null) {
@@ -100,7 +102,7 @@ public class AbilityShingeki extends ActiveAbility {
                 World world = location.getWorld();
                 if (world == null) return;
                 List<Location> roundLocationList = Utils.getRoundLocations(location, radius);
-                double theta = Utils.random() * 360;
+                double theta = RandomUtil.random() * 360;
                 Vector vector = new Vector(1, 0, 0);
                 vector.multiply(radius);
                 vector.rotateAroundY(theta);

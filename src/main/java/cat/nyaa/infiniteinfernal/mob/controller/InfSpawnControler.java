@@ -6,7 +6,9 @@ import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.utils.Context;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.context.Context;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.infiniteinfernal.utils.support.WorldGuardUtils;
@@ -203,10 +205,10 @@ public class InfSpawnControler implements ISpawnControler {
         int maxSpawnDistance = getMaxSpawnDistance(world);
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
-        if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
+        if (RandomUtil.possibility(0.7)){
+            spawnLocation = LocationUtil.randomSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
         }else {
-            spawnLocation = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
+            spawnLocation = LocationUtil.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, (location -> air.test(location.getBlock().getType())));
         }
         return spawnLocation;
     }
@@ -215,10 +217,10 @@ public class InfSpawnControler implements ISpawnControler {
         int maxSpawnDistance = getMaxSpawnDistance(world);
         int minSpawnDistance = getMinSpawnDistance(world);
         Location spawnLocation;
-        if (Utils.possibility(0.7)){
-            spawnLocation = Utils.randomFloorSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
+        if (RandomUtil.possibility(0.7)){
+            spawnLocation = LocationUtil.randomFloorSpawnLocationInFront(location, minSpawnDistance, maxSpawnDistance);
         }else {
-            spawnLocation = Utils.randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
+            spawnLocation = LocationUtil.randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
         }
         return spawnLocation;
     }

@@ -6,6 +6,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.BroadcastMode;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
@@ -61,7 +62,7 @@ public class InfMessager implements IMessager {
         EntityEquipment equipment;
         switch (messageType) {
             case DROP:
-                str = Utils.randomPick(drop);
+                str = RandomUtil.randomPick(drop);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.drop"));
                     return new Message(I18n.format("message.error.drop"));
@@ -73,7 +74,7 @@ public class InfMessager implements IMessager {
                 message.append(HexColorUtils.hexColored( str), lootItem.getItemStack());
                 break;
             case SPETIAL_DROP:
-                str = Utils.randomPick(specialDrop);
+                str = RandomUtil.randomPick(specialDrop);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.special_drop"));
                     return new Message(I18n.format("message.error.special_drop"));
@@ -85,7 +86,7 @@ public class InfMessager implements IMessager {
                 message.append(HexColorUtils.hexColored( str), lootItem.getItemStack());
                 break;
             case NO_DROP:
-                str = Utils.randomPick(noDrop);
+                str = RandomUtil.randomPick(noDrop);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.drop"));
                     return new Message(I18n.format("message.error.drop"));
@@ -98,7 +99,7 @@ public class InfMessager implements IMessager {
                 if (!(killer instanceof LivingEntity)){
                     break;
                 }
-                str = Utils.randomPick(playerKill);
+                str = RandomUtil.randomPick(playerKill);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.drop"));
                     return new Message(I18n.format("message.error.drop"));
@@ -110,7 +111,7 @@ public class InfMessager implements IMessager {
                 message.append(HexColorUtils.hexColored( str), equipment == null ? new ItemStack(Material.AIR) : equipment.getItemInMainHand());
                 break;
             case PLAYER_KILLED:
-                str = Utils.randomPick(mobKill);
+                str = RandomUtil.randomPick(mobKill);
                 if (str == null) {
                     Bukkit.getLogger().log(Level.WARNING, I18n.format("message.error.drop"));
                     return new Message(I18n.format("message.error.drop"));

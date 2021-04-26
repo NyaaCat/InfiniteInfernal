@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityAttack;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -25,7 +26,7 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (!Utils.possibility(attackChance))return;
+        if (!RandomUtil.possibility(attackChance))return;
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -36,7 +37,7 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
 
     @Override
     public void active(IMob iMob) {
-        if (!Utils.possibility(tickChance))return;
+        if (!RandomUtil.possibility(tickChance))return;
 
         LivingEntity mobEntity = iMob.getEntity();
         double bigRange = this.range*1.5;
@@ -46,7 +47,7 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
     }
 
     private void launch(LivingEntity p, IMob iMob) {
-        final Vector v = toVector((Utils.random()*360) - 180, 45, speed);
+        final Vector v = toVector((RandomUtil.random()*360) - 180, 45, speed);
         final LivingEntity player = p;
         if (player.getLocation().distance(iMob.getEntity().getLocation()) <= range) {
             player.setVelocity(v);

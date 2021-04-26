@@ -4,6 +4,8 @@ import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -93,7 +95,7 @@ public class AbilityFang extends ActiveAbility implements AbilityDeath {
                 @Override
                 public void run() {
                     LivingEntity target = iMob.getTarget();
-                    if (Utils.possibility(castToAllNearbyChance)){
+                    if (RandomUtil.possibility(castToAllNearbyChance)){
                         getNearbyEntities(iMob, range).forEach(livingEntity -> {
                             summon(iMob, livingEntity);
                         });
@@ -117,7 +119,7 @@ public class AbilityFang extends ActiveAbility implements AbilityDeath {
                 @Override
                 public void run() {
                     Location expectedLoc = mobLoc.clone().add(towards.clone().multiply(finalI + 1));
-                    Location validSpawnLocationInY = Utils.findValidSpawnLocationInY(expectedLoc);
+                    Location validSpawnLocationInY = LocationUtil.findValidSpawnLocationInY(expectedLoc);
                     spawnFang(iMob, validSpawnLocationInY == null? expectedLoc : validSpawnLocationInY);
                 }
             }.runTaskLater(InfPlugin.plugin, finalI * spawnInterval);

@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -41,7 +42,7 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
 
     @Override
     public void onAttack(IMob mob, LivingEntity target) {
-        if (!Utils.possibility(attackChance)) return;
+        if (!RandomUtil.possibility(attackChance)) return;
         if (!inited) {
             init();
             inited = true;

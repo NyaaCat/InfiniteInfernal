@@ -12,6 +12,7 @@ import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.mob.TargetDummy;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.WeightedPair;
 import cat.nyaa.nyaacore.ILocalizer;
@@ -93,7 +94,7 @@ public class AdminCommands extends CommandReceiver {
         if (arguments.top() == null) {
             if (sender instanceof Player) {
                 Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                Location location = Utils.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
+                Location location = LocationUtil.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
                 if (location != null) {
                     MobManager.instance().spawnMobByName(mobName, location, null);
                 }
@@ -2025,7 +2026,7 @@ public class AdminCommands extends CommandReceiver {
             if (arguments.top() == null) {
                 if (sender instanceof Player) {
                     Block targetBlock = ((Player) sender).getTargetBlock(null, 50);
-                    Location location = Utils.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
+                    Location location = LocationUtil.randomFloorSpawnLocation(targetBlock.getLocation(), 0, 1);
                     if (location != null) {
                         MobManager.instance().spawnMobByName(mobName, location, null);
                     }

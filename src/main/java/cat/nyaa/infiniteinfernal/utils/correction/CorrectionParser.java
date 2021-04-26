@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.utils;
+package cat.nyaa.infiniteinfernal.utils.correction;
 
 import cat.nyaa.infiniteinfernal.configs.IllegalConfigException;
 import org.bukkit.Bukkit;

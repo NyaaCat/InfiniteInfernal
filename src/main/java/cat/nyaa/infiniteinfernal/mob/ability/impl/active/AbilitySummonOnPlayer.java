@@ -2,6 +2,8 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.LocationUtil;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.Location;
@@ -36,10 +38,10 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
         }
         List<LivingEntity> candidate = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(range, range, range))
                 .collect(Collectors.toList());
-        LivingEntity victim = Utils.randomPick(candidate);
+        LivingEntity victim = RandomUtil.randomPick(candidate);
         if (victim == null)return;
         for (int i = 0; i < amount; i++) {
-            Location location = Utils.randomNonNullLocation(victim.getLocation(), 0, radius);
+            Location location = LocationUtil.randomNonNullLocation(victim.getLocation(), 0, radius);
             Entity entity = location.getWorld().spawnEntity(location, type);
             if (!nbt.equals("")){
                 NmsUtils.setEntityTag(entity,nbt);

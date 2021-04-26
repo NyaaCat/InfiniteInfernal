@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -37,7 +38,7 @@ public class AbilityStuck extends ActiveAbility {
 
         List<LivingEntity> candidates = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(20, 20, 20))
                 .collect(Collectors.toList());
-        LivingEntity victim = Utils.randomPick(candidates);
+        LivingEntity victim = RandomUtil.randomPick(candidates);
         if (victim == null)return;
         victim.removePotionEffect(PotionEffectType.SLOW);
         victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
