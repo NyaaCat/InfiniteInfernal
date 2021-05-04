@@ -4,12 +4,12 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class InfernalTickEvent extends Event{
+public class MobTickEvent extends Event{
     private static final HandlerList handler = new HandlerList();
     private boolean canceled = false;
     private IMob iMob;
 
-    public InfernalTickEvent(IMob iMob){
+    public MobTickEvent(IMob iMob){
         this.iMob = iMob;
     }
 

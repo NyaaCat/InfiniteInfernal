@@ -5,12 +5,12 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class InfernalSpawnEvent extends Event implements Cancellable {
+public class MobSpawnEvent extends Event implements Cancellable {
     private final IMob iMob;
     private boolean canceled = false;
     public static final HandlerList handlerList = new HandlerList();
 
-    public InfernalSpawnEvent(IMob iMob) {
+    public MobSpawnEvent(IMob iMob) {
         this.iMob = iMob;
     }
 

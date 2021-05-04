@@ -7,7 +7,7 @@ import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
-import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
+import cat.nyaa.infiniteinfernal.event.MobSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
@@ -307,7 +307,7 @@ public class CustomMob implements IMob {
         }
         entity.setHealth(getMaxHealth());
         createBossbar(entity);
-        InfernalSpawnEvent event = new InfernalSpawnEvent(this);
+        MobSpawnEvent event = new MobSpawnEvent(this);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             MobManager.instance().removeMob(this, false);

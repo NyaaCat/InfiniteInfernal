@@ -3,19 +3,20 @@ package cat.nyaa.infiniteinfernal.event.handler;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.LootDropEvent;
 import cat.nyaa.infiniteinfernal.event.MobNearDeathEvent;
+import cat.nyaa.infiniteinfernal.event.MobSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.mob.ability.*;
+import cat.nyaa.infiniteinfernal.mob.ability.AbilityDeath;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
 import cat.nyaa.infiniteinfernal.mob.ability.impl.active.AbilityProjectile;
 import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.controller.FirenlyFireControler;
-import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.context.Context;
 import cat.nyaa.infiniteinfernal.utils.context.ContextKeys;
@@ -39,7 +40,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MainEventHandler implements Listener {
@@ -132,17 +132,8 @@ public class MainEventHandler implements Listener {
 
             List<IAbilitySet> abilities = iMob.getAbilities();
 
-            IAbilitySet triggeredAbilitySet = RandomUtil.weightedRandomPick(abilities.stream()
-                    .filter(IAbilitySet::containsPassive)
-                    .collect(Collectors.toList()));
+            iMob.triggerAbility(Triggers.HURT, event);
 
-            if (triggeredAbilitySet != null) {
-                if (triggeredAbilitySet.containsDummy()) return;
-                List<AbilityHurt> abilitiesInSet = triggeredAbilitySet.getAbilitiesInSet(AbilityHurt.class);
-                if (!abilitiesInSet.isEmpty()) {
-                    abilitiesInSet.forEach(abilityHurt -> abilityHurt.onHurt(iMob, event));
-                }
-            }
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
                 callNearDeathEvent(event, iMob);
             }
@@ -181,23 +172,8 @@ public class MainEventHandler implements Listener {
             event.setDamage(Math.max(0, origDamage - resist));
             iMob.setLastDamageCause(event);
 
-            IAbilitySet triggeredAbilitySet = RandomUtil.weightedRandomPick(abilities.stream()
-                    .filter(IAbilitySet::containsPassive)
-                    .collect(Collectors.toList()));
+            iMob.triggerAbility(Triggers.HURT, event);
 
-            boolean hurtByPlayer = event.getDamager() instanceof Player;
-
-            if (triggeredAbilitySet != null) {
-                if (triggeredAbilitySet.containsDummy()) return;
-                List<AbilityHurt> abilitiesInSet = triggeredAbilitySet.getAbilitiesInSet(AbilityHurt.class);
-                if (!abilitiesInSet.isEmpty()) {
-                    if (!hurtByPlayer) {
-                        abilitiesInSet.forEach(abilityHurt -> abilityHurt.onHurtByNonPlayer(iMob, event));
-                    } else {
-                        abilitiesInSet.forEach(abilityHurt -> abilityHurt.onHurtByPlayer(iMob, event));
-                    }
-                }
-            }
             if (event.getFinalDamage() > iMob.getEntity().getHealth()) {
                 callNearDeathEvent(event, iMob);
             }
@@ -262,18 +238,11 @@ public class MainEventHandler implements Listener {
         }
 
         if (iMob == null) return;
-        IAbilitySet iAbilitySet = RandomUtil.weightedRandomPick(iMob.getAbilities().stream()
-                .filter(IAbilitySet::containsPassive)
-                .collect(Collectors.toList()));
 
-        if (iAbilitySet == null) return;
-        if (iAbilitySet.containsDummy()) return;
         if (Context.instance().getDouble(iMob.getEntity().getUniqueId(), ContextKeys.DAMAGE_ATTACK_ABILITY) != null) {
             return;
         }
-        List<AbilityAttack> attackAbilities = iAbilitySet.getAbilitiesInSet(AbilityAttack.class);
-        if (attackAbilities.isEmpty()) return;
-        attackAbilities.forEach(abilityAttack -> abilityAttack.onAttack(iMob, ((LivingEntity) ev.getEntity())));
+        iMob.triggerAbility(Triggers.ATTACK, ev);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -303,30 +272,16 @@ public class MainEventHandler implements Listener {
         World world = ev.getMob().getEntity().getWorld();
         if (!enabledInWorld(world))return;
 
-        List<IAbilitySet> abilities = ev.getMob().getAbilities();
-        if (abilities.isEmpty()) return;
-        abilities.forEach(iAbilitySet -> {
-            List<AbilityNearDeath> abilitiesInSet = iAbilitySet.getAbilitiesInSet(AbilityNearDeath.class);
-            if (abilitiesInSet.isEmpty()) return;
-            abilitiesInSet.forEach(abilityNearDeath -> abilityNearDeath.onDeath(ev.getMob(), ev));
-        });
+        ev.getMob().triggerAllAbility(Triggers.NEARDEATH, ev);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInfMobSpawn(InfernalSpawnEvent ev) {
+    public void onInfMobSpawn(MobSpawnEvent ev) {
         World world = ev.getIMob().getEntity().getWorld();
         if (!enabledInWorld(world))return;
 
         IMob iMob = ev.getIMob();
-        List<IAbilitySet> abilities = iMob.getAbilities();
-        if (!abilities.isEmpty()) {
-            abilities.forEach(iAbilitySet -> {
-                List<AbilitySpawn> spawnAbilities = iAbilitySet.getAbilitiesInSet(AbilitySpawn.class);
-                if (!spawnAbilities.isEmpty()) {
-                    spawnAbilities.forEach(abilitySpawn -> abilitySpawn.onSpawn(iMob));
-                }
-            });
-        }
+        iMob.triggerAllAbility(Triggers.SPAWN, ev);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

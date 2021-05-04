@@ -1,8 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import org.bukkit.Location;
-import org.bukkit.util.Vector;
 
 public class AbilityDummy implements IAbility {
 
@@ -14,7 +13,7 @@ public class AbilityDummy implements IAbility {
     }
 
     @Override
-    public void fire(IMob mob, Location targetLocation, Vector range) {
+    public void fire(IMob mob, MobCastEvent event) {
 
     }
 }

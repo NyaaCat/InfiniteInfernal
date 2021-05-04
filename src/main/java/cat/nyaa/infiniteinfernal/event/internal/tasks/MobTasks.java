@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal.event.internal.tasks;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.event.InfernalTickEvent;
+import cat.nyaa.infiniteinfernal.event.MobTickEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.hook.HookUtil;
@@ -65,7 +65,7 @@ public class MobTasks extends BukkitRunnable {
                 if (mobEffectQueue.isEmpty()) return;
                 IMob iMob = mobEffectQueue.poll();
 
-                InfernalTickEvent event = new InfernalTickEvent(iMob);
+                MobTickEvent event = new MobTickEvent(iMob);
                 Bukkit.getPluginManager().callEvent(event);
                 if (event.isCanceled()){
                     continue;

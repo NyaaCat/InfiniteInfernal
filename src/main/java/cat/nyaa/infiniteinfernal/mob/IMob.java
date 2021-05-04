@@ -44,7 +44,7 @@ public interface IMob {
     void retarget(LivingEntity entity);
     void tweakHealth();
 
-    default <T, R, Evt extends Event> void triggerAbility(IMob iMob, Trigger<T, R, Evt> trigger, Evt event) {
+    default <T, R, Evt extends Event> void triggerAbility(Trigger<T, R, Evt> trigger, Evt event) {
         Class<?> abilityCls = trigger.getInterfaceType();
 
         List<IAbilitySet> available = this.getAbilities().stream()
@@ -56,7 +56,20 @@ public interface IMob {
         }
         iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
                 .map(iAbility -> ((T) iAbility))
-                .forEach(iAbility -> trigger.trigger(iMob, iAbility, event));
+                .forEach(iAbility -> trigger.trigger(this, iAbility, event));
+    }
+
+    default <T, R, Evt extends Event> void triggerAllAbility(Trigger<T, R, Evt> trigger, Evt event){
+        Class<?> abilityCls = trigger.getInterfaceType();
+
+        List<IAbilitySet> available = this.getAbilities().stream()
+                .filter(iAbilitySet -> iAbilitySet.containsClass(abilityCls))
+                .collect(Collectors.toList());
+        available.stream().forEach(iAbilitySet -> {
+            iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
+                    .map(iAbility -> ((T) iAbility))
+                    .forEach(iAbility -> trigger.trigger(this, iAbility, event));
+        })
     }
 
     Map<LivingEntity, Aggro> getNonPlayerTargets();
