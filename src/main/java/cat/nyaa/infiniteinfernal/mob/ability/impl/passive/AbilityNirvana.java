@@ -1,10 +1,10 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobNearDeathEvent;
+import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityNearDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
-import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
-import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -33,7 +33,7 @@ public class AbilityNirvana extends AbilityPassive implements AbilityNearDeath {
     }
 
     @Override
-    public void onDeath(IMob iMob, IMobNearDeathEvent mobNearDeathEvent) {
+    public void onDeath(IMob iMob, MobNearDeathEvent mobNearDeathEvent) {
         if (tempLives > 0) {
             mobNearDeathEvent.setCanceled(true);
             respawn(iMob);

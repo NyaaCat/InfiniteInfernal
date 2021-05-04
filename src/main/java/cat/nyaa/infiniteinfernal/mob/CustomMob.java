@@ -3,22 +3,21 @@ package cat.nyaa.infiniteinfernal.mob;
 import cat.nyaa.infiniteinfernal.Config;
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityActive;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
-import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
-import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
-import cat.nyaa.infiniteinfernal.mob.controller.InfAggroController;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
+import cat.nyaa.infiniteinfernal.mob.controller.InfAggroController;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.correction.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.correction.ICorrector;
-import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.hook.Hook;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.NmsUtils;
@@ -108,14 +107,7 @@ public class CustomMob implements IMob {
         List<IAbilitySet> abilities = this.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
                 .collect(Collectors.toList());
-        IAbilitySet iAbilitySet = RandomUtil.weightedRandomPick(abilities);
-        if (iAbilitySet == null) {
-            return;
-        }
-        iAbilitySet.getAbilitiesInSet().stream()
-                .filter(iAbility -> iAbility instanceof AbilityActive)
-                .map(iAbility -> ((AbilityActive) iAbility))
-                .forEach(abilityTick -> abilityTick.active(this));
+
     }
 
     @Hook("mobTick")

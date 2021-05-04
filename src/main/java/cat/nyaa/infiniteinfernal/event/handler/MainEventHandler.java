@@ -2,23 +2,23 @@ package cat.nyaa.infiniteinfernal.event.handler;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.mob.ability.*;
-import cat.nyaa.infiniteinfernal.mob.ability.impl.active.AbilityProjectile;
 import cat.nyaa.infiniteinfernal.configs.LevelConfig;
-import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
-import cat.nyaa.infiniteinfernal.mob.controller.FirenlyFireControler;
-import cat.nyaa.infiniteinfernal.event.IMobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.InfernalSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.LootDropEvent;
+import cat.nyaa.infiniteinfernal.event.MobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.mob.ability.*;
+import cat.nyaa.infiniteinfernal.mob.ability.impl.active.AbilityProjectile;
+import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
+import cat.nyaa.infiniteinfernal.mob.controller.FirenlyFireControler;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
+import cat.nyaa.infiniteinfernal.utils.Utils;
 import cat.nyaa.infiniteinfernal.utils.context.Context;
 import cat.nyaa.infiniteinfernal.utils.context.ContextKeys;
-import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
@@ -153,7 +153,7 @@ public class MainEventHandler implements Listener {
     }
 
     private void callNearDeathEvent(EntityDamageEvent event, IMob iMob) {
-        IMobNearDeathEvent iMobNearDeathEvent = new IMobNearDeathEvent(iMob, iMob.getEntity());
+        MobNearDeathEvent iMobNearDeathEvent = new MobNearDeathEvent(iMob, iMob.getEntity());
         Bukkit.getPluginManager().callEvent(iMobNearDeathEvent);
         if (iMobNearDeathEvent.isCanceled()) {
             event.setDamage(0);
@@ -299,7 +299,7 @@ public class MainEventHandler implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onIMobNearDeath(IMobNearDeathEvent ev) {
+    public void onIMobNearDeath(MobNearDeathEvent ev) {
         World world = ev.getMob().getEntity().getWorld();
         if (!enabledInWorld(world))return;
 

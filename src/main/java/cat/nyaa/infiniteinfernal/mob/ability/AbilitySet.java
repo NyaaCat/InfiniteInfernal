@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 public class AbilitySet implements IAbilitySet {
     private List<IAbility> abilities;
     private int weight;
+    public String trigger;
+    public TriggeringMode triggeringMode;
+    //todo add possibility and cooldown
 
     public AbilitySet(AbilitySetConfig config){
         weight = config.weight;
@@ -32,6 +35,8 @@ public class AbilitySet implements IAbilitySet {
                 e.printStackTrace();
             }
         });
+        this.trigger = config.trigger;
+        this.triggeringMode = config.triggeringMode;
     }
 
     @Override
@@ -43,6 +48,11 @@ public class AbilitySet implements IAbilitySet {
     public <T> List<T> getAbilitiesInSet(Class<T> abilityClass) {
         return abilities.stream().filter(iAbility -> abilityClass.isAssignableFrom(iAbility.getClass()))
                 .map(iAbility -> ((T) iAbility)).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean containsClass(Class<?> cls) {
+        return abilities.stream().anyMatch(iAbility -> cls.isAssignableFrom(iAbility.getClass()));
     }
 
     @Override

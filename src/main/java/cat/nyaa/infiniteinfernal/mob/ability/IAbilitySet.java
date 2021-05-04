@@ -1,6 +1,5 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
-import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Weightable;
 
 import java.util.List;
