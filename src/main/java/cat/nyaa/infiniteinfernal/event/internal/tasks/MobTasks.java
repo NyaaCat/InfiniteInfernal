@@ -1,9 +1,11 @@
 package cat.nyaa.infiniteinfernal.event.internal.tasks;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.InfernalTickEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.hook.HookUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -63,6 +65,11 @@ public class MobTasks extends BukkitRunnable {
                 if (mobEffectQueue.isEmpty()) return;
                 IMob iMob = mobEffectQueue.poll();
 
+                InfernalTickEvent event = new InfernalTickEvent(iMob);
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCanceled()){
+                    continue;
+                }
                 mobEffect(iMob);
             }
         }
