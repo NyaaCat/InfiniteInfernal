@@ -88,6 +88,7 @@ public class MainEventHandler implements Listener {
             event.setCancelled(true);
         }
     }
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onDot(EntityDamageEvent event) {
         World world = event.getEntity().getWorld();
@@ -179,7 +180,6 @@ public class MainEventHandler implements Listener {
             double resist = origDamage * (damageResist / 100d);
             event.setDamage(Math.max(0, origDamage - resist));
             iMob.setLastDamageCause(event);
-
 
             IAbilitySet triggeredAbilitySet = RandomUtil.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)

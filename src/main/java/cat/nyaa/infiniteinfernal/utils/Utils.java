@@ -22,6 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -288,5 +289,15 @@ public class Utils {
     public static List<String> filtered(Arguments arguments, List<String> completeStr) {
         String next = arguments.at(arguments.length() - 1);
         return completeStr.stream().filter(s -> s.startsWith(next)).collect(Collectors.toList());
+    }
+
+    public static Function<Location, Double> getDefaultAOEDamageFactor(Location targetLocation) {
+        return location -> {
+            if (location.getWorld() == null || location.getWorld().equals(targetLocation.getWorld())) {
+                return 1d;
+            }
+            double factor = 1 - Math.pow(location.distance(targetLocation), 2);
+            return Math.max(factor, 0);
+        };
     }
 }

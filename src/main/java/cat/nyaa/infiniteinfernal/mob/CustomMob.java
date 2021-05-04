@@ -104,7 +104,7 @@ public class CustomMob implements IMob {
         return true;
     }
 
-    protected void triggerAbility() {
+    protected void triggerActiveAbility() {
         List<IAbilitySet> abilities = this.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
                 .collect(Collectors.toList());
@@ -123,7 +123,7 @@ public class CustomMob implements IMob {
         if (!checkAbility()){
             return;
         }
-        this.triggerAbility();
+        this.triggerActiveAbility();
     }
 
     @Hook("mobTick")
