@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 public class Triggers {
-    public static final Trigger<AbilityActive, Void, MobTickEvent> ACTIVE = new TriggerActive();
-    public static final Trigger<AbilityAttack, Void, EntityDamageByEntityEvent> ATTACK = new TriggerAttack();
-    public static final Trigger<AbilityDeath, Void, EntityDeathEvent> DEATH = new TriggerDeath();
-    public static final Trigger<AbilityHurt, Void, EntityDamageEvent> HURT = new TriggerHurt();
-    public static final Trigger<AbilityLocation, Void, MobCastEvent> LOCATION = new TriggerLocation();
-    public static final Trigger<AbilitySpawn, Void, MobSpawnEvent> SPAWN = new TriggerSpawn();
-    public static final Trigger<AbilityNearDeath, Void, MobNearDeathEvent> NEARDEATH = new TriggerNeardeath();
+    public static final Trigger<AbilityActive, Void, MobTickEvent> ACTIVE = new TriggerActive("ACTIVE");
+    public static final Trigger<AbilityAttack, Void, EntityDamageByEntityEvent> ATTACK = new TriggerAttack("ATTACK");
+    public static final Trigger<AbilityDeath, Void, EntityDeathEvent> DEATH = new TriggerDeath("DEATH");
+    public static final Trigger<AbilityHurt, Void, EntityDamageEvent> HURT = new TriggerHurt("HURT");
+    public static final Trigger<AbilityLocation, Void, MobCastEvent> LOCATION = new TriggerLocation("LOCATION");
+    public static final Trigger<AbilitySpawn, Void, MobSpawnEvent> SPAWN = new TriggerSpawn("SPAWN");
+    public static final Trigger<AbilityNearDeath, Void, MobNearDeathEvent> NEARDEATH = new TriggerNeardeath("NEARDEATH");
 
     public static Map<String, Trigger<?,?,?>> triggerMap = new HashMap<>();
 
@@ -33,20 +33,20 @@ public class Triggers {
     }
 
     public static void registerInternalTriggerMap(){
-        triggerMap.put("ACTIVE", ACTIVE);
-        triggerMap.put("ATTACK", ATTACK);
-        triggerMap.put("DEATH", DEATH);
-        triggerMap.put("HURT", HURT);
-        triggerMap.put("LOCATION", LOCATION);
-        triggerMap.put("SPAWN", SPAWN);
-        triggerMap.put("NEARDEATH", NEARDEATH);
-        protectedTriggers.add("ACTIVE");
-        protectedTriggers.add("ATTACK");
-        protectedTriggers.add("DEATH");
-        protectedTriggers.add("HURT");
-        protectedTriggers.add("LOCATION");
-        protectedTriggers.add("SPAWN");
-        protectedTriggers.add("NEARDEATH");
+        triggerMap.put(ACTIVE.getName(), ACTIVE);
+        triggerMap.put(ATTACK.getName(), ATTACK);
+        triggerMap.put(DEATH.getName(), DEATH);
+        triggerMap.put(HURT.getName(), HURT);
+        triggerMap.put(LOCATION.getName(), LOCATION);
+        triggerMap.put(SPAWN.getName(), SPAWN);
+        triggerMap.put(NEARDEATH.getName(), NEARDEATH);
+        protectedTriggers.add(ACTIVE.getName());
+        protectedTriggers.add(ATTACK.getName());
+        protectedTriggers.add(DEATH.getName());
+        protectedTriggers.add(HURT.getName());
+        protectedTriggers.add(LOCATION.getName());
+        protectedTriggers.add(SPAWN.getName());
+        protectedTriggers.add(NEARDEATH.getName());
     }
 
     public static Trigger<?, ?, ?> getTrigger(String triggerName) {

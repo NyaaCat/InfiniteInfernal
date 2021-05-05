@@ -8,6 +8,10 @@ import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
 import java.util.Optional;
 
 public class TriggerActive extends Trigger<AbilityActive, Void, MobTickEvent> {
+    public TriggerActive(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob mob, AbilityActive ability, MobTickEvent event) {
         ability.active(mob);

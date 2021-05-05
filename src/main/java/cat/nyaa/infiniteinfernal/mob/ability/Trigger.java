@@ -4,8 +4,18 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 
 import java.util.Optional;
 
-public abstract class Trigger<T, R, Evt> {
-    public abstract Optional<R> trigger(IMob iMob, T ability, Evt event);
+public abstract class Trigger<AbilityImpl, R, Evt> {
+    private String name;
 
-    public abstract Class<T> getInterfaceType();
+    public Trigger(String name){
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public abstract Optional<R> trigger(IMob iMob, AbilityImpl ability, Evt event);
+
+    public abstract Class<AbilityImpl> getInterfaceType();
 }

@@ -12,6 +12,7 @@ import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
 import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
 import cat.nyaa.infiniteinfernal.mob.controller.InfAggroController;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
@@ -105,7 +106,7 @@ public class CustomMob implements IMob {
 
     protected void triggerActiveAbility() {
         List<IAbilitySet> abilities = this.getAbilities().stream()
-                .filter(IAbilitySet::containsActive)
+                .filter(iAbilitySet -> iAbilitySet.hasTrigger(Triggers.ACTIVE))
                 .collect(Collectors.toList());
 
     }

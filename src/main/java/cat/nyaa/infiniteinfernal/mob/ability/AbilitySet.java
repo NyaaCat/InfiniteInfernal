@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class AbilitySet implements IAbilitySet {
     private List<IAbility> abilities;
     private int weight;
-    public String trigger;
+    public List<String> trigger;
     public TriggeringMode triggeringMode;
     //todo add possibility and cooldown
 
@@ -56,18 +56,8 @@ public class AbilitySet implements IAbilitySet {
     }
 
     @Override
-    public boolean containsActive() {
-        return abilities.stream().anyMatch(iAbility -> AbilityActive.class.isAssignableFrom(iAbility.getClass()));
-    }
-
-    @Override
-    public boolean containsPassive() {
-        return abilities.stream().anyMatch(iAbility -> AbilityPassive.class.isAssignableFrom(iAbility.getClass()) || AbilityAttack.class.isAssignableFrom(iAbility.getClass()));
-    }
-
-    @Override
-    public boolean containsDummy() {
-        return abilities.stream().anyMatch(iAbility -> AbilityDummy.class.isAssignableFrom(iAbility.getClass()));
+    public boolean hasTrigger(Trigger trigger) {
+        return false;
     }
 
     @Override

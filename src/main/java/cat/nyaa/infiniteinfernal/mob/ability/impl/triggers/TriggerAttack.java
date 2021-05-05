@@ -10,6 +10,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import java.util.Optional;
 
 public class TriggerAttack extends Trigger<AbilityAttack, Void, EntityDamageByEntityEvent> {
+    public TriggerAttack(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob iMob, AbilityAttack ability, EntityDamageByEntityEvent event) {
         final Entity entity = event.getEntity();

@@ -5,9 +5,7 @@ import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.TriggeringMode;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AbilitySetConfig extends NamedFileConfig {
     private InfPlugin plugin;
@@ -21,7 +19,7 @@ public class AbilitySetConfig extends NamedFileConfig {
     @Serializable
     public int weight = 10;
     @Serializable(name = "trigger")
-    public String trigger = "passive";
+    public String trigger = "ACTIVE";
     @Serializable(name = "triggeringMode")
     public TriggeringMode triggeringMode = TriggeringMode.RANDOM;
 
@@ -31,7 +29,39 @@ public class AbilitySetConfig extends NamedFileConfig {
         ConfigurationSection abilities = config.getConfigurationSection("abilities");
         Set<String> keys = abilities.getKeys(false);
         keys.forEach(s -> {
+            Class<? extends IAbility> abilityClass = getAbilityClass(s);
+            abiliti
+        });
+    }
 
+    private static final List<Character> digits = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+    private Class<? extends IAbility> getAbilityClass(String s) {
+        String className;
+        final int splitPoint = s.lastIndexOf("-");
+        if (splitPoint == -1){
+            s = stripDigits(s);
+            className = s;
+        }else {
+            className = s.substring(0, splitPoint);
+        }
+        String abilityName = Character.toUpperCase(className.charAt(0)) + className.substring(1).toLowerCase();
+
+    }
+
+    private String stripDigits(String s) {
+        while (digits.contains(s.charAt(s.length()-1))){
+            s = s.substring(0, s.length()-1);
+        }
+        return s;
+    }
+
+    @Override
+    public void serialize(ConfigurationSection config) {
+        super.serialize(config);
+        ConfigurationSection aSec = config.createSection("abilities");
+        abilities.forEach((name, ability) -> {
+            ConfigurationSection bSec = aSec.createSection(name);
+            ability.serialize(bSec);
         });
     }
 

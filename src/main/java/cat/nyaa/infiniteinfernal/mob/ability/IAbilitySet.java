@@ -9,7 +9,6 @@ public interface IAbilitySet extends Weightable {
     <T> List<T> getAbilitiesInSet(Class<T> abilityClass);
 
     boolean containsClass(Class<?> cls);
-    boolean containsActive();
-    boolean containsPassive();
-    boolean containsDummy();
+
+    boolean hasTrigger(Trigger trigger);
 }

@@ -8,6 +8,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import java.util.Optional;
 
 public class TriggerDeath extends Trigger<AbilityDeath, Void, EntityDeathEvent> {
+    public TriggerDeath(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob iMob, AbilityDeath ability, EntityDeathEvent event) {
         ability.onMobDeath(iMob, event);

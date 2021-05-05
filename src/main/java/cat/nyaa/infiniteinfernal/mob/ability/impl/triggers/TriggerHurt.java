@@ -14,6 +14,10 @@ import org.bukkit.projectiles.ProjectileSource;
 import java.util.Optional;
 
 public class TriggerHurt extends Trigger<AbilityHurt, Void, EntityDamageEvent> {
+    public TriggerHurt(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob iMob, AbilityHurt ability, EntityDamageEvent event) {
         if (event instanceof EntityDamageByEntityEvent){

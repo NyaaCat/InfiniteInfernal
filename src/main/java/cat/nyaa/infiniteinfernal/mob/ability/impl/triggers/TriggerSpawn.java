@@ -8,6 +8,10 @@ import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
 import java.util.Optional;
 
 public class TriggerSpawn extends Trigger<AbilitySpawn, Void, MobSpawnEvent> {
+    public TriggerSpawn(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob iMob, AbilitySpawn ability, MobSpawnEvent event) {
         ability.onSpawn(iMob);

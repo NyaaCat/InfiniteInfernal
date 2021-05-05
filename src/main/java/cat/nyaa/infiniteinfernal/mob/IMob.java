@@ -62,6 +62,7 @@ public interface IMob {
     default <T, R, Evt extends Event> void triggerAllAbility(Trigger<T, R, Evt> trigger, Evt event){
         Class<?> abilityCls = trigger.getInterfaceType();
 
+        //todo filter by trigger, not class
         List<IAbilitySet> available = this.getAbilities().stream()
                 .filter(iAbilitySet -> iAbilitySet.containsClass(abilityCls))
                 .collect(Collectors.toList());
@@ -69,7 +70,7 @@ public interface IMob {
             iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
                     .map(iAbility -> ((T) iAbility))
                     .forEach(iAbility -> trigger.trigger(this, iAbility, event));
-        })
+        });
     }
 
     Map<LivingEntity, Aggro> getNonPlayerTargets();

@@ -8,6 +8,10 @@ import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
 import java.util.Optional;
 
 public class TriggerLocation extends Trigger<AbilityLocation, Void, MobCastEvent> {
+    public TriggerLocation(String name) {
+        super(name);
+    }
+
     @Override
     public Optional<Void> trigger(IMob iMob, AbilityLocation ability, MobCastEvent event) {
         ability.fire(iMob, event);
