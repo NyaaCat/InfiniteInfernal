@@ -27,6 +27,11 @@ public class Triggers {
 
     private static final List<String> protectedTriggers = new ArrayList<>();
 
+    public static void reload(){
+        clear();
+        registerInternalTriggerMap();
+    }
+
     public static void clear(){
         triggerMap.clear();
         protectedTriggers.clear();

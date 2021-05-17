@@ -8,6 +8,7 @@ import cat.nyaa.infiniteinfernal.commands.ImiCommands;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.event.internal.MainLooper;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityManager;
+import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
 import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.controller.ISpawnControler;
 import cat.nyaa.infiniteinfernal.mob.controller.InfSpawnControler;
@@ -114,6 +115,8 @@ public class InfPlugin extends JavaPlugin {
         UiManager.getInstance();
         MobManager.instance().initMobs();
         Database instance = Database.getInstance();
+        AbilityManager.initPrototypeMap();
+        Triggers.reload();
         instance.load();
         try {
             instance.init();
@@ -132,6 +135,7 @@ public class InfPlugin extends JavaPlugin {
         LootManager.instance().load();
         MainLooper.start();
         AbilityManager.initPrototypeMap();
+        Triggers.reload();
 
         mobManager.load();
         broadcastManager.load();
