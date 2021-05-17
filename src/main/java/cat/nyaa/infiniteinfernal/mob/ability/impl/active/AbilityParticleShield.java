@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityHurt;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityHurt;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;

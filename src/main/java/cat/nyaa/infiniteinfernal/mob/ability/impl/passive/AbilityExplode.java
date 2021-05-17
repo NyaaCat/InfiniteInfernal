@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityDeath;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.Location;

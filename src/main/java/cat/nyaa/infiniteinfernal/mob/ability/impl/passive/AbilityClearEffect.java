@@ -1,10 +1,8 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityAttack;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityAttack;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
-import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
-import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;

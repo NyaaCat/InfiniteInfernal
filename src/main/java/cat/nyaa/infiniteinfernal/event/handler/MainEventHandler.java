@@ -11,7 +11,7 @@ import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityDeath;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
 import cat.nyaa.infiniteinfernal.mob.ability.impl.active.AbilityProjectile;

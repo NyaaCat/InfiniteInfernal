@@ -1,7 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.triggers;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityDeath;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
 import org.bukkit.event.entity.EntityDeathEvent;
 

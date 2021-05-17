@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.event.MobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.event.MobSpawnEvent;
 import cat.nyaa.infiniteinfernal.event.MobTickEvent;
+import cat.nyaa.infiniteinfernal.mob.ability.api.*;
 import cat.nyaa.infiniteinfernal.mob.ability.impl.triggers.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;

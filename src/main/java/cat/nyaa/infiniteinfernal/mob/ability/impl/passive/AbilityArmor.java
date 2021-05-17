@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
-import cat.nyaa.infiniteinfernal.mob.ability.AbilitySpawn;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilitySpawn;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;

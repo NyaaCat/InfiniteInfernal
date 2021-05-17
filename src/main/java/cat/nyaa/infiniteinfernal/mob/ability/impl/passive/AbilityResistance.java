@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
-import cat.nyaa.infiniteinfernal.mob.ability.AbilityHurt;
+import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityHurt;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import org.bukkit.event.entity.EntityDamageEvent;
