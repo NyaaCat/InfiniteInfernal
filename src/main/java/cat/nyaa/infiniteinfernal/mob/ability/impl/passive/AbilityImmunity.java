@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
@@ -139,5 +140,10 @@ public class AbilityImmunity extends AbilityPassive implements AbilitySpawn, Abi
         if (listener != null) {
             affected.remove(iMob);
         }
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        onSpawn(mob);
     }
 }

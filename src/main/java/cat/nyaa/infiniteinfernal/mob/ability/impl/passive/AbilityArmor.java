@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilitySpawn;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -52,5 +53,10 @@ public class AbilityArmor extends AbilityPassive implements AbilitySpawn {
     @Override
     public String getName() {
         return "Armor";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        onSpawn(mob);
     }
 }

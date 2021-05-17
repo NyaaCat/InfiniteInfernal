@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityAttack;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -9,7 +10,9 @@ import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -18,6 +21,7 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -136,5 +140,21 @@ public class AbilityClearEffect extends AbilityPassive implements AbilityAttack 
     @Override
     public String getName() {
         return "ClearEffect";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Location selectedLocation = event.getSelectedLocation();
+        Vector selectedVector = event.getSelectedVector();
+        double radius = selectedVector.length();
+        selectedLocation.getWorld().getNearbyEntities(selectedLocation, radius, radius, radius).stream()
+                .filter(entity -> {
+                    boolean isLiving = entity instanceof LivingEntity;
+                    return isLiving;
+                })
+                .map(entity -> ((LivingEntity) entity))
+                .forEach(entity -> {
+                    onAttack(mob, entity);
+                });
     }
 }
