@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityHurt;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -56,5 +57,9 @@ public class AbilityThorns extends AbilityPassive implements AbilityHurt {
     @Override
     public String getName() {
         return "Thorn";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
     }
 }

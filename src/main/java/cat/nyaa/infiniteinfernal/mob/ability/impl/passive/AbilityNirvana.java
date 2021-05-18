@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.event.MobNearDeathEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityNearDeath;
@@ -77,5 +78,10 @@ public class AbilityNirvana extends AbilityPassive implements AbilityNearDeath {
     @Override
     public String getName() {
         return "Nirvana";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+
     }
 }

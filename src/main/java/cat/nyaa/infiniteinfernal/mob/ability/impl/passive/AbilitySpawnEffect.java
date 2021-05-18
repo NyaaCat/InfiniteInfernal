@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.passive;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilitySpawn;
 import cat.nyaa.infiniteinfernal.mob.ability.BaseAbility;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
@@ -42,5 +43,10 @@ public class AbilitySpawnEffect extends BaseAbility implements AbilitySpawn {
     @Override
     public String getName() {
         return "SpawnEffect";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        onSpawn(mob);
     }
 }
