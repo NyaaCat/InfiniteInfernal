@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -20,5 +21,10 @@ public class AbilityPotionSelf extends ActiveAbility {
     @Override
     public String getName() {
         return "PotionSelf";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        active(mob);
     }
 }

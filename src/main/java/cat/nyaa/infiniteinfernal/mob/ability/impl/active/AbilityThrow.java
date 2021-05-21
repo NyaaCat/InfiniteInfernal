@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.nyaacore.utils.ReflectionUtils;
@@ -29,17 +30,14 @@ public class AbilityThrow extends ActiveAbility {
     public void active(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
         if (mobEntity instanceof Mob){
-            LivingEntity target = ((Mob) mobEntity).getTarget();
-            if (target != null){
-                summonEntity(target);
-            }
+            summonEntity(mobEntity);
         }
     }
 
     @SuppressWarnings("deprecation")
-    private void summonEntity(LivingEntity target) {
+    private void summonEntity(LivingEntity from) {
         try {
-            Location loc = target.getEyeLocation().clone();
+            Location loc = from.getEyeLocation().clone();
             Class craftWorld = ReflectionUtils.getOBCClass("CraftWorld");
             Method getHandleMethod = ReflectionUtils.getMethod(craftWorld, "getHandle");
             Object worldServer = getHandleMethod.invoke(loc.getWorld());
@@ -54,7 +52,7 @@ public class AbilityThrow extends ActiveAbility {
             Method spawnEntity = chunkRegionLoader.getMethod("a", nbtTagCompound, ReflectionUtils.getNMSClass("World"), double.class, double.class, double.class, boolean.class);
             Object nbt;
             try {
-                nbt = getTagFromJson.invoke(null, entityData.replaceAll("\\{player}", target.getName()).replaceAll("\\{playerUUID}", target.getUniqueId().toString()));
+                nbt = getTagFromJson.invoke(null, entityData.replaceAll("\\{player}", from.getName()).replaceAll("\\{playerUUID}", from.getUniqueId().toString()));
             } catch (Exception e) {
                 InfPlugin.plugin.getLogger().log(Level.WARNING, "wrong config", e);
                 return;
@@ -67,7 +65,7 @@ public class AbilityThrow extends ActiveAbility {
                 Entity e = Bukkit.getEntity(uuid);
                 if (e != null) {
                     if (e instanceof Projectile) {
-                        ((Projectile) e).setShooter(target);
+                        ((Projectile) e).setShooter(from);
                     }
                     e.setVelocity(loc.getDirection().multiply(speed));
                 }
@@ -80,5 +78,10 @@ public class AbilityThrow extends ActiveAbility {
     @Override
     public String getName() {
         return "Throw";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        active(mob);
     }
 }

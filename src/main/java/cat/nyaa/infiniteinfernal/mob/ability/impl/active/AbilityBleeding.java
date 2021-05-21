@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -19,25 +20,37 @@ public class AbilityBleeding extends ActiveAbility {
         int times = Math.min(1, duration / 20);
         Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(25, 25, 25))
                 .forEach(entity -> {
-                    AtomicInteger runTimes = new AtomicInteger(times);
-                    new BukkitRunnable(){
-                        @Override
-                        public void run() {
-                            try {
-                                if (iMob.getEntity().isDead() || runTimes.getAndAdd(1) >= times) {
-                                    this.cancel();
-                                }
-                                entity.damage(damage, iMob.getEntity());
-                            }catch (Exception ex){
-                                this.cancel();
-                            }
-                        }
-                    }.runTaskTimer(InfPlugin.plugin, 0, 20);
+                    makeBleed(iMob, times, entity);
                 });
+    }
+
+    private void makeBleed(IMob iMob, int times, org.bukkit.entity.LivingEntity entity) {
+        AtomicInteger runTimes = new AtomicInteger(times);
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                try {
+                    if (iMob.getEntity().isDead() || runTimes.getAndAdd(1) >= times) {
+                        this.cancel();
+                    }
+                    entity.damage(damage, iMob.getEntity());
+                }catch (Exception ex){
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(InfPlugin.plugin, 0, 20);
     }
 
     @Override
     public String getName() {
         return "Bleeding";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        int times = Math.min(1, duration / 20);
+        event.getSelectedEntities().forEach(livingEntity -> {
+            makeBleed(mob, times, livingEntity);
+        });
     }
 }

@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.I18n;
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
@@ -40,6 +41,10 @@ public class AbilityStuck extends ActiveAbility {
                 .collect(Collectors.toList());
         LivingEntity victim = RandomUtil.randomPick(candidates);
         if (victim == null)return;
+        affect(victim);
+    }
+
+    private void affect(LivingEntity victim) {
         victim.removePotionEffect(PotionEffectType.SLOW);
         victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
         victim.removePotionEffect(PotionEffectType.LEVITATION);
@@ -100,5 +105,10 @@ public class AbilityStuck extends ActiveAbility {
     @Override
     public String getName() {
         return "Stuck";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        event.getSelectedEntities().forEach(livingEntity -> affect(livingEntity));
     }
 }

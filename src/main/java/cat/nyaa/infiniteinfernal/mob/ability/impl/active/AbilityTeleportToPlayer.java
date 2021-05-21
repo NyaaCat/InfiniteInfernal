@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.LocationUtil;
@@ -56,5 +57,11 @@ public class AbilityTeleportToPlayer extends ActiveAbility {
     @Override
     public String getName() {
         return "TeleportToPlayer";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Location selectedLocation = event.getSelectedLocation();
+        teleport(mob.getEntity(), selectedLocation);
     }
 }

@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityHurt;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
@@ -55,6 +56,7 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
                 .cone(0)
                 .damage(0)
                 .ignoreWall(true)
+                .speed(20)
                 .build();
     }
 
@@ -159,5 +161,10 @@ public class AbilityParticleShield extends ActiveAbility implements AbilityHurt 
     @Override
     public String getName() {
         return "ParticleShield";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        active(mob);
     }
 }

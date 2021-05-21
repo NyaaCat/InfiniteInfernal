@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -79,5 +80,10 @@ public class AbilityClone extends ActiveAbility {
     @Override
     public String getName() {
         return "Clone";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        cloneMob(mob);
     }
 }

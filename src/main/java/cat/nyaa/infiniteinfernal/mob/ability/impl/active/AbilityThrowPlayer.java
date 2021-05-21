@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityAttack;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -65,5 +66,10 @@ public class AbilityThrowPlayer extends ActiveAbility implements AbilityAttack {
     @Override
     public String getName() {
         return "ThrowPlayer";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        event.getSelectedEntities().forEach(livingEntity -> launch(livingEntity, mob));
     }
 }

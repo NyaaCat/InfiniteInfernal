@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.configs.ParticleConfig;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -34,12 +35,21 @@ public class AbilitySkillEffect extends ActiveAbility {
     public void active(IMob iMob) {
         LivingEntity entity = iMob.getEntity();
         Location location = entity.getLocation();
-        World world = entity.getWorld();
+        fire(location);
+    }
+
+    private void fire(Location location) {
+        World world = location.getWorld();
         if (particleEnabled){
             world.spawnParticle(particle.type, location, particle.amount, particle.getOffsetX(), particle.getOffsetY(), particle.getOffsetZ(), particle.speed, Utils.parseExtraData(particle.extraData), particle.forced);
         }
         if (soundEnabled){
             world.playSound(location, sound, (float) volume, (float) pitch);
         }
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        fire(event.getSelectedLocation());
     }
 }

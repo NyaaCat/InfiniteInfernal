@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -25,17 +26,28 @@ public class AbilityAoePotion extends ActiveAbility {
         PotionEffectType effectType = PotionEffectType.getByName(this.effect);
         PotionEffect effect = effectType.createEffect(duration,amplifier);
         entityStream.forEach(livingEntity -> {
-            PotionEffect potionEffect = livingEntity.getPotionEffect(effectType);
-            if (potionEffect != null && potionEffect.getAmplifier()>amplifier){
-                return;
-            }
-            livingEntity.removePotionEffect(effectType);
-            livingEntity.addPotionEffect(effect, true);
+            affect(effectType, effect, livingEntity);
         });
+    }
+
+    private void affect(PotionEffectType effectType, PotionEffect effect, LivingEntity livingEntity) {
+        PotionEffect potionEffect = livingEntity.getPotionEffect(effectType);
+        if (potionEffect != null && potionEffect.getAmplifier()>amplifier){
+            return;
+        }
+        livingEntity.removePotionEffect(effectType);
+        livingEntity.addPotionEffect(effect, true);
     }
 
     @Override
     public String getName() {
         return "AoePotion";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        PotionEffectType effectType = PotionEffectType.getByName(this.effect);
+        PotionEffect effect = effectType.createEffect(duration,amplifier);
+        event.getSelectedEntities().forEach(livingEntity -> affect(effectType, effect, livingEntity));
     }
 }

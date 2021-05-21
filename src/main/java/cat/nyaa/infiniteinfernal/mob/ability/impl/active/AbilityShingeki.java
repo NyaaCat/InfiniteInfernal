@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.LocationUtil;
@@ -33,6 +34,13 @@ public class AbilityShingeki extends ActiveAbility {
 
     @Override
     public void active(IMob iMob) {
+        Queue<Location> locations = getDefaultLocations(iMob);
+
+        locations.forEach(location -> strike(location, iMob));
+    }
+
+    private Queue<Location> getDefaultLocations(IMob iMob) {
+        Queue<Location> locations = new LinkedList<>();
         Queue<Entity> queue = new LinkedList<>(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(30, 30, 30)).collect(Collectors.toList()));
 
         for (int i = 0; i < amount; i++) {
@@ -43,7 +51,7 @@ public class AbilityShingeki extends ActiveAbility {
                     i--;
                     continue;
                 }
-                strike(location, iMob);
+                locations.add(location);
             } else {
                 Location location = null;
                 for (int j = 0; j < 20; j++) {
@@ -55,13 +63,14 @@ public class AbilityShingeki extends ActiveAbility {
                 }
             }
         }
+        return locations;
     }
 
     private void strike(Location location, IMob iMob) {
         World world = location.getWorld();
 
-	Location bott = location.clone().add(0,0.5,0);
-	Location upper = location.clone().add(0,5.5,0);
+	    Location bott = location.clone().add(0,0.5,0);
+	    Location upper = location.clone().add(0,5.5,0);
 	
         showEffect(bott);
         showEffect(upper);
@@ -150,5 +159,13 @@ public class AbilityShingeki extends ActiveAbility {
     @Override
     public String getName() {
         return "Shingeki";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Queue<Location> defaultLocations = getDefaultLocations(mob);
+        defaultLocations.poll();
+        defaultLocations.offer(event.getSelectedLocation());
+        defaultLocations.forEach(location -> strike(location, mob));
     }
 }

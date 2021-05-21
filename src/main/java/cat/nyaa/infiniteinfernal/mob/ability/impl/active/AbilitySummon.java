@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.LocationUtil;
@@ -41,20 +42,30 @@ public class AbilitySummon extends ActiveAbility {
             if (location == null) {
                 return;
             }
-            Entity entity = location.getWorld().spawnEntity(location, type);
-            if (!nbt.equals("")){
-                NmsUtils.setEntityTag(entity,nbt);
-            }
-            LivingEntity target = iMob.getTarget();
-            if (target != null && entity instanceof Mob){
-                ((Mob) entity).setTarget(target);
-            }
+            summonOnLocation(iMob, location);
         }
         counter++;
+    }
+
+    private void summonOnLocation(IMob iMob, Location location) {
+        Entity entity = location.getWorld().spawnEntity(location, type);
+        if (!nbt.equals("")){
+            NmsUtils.setEntityTag(entity,nbt);
+        }
+        LivingEntity target = iMob.getTarget();
+        if (target != null && entity instanceof Mob){
+            ((Mob) entity).setTarget(target);
+        }
     }
 
     @Override
     public String getName() {
         return "Summon";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Location selectedLocation = event.getSelectedLocation();
+        summonOnLocation(mob, selectedLocation);
     }
 }

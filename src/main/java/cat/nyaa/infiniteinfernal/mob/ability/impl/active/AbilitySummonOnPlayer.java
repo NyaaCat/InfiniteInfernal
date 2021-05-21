@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.LocationUtil;
@@ -41,21 +42,34 @@ public class AbilitySummonOnPlayer extends ActiveAbility {
         LivingEntity victim = RandomUtil.randomPick(candidate);
         if (victim == null)return;
         for (int i = 0; i < amount; i++) {
-            Location location = LocationUtil.randomNonNullLocation(victim.getLocation(), 0, radius);
-            Entity entity = location.getWorld().spawnEntity(location, type);
-            if (!nbt.equals("")){
-                NmsUtils.setEntityTag(entity,nbt);
-            }
-            LivingEntity target = iMob.getTarget();
-            if (target != null && entity instanceof Mob){
-                ((Mob) entity).setTarget(target);
-            }
+            summonOnEntity(iMob, victim);
         }
         counter++;
+    }
+
+    private void summonOnEntity(IMob iMob, LivingEntity victim) {
+        Location location = LocationUtil.randomNonNullLocation(victim.getLocation(), 0, radius);
+        Entity entity = location.getWorld().spawnEntity(location, type);
+        if (!nbt.equals("")){
+            NmsUtils.setEntityTag(entity,nbt);
+        }
+        LivingEntity target = iMob.getTarget();
+        if (target != null && entity instanceof Mob){
+            ((Mob) entity).setTarget(target);
+        }
     }
 
     @Override
     public String getName() {
         return "SummonOnPlayer";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        event.getSelectedEntities().stream()
+                .limit(amount)
+                .forEach(livingEntity -> {
+                    summonOnEntity(mob, livingEntity);
+                });
     }
 }

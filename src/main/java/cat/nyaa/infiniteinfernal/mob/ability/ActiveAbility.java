@@ -25,11 +25,6 @@ public abstract class ActiveAbility extends BaseAbility implements AbilityActive
     }
 
     @Override
-    public void fire(IMob mob, MobCastEvent event) {
-        this.active(mob);
-    }
-
-    @Override
     public void onDeath(IMob iMob, MobNearDeathEvent mobNearDeathEvent) {
         this.active(iMob);
     }

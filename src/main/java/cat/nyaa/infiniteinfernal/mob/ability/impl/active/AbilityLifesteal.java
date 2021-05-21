@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import com.google.common.util.concurrent.AtomicDouble;
@@ -51,6 +52,11 @@ public class AbilityLifesteal extends ActiveAbility {
     @Override
     public String getName() {
         return "LifeSteal";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        event.getSelectedEntities().forEach(livingEntity -> fire(mob, livingEntity));
     }
 
     private class LifestealEffect extends BukkitRunnable {

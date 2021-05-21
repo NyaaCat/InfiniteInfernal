@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -59,6 +60,12 @@ public class AbilityFang extends ActiveAbility implements AbilityDeath {
         toRemove.forEach(uuid -> summoned.remove(uuid));
     }
 
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Location selectedLocation = event.getSelectedLocation();
+        summonToLocation(mob, mob.getEntity().getLocation(), selectedLocation);
+    }
+
     class EventListener implements Listener{
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         public void onDamage(EntityDamageByEntityEvent event){
@@ -111,6 +118,10 @@ public class AbilityFang extends ActiveAbility implements AbilityDeath {
         Location mobLoc = iMob.getEntity().getLocation();
         Location playerLoc = player.getLocation();
 
+        summonToLocation(iMob, mobLoc, playerLoc);
+    }
+
+    private void summonToLocation(IMob iMob, Location mobLoc, Location playerLoc) {
         Vector towards = getTowards(mobLoc, playerLoc, spawnAmount);
 
         for (int i = 0; i < spawnAmount; i++) {

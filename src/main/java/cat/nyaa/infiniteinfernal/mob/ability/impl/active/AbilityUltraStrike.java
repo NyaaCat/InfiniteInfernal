@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.mob.ability.impl.active;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.event.MobCastEvent;
 import cat.nyaa.infiniteinfernal.mob.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.LocationUtil;
@@ -33,6 +34,13 @@ public class AbilityUltraStrike extends ActiveAbility {
 
     @Override
     public void active(IMob iMob) {
+        Queue<Location> locations = getDefaultLocations(iMob);
+
+        locations.forEach(location -> summonUltraStrike(location, iMob));
+    }
+
+    private Queue<Location> getDefaultLocations(IMob iMob) {
+        Queue<Location> locations = new LinkedList<>();
         Queue<Entity> queue = new LinkedList<>(Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(nearbyRange, nearbyRange, nearbyRange)).collect(Collectors.toList()));
 
         for (int i = 0; i < amount; i++) {
@@ -43,11 +51,13 @@ public class AbilityUltraStrike extends ActiveAbility {
                     i--;
                     continue;
                 }
-                summonUltraStrike(location, iMob);
+                locations.add(location);
             } else {
-                summonUltraStrike(LocationUtil.randomNonNullLocation(iMob.getEntity().getLocation(), 0, nearbyRange), iMob);
+                Location location = LocationUtil.randomNonNullLocation(iMob.getEntity().getLocation(), 0, nearbyRange);
+                locations.add(location);
             }
         }
+        return locations;
     }
 
     private void summonUltraStrike(Location location, IMob iMob) {
@@ -110,5 +120,15 @@ public class AbilityUltraStrike extends ActiveAbility {
     @Override
     public String getName() {
         return "UltraStrike";
+    }
+
+    @Override
+    public void fire(IMob mob, MobCastEvent event) {
+        Queue<Location> defaultLocations = getDefaultLocations(mob);
+        defaultLocations.poll();
+        defaultLocations.offer(event.getSelectedLocation());
+        defaultLocations.forEach(location -> {
+            summonUltraStrike(location, mob);
+        });
     }
 }
