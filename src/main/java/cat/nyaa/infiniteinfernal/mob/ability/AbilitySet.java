@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class AbilitySet implements IAbilitySet {
                 e.printStackTrace();
             }
         });
-        this.trigger = config.trigger;
+        this.trigger = new ArrayList<>(Arrays.asList(config.trigger.split(",")));
         this.triggeringMode = config.triggeringMode;
     }
 

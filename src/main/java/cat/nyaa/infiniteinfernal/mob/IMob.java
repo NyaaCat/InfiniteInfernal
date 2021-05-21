@@ -1,7 +1,9 @@
 package cat.nyaa.infiniteinfernal.mob;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
+import cat.nyaa.infiniteinfernal.mob.ability.FlowCtlAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
 import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
@@ -11,7 +13,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,9 +58,34 @@ public interface IMob {
         if (iAbilitySet == null){
             return;
         }
-        iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
+        Iterator<T> iterator = iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
                 .map(iAbility -> ((T) iAbility))
-                .forEach(iAbility -> trigger.trigger(this, iAbility, event));
+                .iterator();
+
+        runAbilities(trigger, event, iterator);
+    }
+
+    default <T, R, Evt extends Event> void runAbilities(Trigger<T, R, Evt> trigger, Evt event, Iterator<T> iterator) {
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            if (next instanceof FlowCtlAbility){
+                FlowCtlAbility flowCtl = (FlowCtlAbility) next;
+                if (flowCtl.aborted()){
+                    return;
+                }
+                if (flowCtl.getFlowCtlDelay() > 0) {
+                    new BukkitRunnable(){
+                        @Override
+                        public void run() {
+                            runAbilities(trigger, event, iterator);
+                        }
+                    }.runTaskLater(InfPlugin.plugin, flowCtl.getFlowCtlDelay());
+                    return;
+                }
+
+            }
+            trigger.trigger(this, next, event);
+        }
     }
 
     default <T, R, Evt extends Event> void triggerAllAbility(Trigger<T, R, Evt> trigger, Evt event){

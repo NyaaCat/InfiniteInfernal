@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class BaseAbility implements IAbility {
+    private boolean aborted = false;
 
     protected List<LivingEntity> getNearbyEntities(IMob iMob, double radius){
         LivingEntity entity = iMob.getEntity();
@@ -29,5 +30,13 @@ public abstract class BaseAbility implements IAbility {
                 .map(entity1 -> ((Player) entity1))
                 .filter(Utils::validGamemode)
                 .collect(Collectors.toList());
+    }
+
+    public void abort(){
+        aborted = true;
+    }
+
+    public boolean aborted(){
+        return false;
     }
 }
