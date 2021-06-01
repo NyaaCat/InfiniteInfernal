@@ -1,6 +1,7 @@
 package cat.nyaa.infiniteinfernal.configs;
 
 import cat.nyaa.infiniteinfernal.InfPlugin;
+import cat.nyaa.infiniteinfernal.mob.ability.AbilityManager;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.TriggeringMode;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,13 +30,13 @@ public class AbilitySetConfig extends NamedFileConfig {
         ConfigurationSection abilities = config.getConfigurationSection("abilities");
         Set<String> keys = abilities.getKeys(false);
         keys.forEach(s -> {
-            Class<? extends IAbility> abilityClass = getAbilityClass(s);
-            abiliti
+            IAbility iAbility = newAbilityInstance(s);
+            this.abilities.put(s, iAbility);
         });
     }
 
     private static final List<Character> digits = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
-    private Class<? extends IAbility> getAbilityClass(String s) {
+    private IAbility newAbilityInstance(String s) {
         String className;
         final int splitPoint = s.lastIndexOf("-");
         if (splitPoint == -1){
@@ -45,7 +46,7 @@ public class AbilitySetConfig extends NamedFileConfig {
             className = s.substring(0, splitPoint);
         }
         String abilityName = Character.toUpperCase(className.charAt(0)) + className.substring(1).toLowerCase();
-
+        return AbilityManager.copyOf(abilityName);
     }
 
     private String stripDigits(String s) {
