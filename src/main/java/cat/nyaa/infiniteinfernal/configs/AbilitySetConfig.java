@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.configs;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityManager;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
-import cat.nyaa.infiniteinfernal.mob.ability.TriggeringMode;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.TriggeringMode;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.*;

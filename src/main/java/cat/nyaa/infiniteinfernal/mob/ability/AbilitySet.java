@@ -1,6 +1,8 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.TriggeringMode;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.lang.reflect.InvocationTargetException;

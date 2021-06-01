@@ -2,7 +2,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.triggers;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityAttack;
-import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;

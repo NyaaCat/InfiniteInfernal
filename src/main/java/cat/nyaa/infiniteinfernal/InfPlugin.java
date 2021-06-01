@@ -8,7 +8,7 @@ import cat.nyaa.infiniteinfernal.commands.ImiCommands;
 import cat.nyaa.infiniteinfernal.configs.MessageConfig;
 import cat.nyaa.infiniteinfernal.event.internal.MainLooper;
 import cat.nyaa.infiniteinfernal.mob.ability.AbilityManager;
-import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Triggers;
 import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.controller.ISpawnControler;
 import cat.nyaa.infiniteinfernal.mob.controller.InfSpawnControler;

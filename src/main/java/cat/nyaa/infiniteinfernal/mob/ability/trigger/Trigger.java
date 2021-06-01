@@ -1,4 +1,4 @@
-package cat.nyaa.infiniteinfernal.mob.ability;
+package cat.nyaa.infiniteinfernal.mob.ability.trigger;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
 

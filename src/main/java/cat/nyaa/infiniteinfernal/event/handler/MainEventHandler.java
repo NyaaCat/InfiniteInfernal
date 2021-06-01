@@ -13,7 +13,7 @@ import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilityDeath;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.mob.ability.Triggers;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Triggers;
 import cat.nyaa.infiniteinfernal.mob.ability.impl.active.AbilityProjectile;
 import cat.nyaa.infiniteinfernal.mob.bossbar.BossbarManager;
 import cat.nyaa.infiniteinfernal.mob.controller.FirenlyFireControler;

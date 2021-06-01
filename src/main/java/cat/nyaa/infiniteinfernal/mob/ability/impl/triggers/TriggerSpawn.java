@@ -3,7 +3,7 @@ package cat.nyaa.infiniteinfernal.mob.ability.impl.triggers;
 import cat.nyaa.infiniteinfernal.event.MobSpawnEvent;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.ability.api.AbilitySpawn;
-import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
 
 import java.util.Optional;
 

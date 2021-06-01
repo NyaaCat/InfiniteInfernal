@@ -1,5 +1,7 @@
-package cat.nyaa.infiniteinfernal.mob.ability;
+package cat.nyaa.infiniteinfernal.mob.ability.trigger;
 
+import cat.nyaa.infiniteinfernal.mob.ability.AbilitySet;
+import cat.nyaa.infiniteinfernal.mob.ability.IAbility;
 import org.bukkit.event.Event;
 
 import java.util.Queue;

@@ -5,7 +5,7 @@ import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
 import cat.nyaa.infiniteinfernal.mob.ability.FlowCtlAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
-import cat.nyaa.infiniteinfernal.mob.ability.Trigger;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
 import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import org.bukkit.boss.KeyedBossBar;

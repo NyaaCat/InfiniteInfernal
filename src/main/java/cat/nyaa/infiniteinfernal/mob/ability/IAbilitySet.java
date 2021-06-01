@@ -1,5 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
 import cat.nyaa.infiniteinfernal.utils.Weightable;
 
 import java.util.List;
