@@ -1,11 +1,10 @@
 package cat.nyaa.infiniteinfernal.mob;
 
-import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
-import cat.nyaa.infiniteinfernal.mob.ability.FlowCtlAbility;
 import cat.nyaa.infiniteinfernal.mob.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.Triggers;
 import cat.nyaa.infiniteinfernal.mob.controller.Aggro;
 import cat.nyaa.infiniteinfernal.utils.RandomUtil;
 import org.bukkit.boss.KeyedBossBar;
@@ -13,9 +12,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,39 +49,17 @@ public interface IMob {
         Class<?> abilityCls = trigger.getInterfaceType();
 
         List<IAbilitySet> available = this.getAbilities().stream()
-                .filter(iAbilitySet -> iAbilitySet.containsClass(abilityCls))
+                .filter(iAbilitySet -> iAbilitySet.containsClass(abilityCls) && iAbilitySet.checkConditions(this))
                 .collect(Collectors.toList());
         IAbilitySet iAbilitySet = RandomUtil.weightedRandomPick(available);
         if (iAbilitySet == null){
             return;
         }
-        Iterator<T> iterator = iAbilitySet.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
-                .map(iAbility -> ((T) iAbility))
-                .iterator();
-
-        runAbilities(trigger, event, iterator);
-    }
-
-    default <T, R, Evt extends Event> void runAbilities(Trigger<T, R, Evt> trigger, Evt event, Iterator<T> iterator) {
-        while (iterator.hasNext()) {
-            T next = iterator.next();
-            if (next instanceof FlowCtlAbility){
-                FlowCtlAbility flowCtl = (FlowCtlAbility) next;
-                if (flowCtl.aborted()){
-                    return;
-                }
-                if (flowCtl.getFlowCtlDelay() > 0) {
-                    new BukkitRunnable(){
-                        @Override
-                        public void run() {
-                            runAbilities(trigger, event, iterator);
-                        }
-                    }.runTaskLater(InfPlugin.plugin, flowCtl.getFlowCtlDelay());
-                    return;
-                }
-
-            }
-            trigger.trigger(this, next, event);
+        if (trigger.equals(Triggers.ACTIVE)){
+            //todo implement active mode
+            iAbilitySet.trigger(this, abilityCls, trigger, event);
+        }else {
+            iAbilitySet.trigger(this, abilityCls, trigger, event);
         }
     }
 

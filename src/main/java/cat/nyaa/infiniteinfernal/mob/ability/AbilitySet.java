@@ -1,17 +1,21 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
+import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.ability.api.ICondition;
 import cat.nyaa.infiniteinfernal.mob.ability.trigger.ActiveMode;
 import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.Event;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AbilitySet implements IAbilitySet {
-    private List<IAbility> abilities;
+    private final List<IAbility> abilities;
     private int weight;
     public List<String> trigger;
     public ActiveMode activeMode;
@@ -58,6 +62,11 @@ public class AbilitySet implements IAbilitySet {
     }
 
     @Override
+    public boolean checkConditions(IMob iMob) {
+        return conditions.values().stream().allMatch(condition -> condition.check(iMob));
+    }
+
+    @Override
     public boolean containsClass(Class<?> cls) {
         return abilities.stream().anyMatch(iAbility -> cls.isAssignableFrom(iAbility.getClass()));
     }
@@ -68,8 +77,35 @@ public class AbilitySet implements IAbilitySet {
     }
 
     @Override
-    public boolean hasCondition(String condition) {
-        return conditions.containsKey(condition);
+    public <R, T, Evt extends Event> void trigger(IMob iMob, Class<?> abilityCls, Trigger<T, R, Evt> trigger, Evt event) {
+        Iterator<T> iterator = this.getAbilitiesInSet().stream().filter(iAbility -> abilityCls.isAssignableFrom(iAbility.getClass()))
+                .map(iAbility -> ((T) iAbility))
+                .iterator();
+
+        runAbilities(iMob, trigger, event, iterator);
+    }
+
+    private <T, R, Evt extends Event> void runAbilities(IMob iMob, Trigger<T, R, Evt> trigger, Evt event, Iterator<T> iterator) {
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            if (next instanceof FlowCtlAbility){
+                FlowCtlAbility flowCtl = (FlowCtlAbility) next;
+                if (flowCtl.aborted()){
+                    return;
+                }
+                if (flowCtl.getFlowCtlDelay() > 0) {
+                    new BukkitRunnable(){
+                        @Override
+                        public void run() {
+                            runAbilities(iMob, trigger, event, iterator);
+                        }
+                    }.runTaskLater(InfPlugin.plugin, flowCtl.getFlowCtlDelay());
+                    return;
+                }
+
+            }
+            trigger.trigger(iMob, next, event);
+        }
     }
 
     @Override
