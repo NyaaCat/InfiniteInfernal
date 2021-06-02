@@ -1,11 +1,7 @@
-package cat.nyaa.infiniteinfernal.mob.ability.condition;
+package cat.nyaa.infiniteinfernal.mob.ability.impl.condition;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
-import cat.nyaa.infiniteinfernal.utils.Utils;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-
-import java.util.List;
+import cat.nyaa.infiniteinfernal.mob.ability.condition.PlayerCondition;
 
 public class PlayerAmountCondition extends PlayerCondition {
     @Serializable

@@ -1,21 +1,21 @@
 package cat.nyaa.infiniteinfernal.mob.ability;
 
 import cat.nyaa.infiniteinfernal.configs.AbilitySetConfig;
+import cat.nyaa.infiniteinfernal.mob.ability.api.ICondition;
+import cat.nyaa.infiniteinfernal.mob.ability.trigger.ActiveMode;
 import cat.nyaa.infiniteinfernal.mob.ability.trigger.Trigger;
-import cat.nyaa.infiniteinfernal.mob.ability.trigger.TriggeringMode;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AbilitySet implements IAbilitySet {
     private List<IAbility> abilities;
     private int weight;
     public List<String> trigger;
-    public TriggeringMode triggeringMode;
+    public ActiveMode activeMode;
+    public Map<String, ICondition> conditions;
     //todo add possibility and cooldown
 
     public AbilitySet(AbilitySetConfig config){
@@ -39,7 +39,11 @@ public class AbilitySet implements IAbilitySet {
             }
         });
         this.trigger = new ArrayList<>(Arrays.asList(config.trigger.split(",")));
-        this.triggeringMode = config.triggeringMode;
+        this.activeMode = config.activeMode;
+        this.conditions = new HashMap<>();
+        config.conditions.values().forEach(cond -> {
+            conditions.put(cond.getId(), cond);
+        });
     }
 
     @Override
@@ -61,6 +65,16 @@ public class AbilitySet implements IAbilitySet {
     @Override
     public boolean hasTrigger(Trigger trigger) {
         return false;
+    }
+
+    @Override
+    public boolean hasCondition(String condition) {
+        return conditions.containsKey(condition);
+    }
+
+    @Override
+    public ICondition getCondition(String condition) {
+        return conditions.get(condition);
     }
 
     @Override

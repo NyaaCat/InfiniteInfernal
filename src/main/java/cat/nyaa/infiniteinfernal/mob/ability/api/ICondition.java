@@ -7,9 +7,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.lang.reflect.InvocationTargetException;
 
 public interface ICondition extends ISerializable {
+    String getId();
     boolean check(IMob mob);
 
-    default ICondition copyOf(ICondition iCondition){
+    static ICondition copyOf(ICondition iCondition){
         Class<? extends ICondition> aClass = iCondition.getClass();
         try {
             ICondition iCondition1 = aClass.getConstructor().newInstance();

@@ -1,11 +1,12 @@
-package cat.nyaa.infiniteinfernal.mob.ability.condition;
+package cat.nyaa.infiniteinfernal.mob.ability.impl.condition;
 
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.infiniteinfernal.mob.ability.condition.PlayerCondition;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 
-public class PlayerHealthCondition extends PlayerCondition{
+public class PlayerHealthCondition extends PlayerCondition {
     @Serializable
     double lowerBound = 0;
     @Serializable

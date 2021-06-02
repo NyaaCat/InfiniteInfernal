@@ -1,6 +1,6 @@
 package cat.nyaa.infiniteinfernal.mob.ability.trigger;
 
-public enum TriggeringMode {
+public enum ActiveMode {
     ALL,
     RANDOM,
     PITFALL,
