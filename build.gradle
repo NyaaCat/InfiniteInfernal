@@ -34,11 +34,11 @@ repositories {
     }
     maven {
         name 'sk89q'
-        url "http://maven.sk89q.com/repo/"
+        url "https://maven.sk89q.com/repo/"
     }
     maven {
         name 'ProtocolLib'
-        url "http://repo.dmulloy2.net/nexus/repository/public/"
+        url "https://repo.dmulloy2.net/nexus/repository/public/"
     }
     maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
 }
@@ -48,10 +48,9 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile('cat.nyaa:nyaacore:8.0-SNAPSHOT')
-    compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    compileOnly "com.udojava:EvalEx:2.1"
+    implementation 'cat.nyaa:nyaacore:8.0-SNAPSHOT'
+    implementation "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
+    implementation "com.udojava:EvalEx:2.1"
 
     implementation 'com.meowj:LangUtils:2.3-SNAPSHOT'
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
