@@ -58,7 +58,7 @@ public class BeamUtil {
             if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
                 return;
             }
-            world.spawnParticle(beamConfig.particle.type, lastLocation, i, beamConfig.particle.getOffsetX(), beamConfig.particle.getOffsetY(), beamConfig.particle.getOffsetZ(), beamConfig.particle.speed, Utils.parseExtraData(beamConfig.particle.extraData), beamConfig.particle.forced);
+            world.spawnParticle(beamConfig.particle.type, lastLocation, i, beamConfig.particle.getOffsetX(), beamConfig.particle.getOffsetY(), beamConfig.particle.getOffsetZ(), beamConfig.particle.speed, Utils.parseExtraData(beamConfig.particle.extraData, beamConfig.particle.type), beamConfig.particle.forced);
         }
 
         private boolean canHit(Location loc, Entity entity) {

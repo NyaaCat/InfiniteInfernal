@@ -291,16 +291,40 @@ public class Utils {
     }
 
     public static Object parseExtraData(String extraData) {
-        try {
-            String[] split = extraData.split(",", 4);
-            int r = Integer.parseInt(split[0]);
-            int g = Integer.parseInt(split[1]);
-            int b = Integer.parseInt(split[2]);
-            float size = Float.parseFloat(split[3]);
-            return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
-        } catch (Exception e) {
-            return null;
+        return parseExtraData(extraData, null);
+    }
+
+    public static Object parseExtraData(String extraData, Particle particle) {
+        // First try to parse custom extraData if provided
+        if (extraData != null && !extraData.isEmpty()) {
+            try {
+                String[] split = extraData.split(",", 4);
+                int r = Integer.parseInt(split[0]);
+                int g = Integer.parseInt(split[1]);
+                int b = Integer.parseInt(split[2]);
+                float size = Float.parseFloat(split[3]);
+                return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
+            } catch (Exception ignored) {
+                // Try parsing as single float for DRAGON_BREATH etc.
+                try {
+                    return Float.parseFloat(extraData);
+                } catch (Exception ignored2) {
+                }
+            }
         }
+
+        // If no extraData, provide defaults for particles that require data
+        if (particle != null) {
+            Class<?> dataType = particle.getDataType();
+            if (dataType == Float.class) {
+                return 1.0f; // Default power for DRAGON_BREATH etc.
+            } else if (dataType == Integer.class) {
+                return 0; // Default delay for SHRIEK etc.
+            } else if (dataType == Color.class) {
+                return Color.WHITE; // Default color for ENTITY_EFFECT, FLASH
+            }
+        }
+        return null;
     }
 
     public static List<Location> getRoundLocations(Location location, double radius) {
@@ -384,7 +408,7 @@ public class Utils {
                 particleConfig.getOffsetY(),
                 particleConfig.getOffsetZ(),
                 particleConfig.speed,
-                parseExtraData(particleConfig.extraData),
+                parseExtraData(particleConfig.extraData, particleConfig.type),
                 particleConfig.forced
         );
     }
