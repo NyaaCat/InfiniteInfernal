@@ -158,6 +158,7 @@ public class MobManager {
         World world = location.getWorld();
         if (world == null) return new ArrayList<>();
         Biome biome = location.getBlock().getBiome();
+        String biomeKey = biome.getKey().getKey();
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         if (!regions.isEmpty()) {
@@ -175,8 +176,10 @@ public class MobManager {
                             .filter(config1 -> {
                                 List<String> biomes = config1.spawn.biomes;
                                 List<String> worlds = config1.spawn.worlds;
-                                return biomes != null && worlds != null
-                                        && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
+                                // Empty/null worlds means all worlds; empty/null biomes means all biomes
+                                boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+                                boolean biomeMatch = biomes == null || biomes.isEmpty() || biomes.contains(biomeKey);
+                                return worldMatch && biomeMatch;
                             })
                             .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
                             .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, mobConfig.getWeight(), mobConfig.getWeight())));
@@ -312,12 +315,15 @@ public class MobManager {
         if (mobConfigs == null) {
             return null;
         }
+        String biomeKey = biome.getKey().getKey();
         List<MobConfig> collect = mobConfigs.stream()
                 .filter(config1 -> {
                     List<String> biomes = config1.spawn.biomes;
                     List<String> worlds = config1.spawn.worlds;
-                    return biomes != null && worlds != null
-                            && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
+                    // Empty/null worlds means all worlds; empty/null biomes means all biomes
+                    boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+                    boolean biomeMatch = biomes == null || biomes.isEmpty() || biomes.contains(biomeKey);
+                    return worldMatch && biomeMatch;
                 }).collect(Collectors.toList());
 
         MobConfig mobConfig = Utils.weightedRandomPick(collect);
