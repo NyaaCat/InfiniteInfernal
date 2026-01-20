@@ -141,13 +141,12 @@ public class InfSpawnControler implements ISpawnControler {
 
         if (!regions.isEmpty()) {
             WeightedPair<MobConfig, Integer> pair = mobManager.selectConfigInRegion(regions, center);
-            if (pair == null || pair.getKey() == null){
-                return null;
+            if (pair != null && pair.getKey() != null) {
+                mobConfig = pair.getKey();
+                final Integer level = pair.getValue();
+                MobConfig finalMobConfig = mobConfig;
+                mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
             }
-            mobConfig = pair.getKey();
-            final Integer level = pair.getValue();
-            MobConfig finalMobConfig = mobConfig;
-            mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
         }
 
         if (mobSupplier == null){
@@ -224,10 +223,10 @@ public class InfSpawnControler implements ISpawnControler {
         }
         World world = location.getWorld();
         if (canSpawn(world,location) || force) {
-//            Biome biome = location.getBlock().getBiome();
-//            if (!isValidBiome(mobConfig, world, biome)){
-//                return false;
-//            }
+            Biome biome = location.getBlock().getBiome();
+            if (!isValidBiome(mobConfig, world, biome)){
+                return false;
+            }
             if (!force && InfPlugin.wgEnabled){
                 if (WorldGuardUtils.instance().isProtectedRegion(location, player)) {
                     return false;
@@ -247,8 +246,9 @@ public class InfSpawnControler implements ISpawnControler {
     private boolean isValidBiome(MobConfig mobConfig, World world, Biome biome) {
         List<String> biomes = mobConfig.spawn.biomes;
         List<String> worlds = mobConfig.spawn.worlds;
-        return biomes != null && worlds != null
-                && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
+        boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+        boolean biomeMatch = MobManager.isBiomeMatch(biomes, biome.getKey().getKey());
+        return worldMatch && biomeMatch;
     }
 
     private boolean lightValid(Location spawnLocation) {

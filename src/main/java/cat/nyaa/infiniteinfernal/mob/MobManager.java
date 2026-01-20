@@ -59,7 +59,7 @@ public class MobManager {
         return normalized;
     }
 
-    private static boolean isBiomeMatch(List<String> biomes, String biomeKey) {
+    public static boolean isBiomeMatch(List<String> biomes, String biomeKey) {
         if (biomes == null || biomes.isEmpty()) {
             return true;
         }
@@ -415,6 +415,9 @@ public class MobManager {
 
     private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        World locationWorld = location.getWorld();
+        Biome biome = location.getBlock().getBiome();
+        String biomeKey = biome.getKey().getKey();
         regions.forEach(regionConfig -> {
             if (regionConfig.mobs.isEmpty()) {
                 return;
@@ -429,8 +432,15 @@ public class MobManager {
                         Bukkit.getLogger().log(Level.SEVERE, I18n.format("error.mob.spawn_no_id", mobs));
                         return;
                     }
-                    World world = location.getWorld();
-                    if (world != null && mobConfig.spawn.worlds.contains(world.getName())) {
+                    World world = locationWorld;
+                    if (world != null) {
+                        List<String> worlds = mobConfig.spawn.worlds;
+                        List<String> biomes = mobConfig.spawn.biomes;
+                        boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+                        boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
+                        if (!worldMatch || !biomeMatch) {
+                            return;
+                        }
                         Integer level = 0;
                         if (regionConfig.followGlobalLevel) {
                             level = randomLevel(location);
