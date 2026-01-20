@@ -48,6 +48,30 @@ public class MobManager {
         this.load();
     }
 
+    private static String normalizeBiomeKey(String biomeKey) {
+        if (biomeKey == null) {
+            return "";
+        }
+        String normalized = biomeKey.trim().toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("minecraft:")) {
+            normalized = normalized.substring("minecraft:".length());
+        }
+        return normalized;
+    }
+
+    private static boolean isBiomeMatch(List<String> biomes, String biomeKey) {
+        if (biomes == null || biomes.isEmpty()) {
+            return true;
+        }
+        String normalizedKey = normalizeBiomeKey(biomeKey);
+        for (String biome : biomes) {
+            if (normalizedKey.equals(normalizeBiomeKey(biome))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void load() {
         initialize();
         NamedDirConfigs<MobConfig> mobConfigs = InfPlugin.plugin.config().mobConfigs;
@@ -178,7 +202,7 @@ public class MobManager {
                                 List<String> worlds = config1.spawn.worlds;
                                 // Empty/null worlds means all worlds; empty/null biomes means all biomes
                                 boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
-                                boolean biomeMatch = biomes == null || biomes.isEmpty() || biomes.contains(biomeKey);
+                                boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
                                 return worldMatch && biomeMatch;
                             })
                             .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
@@ -322,7 +346,7 @@ public class MobManager {
                     List<String> worlds = config1.spawn.worlds;
                     // Empty/null worlds means all worlds; empty/null biomes means all biomes
                     boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
-                    boolean biomeMatch = biomes == null || biomes.isEmpty() || biomes.contains(biomeKey);
+                    boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
                     return worldMatch && biomeMatch;
                 }).collect(Collectors.toList());
 
