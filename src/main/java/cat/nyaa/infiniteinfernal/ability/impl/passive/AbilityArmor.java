@@ -3,7 +3,9 @@ package cat.nyaa.infiniteinfernal.ability.impl.passive;
 import cat.nyaa.infiniteinfernal.ability.AbilitySpawn;
 import cat.nyaa.infiniteinfernal.ability.AbilityPassive;
 import cat.nyaa.infiniteinfernal.mob.IMob;
+import cat.nyaa.nyaacore.configuration.ISerializable;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +23,17 @@ public class AbilityArmor extends AbilityPassive implements AbilitySpawn {
     public String mainHand = "";
     @Serializable
     public String offhand = "";
+
+    @Override
+    public void deserialize(ConfigurationSection config) {
+        ISerializable.deserialize(config, this);
+        head = refreshNbt(head);
+        chest = refreshNbt(chest);
+        leg = refreshNbt(leg);
+        feet = refreshNbt(feet);
+        mainHand = refreshNbt(mainHand);
+        offhand = refreshNbt(offhand);
+    }
 
     @Override
     public void onSpawn(IMob iMob) {
@@ -46,6 +59,21 @@ public class AbilityArmor extends AbilityPassive implements AbilitySpawn {
             return ItemStackUtils.itemFromBase64(str);
         }catch (Exception e){
             return null;
+        }
+    }
+
+    private String refreshNbt(String base64) {
+        if (base64 == null || base64.isEmpty()) {
+            return base64;
+        }
+        try {
+            ItemStack itemStack = ItemStackUtils.itemFromBase64(base64);
+            if (itemStack == null) {
+                return base64;
+            }
+            return ItemStackUtils.itemToBase64(itemStack);
+        } catch (Exception ex) {
+            return base64;
         }
     }
 

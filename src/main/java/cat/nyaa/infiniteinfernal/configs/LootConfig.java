@@ -43,6 +43,7 @@ public class LootConfig extends FileConfigure {
         }
         deserialize(cfg);
         LootManager.loadFromLootMap(lootItemMap, lootMap);
+        save();
     }
 
     private File ensureFile() {

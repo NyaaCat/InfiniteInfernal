@@ -3,6 +3,7 @@ package cat.nyaa.infiniteinfernal.loot;
 import cat.nyaa.infiniteinfernal.InfPlugin;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 public class CommonLootItem implements ILootItem, ISerializable {
@@ -25,6 +26,12 @@ public class CommonLootItem implements ILootItem, ISerializable {
         this.plugin = plugin;
         this.name = name;
         this.nbt = ItemStackUtils.itemToBase64(item);
+    }
+
+    @Override
+    public void deserialize(ConfigurationSection config) {
+        ISerializable.deserialize(config, this);
+        nbt = refreshNbt(nbt);
     }
 
     @Override
@@ -56,5 +63,20 @@ public class CommonLootItem implements ILootItem, ISerializable {
     @Override
     public void setDynamic(boolean dynamic) {
         this.dynamic = dynamic;
+    }
+
+    private String refreshNbt(String base64) {
+        if (base64 == null || base64.isEmpty()) {
+            return base64;
+        }
+        try {
+            ItemStack itemStack = ItemStackUtils.itemFromBase64(base64);
+            if (itemStack == null) {
+                return base64;
+            }
+            return ItemStackUtils.itemToBase64(itemStack);
+        } catch (Exception ex) {
+            return base64;
+        }
     }
 }
