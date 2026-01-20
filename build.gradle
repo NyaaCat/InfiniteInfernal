@@ -47,6 +47,11 @@ repositories {
     maven { name 'aikar'; url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
@@ -55,7 +60,7 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     implementation('cat.nyaa:nyaacore:9.10')
     compileOnly "io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT"
-    compileOnly "com.udojava:EvalEx:2.7"
+    shade "com.udojava:EvalEx:2.7"
 
     compileOnly 'com.meowj:LangUtils:2.3-SNAPSHOT'
     compileOnly('com.sk89q.worldguard:worldguard-bukkit:7.0.8-SNAPSHOT') {
@@ -64,6 +69,14 @@ dependencies {
         exclude group: 'org.bukkit', module: 'bukkit'
     }
     implementation 'co.aikar:taskchain-bukkit:3.7.2'
+}
+
+jar {
+    from {
+        configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
 task apiJar(type: Jar) {
