@@ -59,7 +59,12 @@ public class Group {
 
     public void broadcast(Message message, Player from){
         new Message(I18n.format("group.chat_format", from)).append(message.inner);
-        members.forEach(uuid -> message.send(Bukkit.getOfflinePlayer(uuid)));
+        members.forEach(uuid -> {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                message.send(player);
+            }
+        });
     }
 
     public Collection<? extends String> getMemberNames() {
@@ -71,7 +76,12 @@ public class Group {
     }
 
     public void broadcast(Message append) {
-        members.forEach(uuid -> append.send(Bukkit.getOfflinePlayer(uuid)));
+        members.forEach(uuid -> {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                append.send(player);
+            }
+        });
     }
 
     public void kick(Player player) {

@@ -58,9 +58,9 @@ public class AbilityClone extends ActiveAbility {
     private void cloneAttributes(IMob from, IMob to){
         LivingEntity clonedEntity = to.getEntity();
 //            this function will produce unexpected exception, skipping.
-        AttributeInstance damageAttr = clonedEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
-        AttributeInstance maxHealthAttr = clonedEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        AttributeInstance followRangeAttr = clonedEntity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
+        AttributeInstance damageAttr = clonedEntity.getAttribute(Attribute.ATTACK_DAMAGE);
+        AttributeInstance maxHealthAttr = clonedEntity.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance followRangeAttr = clonedEntity.getAttribute(Attribute.FOLLOW_RANGE);
         if(damageAttr != null){
             damageAttr.setBaseValue(from.getDamage());
         }else {}

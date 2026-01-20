@@ -176,7 +176,7 @@ public class MobManager {
                                 List<String> biomes = config1.spawn.biomes;
                                 List<String> worlds = config1.spawn.worlds;
                                 return biomes != null && worlds != null
-                                        && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                                        && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
                             })
                             .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
                             .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, mobConfig.getWeight(), mobConfig.getWeight())));
@@ -317,7 +317,7 @@ public class MobManager {
                     List<String> biomes = config1.spawn.biomes;
                     List<String> worlds = config1.spawn.worlds;
                     return biomes != null && worlds != null
-                            && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                            && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
                 }).collect(Collectors.toList());
 
         MobConfig mobConfig = Utils.weightedRandomPick(collect);

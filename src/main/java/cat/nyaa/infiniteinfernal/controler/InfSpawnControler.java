@@ -44,7 +44,7 @@ public class InfSpawnControler implements ISpawnControler {
     public boolean canSpawn(World world, Location location) {
         final Config config = InfPlugin.plugin.config();
         AtomicBoolean canSpawn = new AtomicBoolean(true);
-        if (MobManager.instance().getMobsInWorld(world).size() >= config.maxMobInWorld) {
+        if (MobManager.instance().getMobsInWorld(world).size() >= config.getMaxMobInWorld(world)) {
             return false;
         }
         int maxSpawnDistance = getMaxSpawnDistance(world);
@@ -96,36 +96,31 @@ public class InfSpawnControler implements ISpawnControler {
     @Override
     public int getMaxSpawnAmount(Player player) {
         final Config config = InfPlugin.plugin.config();
-        return config.maxMobPerPlayer;
+        return config.getMaxMobPerPlayer(player.getWorld());
     }
 
     @Override
     public int getMaxSpawnAmount(World world) {
         final Config config = InfPlugin.plugin.config();
-        return config.maxMobInWorld;
+        return config.getMaxMobInWorld(world);
     }
 
     @Override
     public int getMaxSpawnDistance(World world) {
         final Config config = InfPlugin.plugin.config();
-        return config.spawnRangeMax;
+        return config.getSpawnRangeMax(world);
     }
 
     @Override
     public int getMinSpawnDistance(World world) {
         final Config config = InfPlugin.plugin.config();
-        return config.spawnRangeMin;
+        return config.getSpawnRangeMin(world);
     }
 
     @Override
     public void setVanillaAutoSpawn(World world, boolean flag) {
         final Config config = InfPlugin.plugin.config();
-        final String name = world.getName();
-        if (flag){
-            config.disableNaturalSpawning.remove(name) ;
-        }else {
-            config.disableNaturalSpawning.add(name);
-        }
+        config.setAutoSpawnDisabledInWorld(world, !flag);
         config.save();
     }
 
@@ -253,23 +248,24 @@ public class InfSpawnControler implements ISpawnControler {
         List<String> biomes = mobConfig.spawn.biomes;
         List<String> worlds = mobConfig.spawn.worlds;
         return biomes != null && worlds != null
-                && worlds.contains(world.getName()) && biomes.contains(biome.name());
+                && worlds.contains(world.getName()) && biomes.contains(biome.getKey().getKey());
     }
 
     private boolean lightValid(Location spawnLocation) {
         final Config config = InfPlugin.plugin.config();
+        final World world = spawnLocation.getWorld();
 
         final Block block = spawnLocation.getBlock();
         final byte lightLevel = block.getLightLevel();
         final byte lightFromBlocks = block.getLightFromBlocks();
         final byte lightFromSky = block.getLightFromSky();
 
-        final int worldMinSkyLight = config.spawnMinSkyLight;
-        final int worldMaxSkyLight = config.spawnMaxSkyLight;
-        final int worldMinBlockLight = config.spawnMinBlockLight;
-        final int worldMaxBlockLight = config.spawnMaxBlockLight;
-        final int worldMinLight = config.spawnMinLight;
-        final int worldMaxLight = config.spawnMaxLight;
+        final int worldMinSkyLight = config.getSpawnMinSkyLight(world);
+        final int worldMaxSkyLight = config.getSpawnMaxSkyLight(world);
+        final int worldMinBlockLight = config.getSpawnMinBlockLight(world);
+        final int worldMaxBlockLight = config.getSpawnMaxBlockLight(world);
+        final int worldMinLight = config.getSpawnMinLight(world);
+        final int worldMaxLight = config.getSpawnMaxLight(world);
 
         return isInRange(lightLevel, worldMinLight, worldMaxLight)
                 || isInRange(lightFromBlocks, worldMinBlockLight, worldMaxBlockLight)

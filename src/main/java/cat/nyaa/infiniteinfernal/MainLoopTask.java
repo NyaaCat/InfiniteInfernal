@@ -43,8 +43,8 @@ public class MainLoopTask {
                 return;
             }
 
-            int interval = config.mobTickInterval;
-            int mobSpawnInteval = config.mobSpawnInteval;
+            int interval = config.getMobTickInterval(world);
+            int mobSpawnInteval = config.getMobSpawnInterval(world);
             MainLoopRunnable runnable = new MainLoopRunnable(world, interval);
             runnables.add(runnable);
             runnable.runTaskTimer(InfPlugin.plugin, 0, interval);

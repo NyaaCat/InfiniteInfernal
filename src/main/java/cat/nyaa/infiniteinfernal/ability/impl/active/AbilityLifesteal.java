@@ -45,7 +45,7 @@ public class AbilityLifesteal extends ActiveAbility {
 //        }
 //        double finalDamage = ev.getFinalDamage();
         double health = mob.getEntity().getHealth();
-        double max = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double max = mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getValue();
         double regen = max * (gain / 100d);
         mob.getEntity().setHealth(Math.max(0, Math.min(health + regen, max)));
         target.setHealth(Math.max(0.1, target.getHealth() - suck));

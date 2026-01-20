@@ -31,6 +31,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.command.BlockCommandSender;
@@ -458,11 +460,11 @@ public class AdminCommands extends CommandReceiver {
 
         @SubCommand(value = "biome", permission = "im.inspect.biome", tabCompleter = "biomeCompleter")
         public void biomeCommand(CommandSender sender, Arguments arguments) {
-            Biome biome = arguments.nextEnum(Biome.class);
+            String biomeName = arguments.nextString();
             boolean detailed = isDetailed(arguments);
 
             List<MobConfig> collect = MobManager.instance().getMobConfigs().stream()
-                    .filter(mobConfig -> mobConfig.spawn.biomes.contains(biome))
+                    .filter(mobConfig -> mobConfig.spawn.biomes.contains(biomeName))
                     .collect(Collectors.toList());
             sendMobInfo(sender, collect, detailed);
         }
@@ -471,7 +473,7 @@ public class AdminCommands extends CommandReceiver {
             List<String> completeStr = new ArrayList<>();
             switch (arguments.remains()) {
                 case 1:
-                    completeStr.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
+                    Registry.BIOME.stream().forEach(b -> completeStr.add(b.getKey().getKey()));
                     break;
                 case 2:
                     completeStr.add("detailed");
@@ -726,7 +728,7 @@ public class AdminCommands extends CommandReceiver {
             mobConfig.type = entityType;
             mobConfig.spawn.autoSpawn = autoSpawn;
             mobConfig.name = displayName;
-            mobConfig.spawn.biomes = Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList());
+            mobConfig.spawn.biomes = Registry.BIOME.stream().map(b -> b.getKey().getKey()).collect(Collectors.toList());
             mobConfig.spawn.worlds = Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList());
             int max = MobManager.instance().getLevels().stream().mapToInt(Integer::intValue)
                     .max().orElse(1);
@@ -1003,7 +1005,6 @@ public class AdminCommands extends CommandReceiver {
                     break;
                 case "biome":
                     String action2 = arguments.nextString();
-                    Biome biome;
                     switch (action2) {
                         case "list":
                             List<String> biomes = mobConfig.spawn.biomes;
@@ -1017,8 +1018,7 @@ public class AdminCommands extends CommandReceiver {
 
                             break;
                         case "add":
-                            biome = arguments.nextEnum(Biome.class);
-                            String name = biome.name();
+                            String name = arguments.nextString();
                             if (!mobConfig.spawn.biomes.contains(name)) {
                                 mobConfig.spawn.biomes.add(name);
                                 new Message(I18n.format("modify.biome.add.success", name)).send(sender);
@@ -1027,8 +1027,7 @@ public class AdminCommands extends CommandReceiver {
                             }
                             break;
                         case "remove":
-                            biome = arguments.nextEnum(Biome.class);
-                            String name1 = biome.name();
+                            String name1 = arguments.nextString();
                             if (mobConfig.spawn.biomes.contains(name1)) {
                                 mobConfig.spawn.biomes.remove(name1);
                                 new Message(I18n.format("modify.biome.remove.success", name1)).send(sender);
@@ -1300,7 +1299,7 @@ public class AdminCommands extends CommandReceiver {
                             if ("remove".equals(action1)) {
                                 completeString.addAll(mobConfig.spawn.biomes);
                             } else {
-                                completeString.addAll(Arrays.stream(Biome.values()).map(Enum::name).collect(Collectors.toList()));
+                                Registry.BIOME.stream().forEach(b -> completeString.add(b.getKey().getKey()));
                             }
                             break;
                         case "world":

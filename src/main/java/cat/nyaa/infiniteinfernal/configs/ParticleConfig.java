@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ParticleConfig implements ISerializable {
     @Serializable
-    public Particle type = Particle.FIREWORKS_SPARK;
+    public Particle type = Particle.FIREWORK;
     @Deprecated
     @Serializable(manualSerialization = true)
     public List<Number> delta = new ArrayList<>(Arrays.asList(0d, 0d, 0d));

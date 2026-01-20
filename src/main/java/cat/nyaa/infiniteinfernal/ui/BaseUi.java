@@ -164,12 +164,12 @@ public class BaseUi {
     static {
         PotionEffectType[] potionTypes = {
                 PotionEffectType.SPEED,
-                PotionEffectType.FAST_DIGGING,
-                PotionEffectType.INCREASE_DAMAGE,
-                PotionEffectType.HEAL,
-                PotionEffectType.JUMP,
+                PotionEffectType.HASTE,
+                PotionEffectType.STRENGTH,
+                PotionEffectType.INSTANT_HEALTH,
+                PotionEffectType.JUMP_BOOST,
                 PotionEffectType.REGENERATION,
-                PotionEffectType.DAMAGE_RESISTANCE,
+                PotionEffectType.RESISTANCE,
                 PotionEffectType.FIRE_RESISTANCE,
                 PotionEffectType.WATER_BREATHING,
                 PotionEffectType.INVISIBILITY,

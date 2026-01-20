@@ -191,9 +191,9 @@ public class CustomMob implements IMob {
         }
         entity.setCustomName(getTaggedName());
         entity.setCustomNameVisible(true);
-        AttributeInstance damageAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
-        AttributeInstance maxHealthAttr = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        AttributeInstance followRangeAttr = entity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
+        AttributeInstance damageAttr = entity.getAttribute(Attribute.ATTACK_DAMAGE);
+        AttributeInstance maxHealthAttr = entity.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance followRangeAttr = entity.getAttribute(Attribute.FOLLOW_RANGE);
         if (damageAttr != null) {
             damageAttr.setBaseValue(getDamage());
         } else {
@@ -309,7 +309,7 @@ public class CustomMob implements IMob {
         Expression expression = createExpression();
         BigDecimal maxHealth = expression.eval();
         double originHealth = getEntity().getHealth();
-        AttributeInstance maxHealthAttr = getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance maxHealthAttr = getEntity().getAttribute(Attribute.MAX_HEALTH);
         if (maxHealthAttr == null) return;
         double originMax = maxHealthAttr.getValue();
         if (maxHealth.doubleValue() <= originMax)return;
@@ -406,7 +406,7 @@ public class CustomMob implements IMob {
     @Override
     public void updateBossBar(KeyedBossBar bossBar, LivingEntity entity) {
         double health = entity.getHealth();
-        double maxHealth = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        double maxHealth = entity.getAttribute(Attribute.MAX_HEALTH).getValue();
         double progress = health / maxHealth;
         bossBar.setProgress(Math.min(Math.max(0, progress), Math.min(progress, 1)));
         if (progress < 0.33) {

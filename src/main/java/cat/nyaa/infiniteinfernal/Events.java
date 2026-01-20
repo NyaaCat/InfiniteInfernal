@@ -100,10 +100,10 @@ public class Events implements Listener {
         if(!(event.getEntity() instanceof LivingEntity)) return;
         LivingEntity entity = (LivingEntity) event.getEntity();
         Collection<PotionEffect> activePotionEffects = entity.getActivePotionEffects();
-        if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && potionEffect.getAmplifier()>=4)){
+        if (activePotionEffects.stream().anyMatch(potionEffect -> potionEffect.getType().equals(PotionEffectType.RESISTANCE) && potionEffect.getAmplifier()>=4)){
             return;
         }
-        entity.setHealth(Math.max(Math.min(entity.getHealth() - damage, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
+        entity.setHealth(Math.max(Math.min(entity.getHealth() - damage, entity.getAttribute(Attribute.MAX_HEALTH).getValue()), 0.01));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

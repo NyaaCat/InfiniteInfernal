@@ -208,7 +208,7 @@ public class Config extends PluginConfigure {
             lore.add("inf-sample");
             itemMeta.setLore(lore);
             itemMeta.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            itemMeta.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            itemMeta.addAttributeModifier(Attribute.LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             sampleItem.setItemMeta(itemMeta);
         }
         ItemStack extraSampleItem = new ItemStack(Material.ACACIA_BUTTON);
@@ -219,7 +219,7 @@ public class Config extends PluginConfigure {
             lore.add("inf-extra-sample");
             itemMeta1.setLore(lore);
             itemMeta1.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            itemMeta1.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            itemMeta1.addAttributeModifier(Attribute.LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             extraSampleItem.setItemMeta(itemMeta1);
         }
         ItemStack sampleItem5 = new ItemStack(Material.ACACIA_BUTTON);
@@ -230,7 +230,7 @@ public class Config extends PluginConfigure {
             lore.add("inf-sample-5");
             itemMeta2.setLore(lore);
             itemMeta2.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            itemMeta2.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            itemMeta2.addAttributeModifier(Attribute.LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             sampleItem5.setItemMeta(itemMeta2);
         }
         ItemStack sampleItem10 = new ItemStack(Material.ACACIA_BUTTON);
@@ -241,7 +241,7 @@ public class Config extends PluginConfigure {
             lore.add("inf-sample-10");
             itemMeta3.setLore(lore);
             itemMeta3.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            itemMeta3.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            itemMeta3.addAttributeModifier(Attribute.LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             sampleItem10.setItemMeta(itemMeta3);
         }
         ItemStack sampleItem20 = new ItemStack(Material.ACACIA_BUTTON);
@@ -252,7 +252,7 @@ public class Config extends PluginConfigure {
             lore.add("inf-sample-20");
             itemMeta4.setLore(lore);
             itemMeta4.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            itemMeta4.addAttributeModifier(Attribute.GENERIC_LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
+            itemMeta4.addAttributeModifier(Attribute.LUCK, new AttributeModifier("luck-1", 1, AttributeModifier.Operation.ADD_NUMBER));
             sampleItem20.setItemMeta(itemMeta4);
         }
         LootManager.instance().addLoot("inf-sample-10", true, sampleItem10);
@@ -274,9 +274,7 @@ public class Config extends PluginConfigure {
         mobConfig.abilities.add(passives.getPrefix() + "-" + passives.getName());
         mobConfig.abilities.add("set-2");
         mobConfig.name = "Zombie-King";
-        for (Biome value : Biome.values()) {
-            mobConfig.spawn.biomes.add(value.name());
-        }
+        Registry.BIOME.stream().forEach(biome -> mobConfig.spawn.biomes.add(biome.getKey().getKey()));
         mobConfig.spawn.worlds.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
         mobConfig.spawn.levels.add("1-3");
         mobConfig.spawn.levels.add("5");
@@ -371,5 +369,88 @@ public class Config extends PluginConfigure {
             return false;
         }
         return worldConfig.isTrueDamageEnabled();
+    }
+
+    public WorldConfig getWorldConfig(World world) {
+        return worlds.get(world.getName());
+    }
+
+    public int getMaxMobPerPlayer(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.maxMobPerPlayer : 10;
+    }
+
+    public int getMaxMobInWorld(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.maxMobInWorld : 240;
+    }
+
+    public int getSpawnRangeMin(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.spawnRangeMin : 60;
+    }
+
+    public int getSpawnRangeMax(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.spawnRangeMax : 120;
+    }
+
+    public int getMobTickInterval(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.mobTickInterval : 60;
+    }
+
+    public int getMobSpawnInterval(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.mobSpawnInteval : 20;
+    }
+
+    public List<World> getEnabledWorlds() {
+        return worlds.keySet().stream()
+                .map(Bukkit::getWorld)
+                .filter(w -> w != null && isEnabledInWorld(w))
+                .collect(Collectors.toList());
+    }
+
+    public boolean isAutoSpawnDisabledInWorld(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null && wc.disableNaturalSpawning;
+    }
+
+    public void setAutoSpawnDisabledInWorld(World world, boolean disabled) {
+        WorldConfig wc = getWorldConfig(world);
+        if (wc != null) {
+            wc.disableNaturalSpawning = disabled;
+        }
+    }
+
+    public int getSpawnMinSkyLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.minSkyLight : 0;
+    }
+
+    public int getSpawnMaxSkyLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.maxSkyLight : 15;
+    }
+
+    public int getSpawnMinBlockLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.minBlockLight : 0;
+    }
+
+    public int getSpawnMaxBlockLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.maxBlockLight : 15;
+    }
+
+    public int getSpawnMinLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.minLight : 0;
+    }
+
+    public int getSpawnMaxLight(World world) {
+        WorldConfig wc = getWorldConfig(world);
+        return wc != null ? wc.maxLight : 15;
     }
 }

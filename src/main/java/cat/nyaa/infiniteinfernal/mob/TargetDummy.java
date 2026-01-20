@@ -25,7 +25,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.spigotmc.event.entity.EntityMountEvent;
+import org.bukkit.event.entity.EntityMountEvent;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -350,7 +350,7 @@ public class TargetDummy implements IMob {
             if (trackedEntity.isDead()){
                 respawn();
             }
-            double maxHealth = trackedEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+            double maxHealth = trackedEntity.getAttribute(Attribute.MAX_HEALTH).getBaseValue();
             trackedEntity.setHealth(maxHealth);
         }
     }
@@ -458,7 +458,7 @@ public class TargetDummy implements IMob {
 
     @Override
     public void makeInfernal(LivingEntity entity) {
-        entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(getMaxHealth());
+        entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(getMaxHealth());
         if (config.nbtTags != null && !config.nbtTags.equals("")) {
             NmsUtils.setEntityTag(entity, config.nbtTags);
         }

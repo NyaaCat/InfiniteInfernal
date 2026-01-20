@@ -39,8 +39,8 @@ public class AbilityStuck extends ActiveAbility {
                 .collect(Collectors.toList());
         LivingEntity victim = Utils.randomPick(candidates);
         if (victim == null)return;
-        victim.removePotionEffect(PotionEffectType.SLOW);
-        victim.addPotionEffect(PotionEffectType.SLOW.createEffect(duration, 10), true);
+        victim.removePotionEffect(PotionEffectType.SLOWNESS);
+        victim.addPotionEffect(PotionEffectType.SLOWNESS.createEffect(duration, 10), true);
         victim.removePotionEffect(PotionEffectType.LEVITATION);
         victim.addPotionEffect(PotionEffectType.LEVITATION.createEffect(duration, -1), true);
         stucked.add(victim.getUniqueId());

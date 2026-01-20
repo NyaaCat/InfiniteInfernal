@@ -42,7 +42,7 @@ public class AbilityNirvana extends AbilityPassive implements AbilityNearDeath {
 
     public void respawn(IMob iMob) {
         LivingEntity mobEntity = iMob.getEntity();
-        AttributeInstance attribute = mobEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance attribute = mobEntity.getAttribute(Attribute.MAX_HEALTH);
         if (attribute != null) {
             double maxHealth = attribute.getValue();
             mobEntity.setHealth(maxHealth);
