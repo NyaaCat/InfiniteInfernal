@@ -232,6 +232,10 @@ public class RandomLootChestManager implements Listener {
             return false;
         }
         long now = System.currentTimeMillis();
+        if (!data.has(lastRefillKey, PersistentDataType.LONG)) {
+            refillContainer(info, config, now);
+            return true;
+        }
         Long nextRefill = data.get(nextRefillKey, PersistentDataType.LONG);
         if (nextRefill != null && now < nextRefill) {
             return false;
