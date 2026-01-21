@@ -325,9 +325,16 @@ public class InfSpawnControler implements ISpawnControler {
         }
         World world = location.getWorld();
         if (canSpawn(world,location) || force) {
-            Biome biome = location.getBlock().getBiome();
-            if (!isValidBiome(mobConfig, world, biome)){
+            if (!isValidWorld(mobConfig, world)) {
                 return false;
+            }
+            boolean ignoreBiome = allowedRegions != null && !allowedRegions.isEmpty()
+                    && isRegionDefinedMob(allowedRegions, mobConfig);
+            if (!ignoreBiome) {
+                Biome biome = location.getBlock().getBiome();
+                if (!isValidBiome(mobConfig, biome)) {
+                    return false;
+                }
             }
             if (!force && InfPlugin.wgEnabled){
                 if (WorldGuardUtils.instance().isProtectedRegion(location, player)) {
@@ -345,12 +352,34 @@ public class InfSpawnControler implements ISpawnControler {
         }
     }
 
-    private boolean isValidBiome(MobConfig mobConfig, World world, Biome biome) {
-        List<String> biomes = mobConfig.spawn.biomes;
+    private boolean isValidWorld(MobConfig mobConfig, World world) {
         List<String> worlds = mobConfig.spawn.worlds;
-        boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
-        boolean biomeMatch = MobManager.isBiomeMatch(biomes, biome.getKey().getKey());
-        return worldMatch && biomeMatch;
+        return worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+    }
+
+    private boolean isValidBiome(MobConfig mobConfig, Biome biome) {
+        List<String> biomes = mobConfig.spawn.biomes;
+        return MobManager.isBiomeMatch(biomes, biome.getKey().getKey());
+    }
+
+    private boolean isRegionDefinedMob(List<RegionConfig> regions, MobConfig mobConfig) {
+        if (regions == null || regions.isEmpty() || mobConfig == null) {
+            return false;
+        }
+        String name = mobConfig.getName();
+        for (RegionConfig regionConfig : regions) {
+            for (String entry : regionConfig.mobs) {
+                if (entry == null || entry.isEmpty()) {
+                    continue;
+                }
+                int colon = entry.indexOf(':');
+                String mobId = colon >= 0 ? entry.substring(0, colon) : entry;
+                if (name.equals(mobId.trim())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean lightValid(Location spawnLocation) {

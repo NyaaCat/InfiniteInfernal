@@ -184,11 +184,12 @@ public class MobManager {
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
-        if (!regions.isEmpty() && regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty())) {
-            return spawnConfs;
-        }
         if (!regions.isEmpty()) {
+            if (regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty())) {
+                return spawnConfs;
+            }
             spawnConfs.addAll(getSpawnConfigsForRegion(regions, location));
+            return spawnConfs;
         }
         spawnConfs.addAll(getNaturalSpawnConfigs(location));
         return spawnConfs;
@@ -436,7 +437,6 @@ public class MobManager {
         }
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
         spawnConfs.addAll(getSpawnConfigsForRegion(regions, center));
-        spawnConfs.addAll(getNaturalSpawnConfigs(center));
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
@@ -481,8 +481,6 @@ public class MobManager {
     private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
         World locationWorld = location.getWorld();
-        Biome biome = location.getBlock().getBiome();
-        String biomeKey = biome.getKey().getKey();
         regions.forEach(regionConfig -> {
             if (regionConfig.mobs.isEmpty()) {
                 return;
@@ -500,10 +498,8 @@ public class MobManager {
                     World world = locationWorld;
                     if (world != null) {
                         List<String> worlds = mobConfig.spawn.worlds;
-                        List<String> biomes = mobConfig.spawn.biomes;
                         boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
-                        boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
-                        if (!worldMatch || !biomeMatch) {
+                        if (!worldMatch) {
                             return;
                         }
                         Integer level = 0;
