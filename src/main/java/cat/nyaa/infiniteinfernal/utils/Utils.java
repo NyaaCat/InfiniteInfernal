@@ -367,6 +367,12 @@ public class Utils {
         if (dataType == Color.class) {
             return colorFromOffsets(particleConfig);
         }
+        if (dataType == Float.class) {
+            return 1.0f;
+        }
+        if (dataType == Integer.class) {
+            return 0;
+        }
         return null;
     }
 
