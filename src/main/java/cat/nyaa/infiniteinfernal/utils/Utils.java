@@ -295,36 +295,127 @@ public class Utils {
     }
 
     public static Object parseExtraData(String extraData, Particle particle) {
-        // First try to parse custom extraData if provided
-        if (extraData != null && !extraData.isEmpty()) {
-            try {
-                String[] split = extraData.split(",", 4);
-                int r = Integer.parseInt(split[0]);
-                int g = Integer.parseInt(split[1]);
-                int b = Integer.parseInt(split[2]);
-                float size = Float.parseFloat(split[3]);
-                return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
-            } catch (Exception ignored) {
-                // Try parsing as single float for DRAGON_BREATH etc.
-                try {
-                    return Float.parseFloat(extraData);
-                } catch (Exception ignored2) {
-                }
-            }
+        if (particle == null) {
+            return parseExtraDataWithoutParticle(extraData);
         }
-
-        // If no extraData, provide defaults for particles that require data
-        if (particle != null) {
-            Class<?> dataType = particle.getDataType();
-            if (dataType == Float.class) {
-                return 1.0f; // Default power for DRAGON_BREATH etc.
-            } else if (dataType == Integer.class) {
-                return 0; // Default delay for SHRIEK etc.
-            } else if (dataType == Color.class) {
-                return Color.WHITE; // Default color for ENTITY_EFFECT, FLASH
-            }
+        Class<?> dataType = particle.getDataType();
+        if (dataType == Void.class) {
+            return null;
+        }
+        if (dataType == Particle.DustTransition.class) {
+            Particle.DustTransition transition = parseDustTransition(extraData);
+            return transition != null ? transition : new Particle.DustTransition(Color.WHITE, Color.WHITE, 1.0f);
+        }
+        if (dataType == Particle.DustOptions.class) {
+            Particle.DustOptions dust = parseDustOptions(extraData);
+            return dust != null ? dust : new Particle.DustOptions(Color.WHITE, 1.0f);
+        }
+        if (dataType == Float.class) {
+            Float value = parseFloat(extraData);
+            return value != null ? value : 1.0f;
+        }
+        if (dataType == Integer.class) {
+            Integer value = parseInt(extraData);
+            return value != null ? value : 0;
+        }
+        if (dataType == Color.class) {
+            Color color = parseColor(extraData);
+            return color != null ? color : Color.WHITE;
         }
         return null;
+    }
+
+    private static Object parseExtraDataWithoutParticle(String extraData) {
+        Particle.DustOptions dust = parseDustOptions(extraData);
+        if (dust != null) {
+            return dust;
+        }
+        Float value = parseFloat(extraData);
+        if (value != null) {
+            return value;
+        }
+        return null;
+    }
+
+    private static Particle.DustOptions parseDustOptions(String extraData) {
+        if (extraData == null || extraData.isEmpty()) {
+            return null;
+        }
+        try {
+            String[] split = extraData.split(",", 4);
+            if (split.length < 4) {
+                return null;
+            }
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            float size = Float.parseFloat(split[3]);
+            return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static Particle.DustTransition parseDustTransition(String extraData) {
+        if (extraData == null || extraData.isEmpty()) {
+            return null;
+        }
+        try {
+            String[] split = extraData.split(",", 7);
+            if (split.length < 7) {
+                return null;
+            }
+            int r1 = Integer.parseInt(split[0]);
+            int g1 = Integer.parseInt(split[1]);
+            int b1 = Integer.parseInt(split[2]);
+            int r2 = Integer.parseInt(split[3]);
+            int g2 = Integer.parseInt(split[4]);
+            int b2 = Integer.parseInt(split[5]);
+            float size = Float.parseFloat(split[6]);
+            return new Particle.DustTransition(Color.fromRGB(r1, g1, b1), Color.fromRGB(r2, g2, b2), size);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static Float parseFloat(String extraData) {
+        if (extraData == null || extraData.isEmpty()) {
+            return null;
+        }
+        try {
+            return Float.parseFloat(extraData);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static Integer parseInt(String extraData) {
+        if (extraData == null || extraData.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(extraData);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static Color parseColor(String extraData) {
+        if (extraData == null || extraData.isEmpty()) {
+            return null;
+        }
+        try {
+            String[] split = extraData.split(",", 3);
+            if (split.length < 3) {
+                return null;
+            }
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            return Color.fromRGB(r, g, b);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     public static List<Location> getRoundLocations(Location location, double radius) {
