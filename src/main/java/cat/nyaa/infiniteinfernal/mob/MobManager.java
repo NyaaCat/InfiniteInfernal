@@ -359,24 +359,67 @@ public class MobManager {
     }
 
     private List<WeightedPair<Integer, Integer>> getValidLevels(Location location) {
-        Collection<LevelConfig> values = InfPlugin.plugin.config().levelConfigs.values();
+        Config config = InfPlugin.plugin.config();
+        Collection<LevelConfig> values = config.levelConfigs.values();
         List<WeightedPair<Integer, Integer>> levelCandidates = new ArrayList<>();
+        World world = location.getWorld();
+        if (world == null) {
+            throw new IllegalArgumentException();
+        }
+        WorldConfig worldConfig = config.worlds.get(world.getName());
+        int startLevel = worldConfig == null ? 0 : worldConfig.spawnLevelStart;
+        int capLevel = worldConfig == null ? Integer.MAX_VALUE : worldConfig.spawnLevelCap;
+
+        int minLevel = Integer.MAX_VALUE;
+        int maxLevel = Integer.MIN_VALUE;
+        NavigableSet<Integer> availableLevels = new TreeSet<>();
+        for (LevelConfig levelConfig : values) {
+            int level = levelConfig.level;
+            availableLevels.add(level);
+            minLevel = Math.min(minLevel, level);
+            maxLevel = Math.max(maxLevel, level);
+        }
+        if (availableLevels.isEmpty()) {
+            return levelCandidates;
+        }
+        int effectiveStart = Math.min(Math.max(startLevel, minLevel), maxLevel);
+        int effectiveCap = Math.min(Math.max(capLevel, effectiveStart), maxLevel);
+        int offset = effectiveStart - minLevel;
+        NavigableSet<Integer> availableInRange = availableLevels.subSet(effectiveStart, true, effectiveCap, true);
+        if (availableInRange.isEmpty()) {
+            return levelCandidates;
+        }
+
+        double distance = location.distance(world.getSpawnLocation());
         values.forEach(levelConfig -> {
             int from = levelConfig.spawnConfig.from;
             int to = levelConfig.spawnConfig.to;
-            int level = levelConfig.level;
             int weight = levelConfig.spawnConfig.weight;
-            World world = location.getWorld();
-            if (world == null) {
-                throw new IllegalArgumentException();
-            }
-            double distance = location.distance(world.getSpawnLocation());
             if (distance < from || distance >= to) {
                 return;
             }
-            levelCandidates.add(new WeightedPair<>(level, level, weight));
+            int adjustedLevel = levelConfig.level + offset;
+            if (adjustedLevel > effectiveCap) {
+                adjustedLevel = effectiveCap;
+            }
+            Integer resolvedLevel = resolveLevelInRange(availableInRange, adjustedLevel);
+            if (resolvedLevel == null) {
+                return;
+            }
+            levelCandidates.add(new WeightedPair<>(resolvedLevel, resolvedLevel, weight));
         });
         return levelCandidates;
+    }
+
+    private Integer resolveLevelInRange(NavigableSet<Integer> availableLevels, int desired) {
+        if (availableLevels.isEmpty()) {
+            return null;
+        }
+        Integer resolved = availableLevels.floor(desired);
+        if (resolved == null) {
+            resolved = availableLevels.ceiling(desired);
+        }
+        return resolved;
     }
 
     public IMob spawnInRegion(List<RegionConfig> regions, Location center) {

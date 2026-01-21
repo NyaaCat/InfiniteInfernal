@@ -233,12 +233,12 @@ public class InfSpawnControler implements ISpawnControler {
             if (!world.isChunkLoaded(x >> 4, z >> 4)) {
                 continue;
             }
-            int topY = world.getHighestBlockYAt(x, z);
-            int offset = (int) Math.round(Utils.random(8, 24));
-            int y = Math.min(world.getMaxHeight() - 2, topY + Math.max(2, offset));
-            if (y <= world.getMinHeight()) {
+            int minY = world.getMinHeight() + 1;
+            int maxY = world.getMaxHeight() - 2;
+            if (maxY <= minY) {
                 continue;
             }
+            int y = (int) Math.round(Utils.random(minY, maxY));
             Location spawn = new Location(world, x + 0.5, y, z + 0.5);
             if (spawn.getBlock().getType().isAir() && spawn.getBlock().getRelative(BlockFace.UP).getType().isAir()) {
                 return spawn;
