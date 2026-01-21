@@ -231,6 +231,9 @@ public class RandomLootChestManager implements Listener {
         if (data.has(DEATH_CHEST_KEY, PersistentDataType.BYTE)) {
             return false;
         }
+        if (shouldSkipLootChest(container.getLocation())) {
+            return false;
+        }
         long now = System.currentTimeMillis();
         if (!data.has(lastRefillKey, PersistentDataType.LONG)) {
             refillContainer(info, config, now);
@@ -320,6 +323,17 @@ public class RandomLootChestManager implements Listener {
             return mobManager.getNaturalSpawnableMob(location);
         }
         return spawnable;
+    }
+
+    private boolean shouldSkipLootChest(Location location) {
+        if (location == null) {
+            return false;
+        }
+        List<RegionConfig> regions = plugin.config().getRegionsForLocation(location);
+        if (regions.isEmpty()) {
+            return false;
+        }
+        return regions.stream().anyMatch(region -> region.skipLootChest);
     }
 
     private Map<ILootItem, Integer> buildLootPool(List<WeightedPair<MobConfig, Integer>> spawnable) {

@@ -34,6 +34,9 @@ public class RegionConfig extends NamedFileConfig {
     @Serializable
     public boolean followGlobalLevel = false;
 
+    @Serializable(name = "skip-lootchest")
+    public boolean skipLootChest = false;
+
     @Serializable
     public int maxSpawnAmountOverride = -1;
 
