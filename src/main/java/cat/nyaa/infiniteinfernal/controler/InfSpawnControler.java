@@ -83,6 +83,18 @@ public class InfSpawnControler implements ISpawnControler {
         return nearbyMobs < getMaxSpawnAmount(player);
     }
 
+    /**
+     * Checks if a location is within a region that has an empty mobs list.
+     * Empty mobs list means spawning is blocked in that region.
+     */
+    private boolean isInEmptyMobsRegion(Location location) {
+        List<RegionConfig> regions = InfPlugin.plugin.config().getRegionsForLocation(location);
+        if (regions.isEmpty()) {
+            return false;
+        }
+        return regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty());
+    }
+
     @Override
     public boolean canIMobAutoSpawn(World world) {
         return InfPlugin.plugin.config().isEnabledInWorld(world);
@@ -140,12 +152,19 @@ public class InfSpawnControler implements ISpawnControler {
         }
 
         if (!regions.isEmpty()) {
+            // Check if player is in a region with empty mobs list - block all spawning
+            if (isInEmptyMobsRegion(center)) {
+                return null;
+            }
             WeightedPair<MobConfig, Integer> pair = mobManager.selectConfigInRegion(regions, center);
             if (pair != null && pair.getKey() != null) {
                 mobConfig = pair.getKey();
                 final Integer level = pair.getValue();
                 MobConfig finalMobConfig = mobConfig;
                 mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
+            } else {
+                // Player is in a region but no mobs are configured - don't fall back to natural spawning
+                return null;
             }
         }
 
@@ -219,6 +238,10 @@ public class InfSpawnControler implements ISpawnControler {
 
     private boolean recheckLocation(Location location, MobConfig mobConfig, boolean force, Player player) {
         if (location == null || mobConfig == null || location.getWorld() == null) {
+            return false;
+        }
+        // Block spawning within regions that have empty mobs list
+        if (isInEmptyMobsRegion(location)) {
             return false;
         }
         World world = location.getWorld();
