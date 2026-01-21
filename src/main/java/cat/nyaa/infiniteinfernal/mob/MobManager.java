@@ -195,6 +195,10 @@ public class MobManager {
         return spawnConfs;
     }
 
+    public List<WeightedPair<MobConfig, Integer>> getNaturalSpawnableMob(Location location) {
+        return getNaturalSpawnConfigs(location);
+    }
+
     public Collection<MobConfig> getMobConfigs() {
         return InfPlugin.plugin.config().mobConfigs.values();
     }

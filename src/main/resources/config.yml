@@ -4,5 +4,18 @@ bossbar:
   __class__: cat.nyaa.infiniteinfernal.configs.BossbarConfig
   enabled: true
   killsuffix: '[KILLED]'
+randomLootChest:
+  __class__: cat.nyaa.infiniteinfernal.configs.RandomLootChestConfig
+  enabled: true
+  items:
+    min: 1
+    max: 4
+  reset:
+    minHours: 1
+    maxHours: 4
+  scan:
+    intervalTicks: 200
+    chunksPerRun: 2
+    maxContainersPerChunk: 32
 tags: []
 worlds: {}

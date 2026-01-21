@@ -88,6 +88,9 @@ public class Config extends PluginConfigure {
     @Serializable
     public boolean enabled = true;
 
+    @Serializable(name = "randomLootChest")
+    public RandomLootChestConfig randomLootChest = new RandomLootChestConfig();
+
     @Serializable(name = "dps.title")
     public String dpsTitle = "&aDPS: &c{dps} &atotal: &c{total} &amax: &c{max}";
 

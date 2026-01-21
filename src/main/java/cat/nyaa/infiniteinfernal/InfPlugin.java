@@ -11,6 +11,7 @@ import cat.nyaa.infiniteinfernal.group.GroupListener;
 import cat.nyaa.infiniteinfernal.loot.IMessager;
 import cat.nyaa.infiniteinfernal.loot.InfMessager;
 import cat.nyaa.infiniteinfernal.loot.LootManager;
+import cat.nyaa.infiniteinfernal.loot.RandomLootChestManager;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
 import cat.nyaa.infiniteinfernal.mob.TargetDummy;
 import cat.nyaa.infiniteinfernal.ui.UiEvents;
@@ -49,6 +50,7 @@ public class InfPlugin extends JavaPlugin {
     MobManager mobManager;
     BroadcastManager broadcastManager;
     BossbarManager bossbarManager;
+    RandomLootChestManager randomLootChestManager;
 
     InfMessager infMessager;
     ISpawnControler spawnControler;
@@ -82,10 +84,12 @@ public class InfPlugin extends JavaPlugin {
         messageConfig.load();
         infMessager = new InfMessager(messageConfig);
         spawnControler = new InfSpawnControler(this);
+        randomLootChestManager = new RandomLootChestManager(this);
 
         Bukkit.getPluginManager().registerEvents(events, this);
         Bukkit.getPluginManager().registerEvents(uiEvents, this);
         Bukkit.getPluginManager().registerEvents(groupListener, this);
+        Bukkit.getPluginManager().registerEvents(randomLootChestManager, this);
         Bukkit.getPluginCommand("infiniteinfernal").setExecutor(commands);
         Bukkit.getPluginCommand("ig").setExecutor(groupCommands);
         Bukkit.getPluginCommand("imi").setExecutor(imiCommand);
@@ -106,6 +110,7 @@ public class InfPlugin extends JavaPlugin {
         Ticker.getInstance().init(this);
         UiManager.getInstance();
         MobManager.instance().initMobs();
+        randomLootChestManager.start();
         Database instance = Database.getInstance();
         instance.load();
         try {
@@ -135,11 +140,17 @@ public class InfPlugin extends JavaPlugin {
         }
         MobManager.instance().initMobs();
         TargetDummy.clearAll();
+        if (randomLootChestManager != null) {
+            randomLootChestManager.start();
+        }
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
+        if (randomLootChestManager != null) {
+            randomLootChestManager.stop();
+        }
         LootManager.disable();
         MobManager.disable();
     }
