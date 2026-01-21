@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -144,8 +145,8 @@ public class InfSpawnControler implements ISpawnControler {
         List<RegionConfig> regions = config.getRegionsForLocation(center);
 
         Function<Location, IMob> mobSupplier = null;
-        Function<MobConfig, Location> locationSupplier = (mobConfig) -> findLocationByConfig(player, mobConfig, center, force);
         MobConfig mobConfig = null;
+        List<RegionConfig> allowedRegions = null;
 
         if (!canSpawnNearPlayer(player, center) && !force) {
             return null;
@@ -162,6 +163,7 @@ public class InfSpawnControler implements ISpawnControler {
                 final Integer level = pair.getValue();
                 MobConfig finalMobConfig = mobConfig;
                 mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
+                allowedRegions = regions;
             } else {
                 // Player is in a region but no mobs are configured - don't fall back to natural spawning
                 return null;
@@ -179,6 +181,9 @@ public class InfSpawnControler implements ISpawnControler {
             mobSupplier = (location) -> mobManager.spawnMobByConfig(finalMobConfig, location, level);
         }
 
+        List<RegionConfig> finalAllowedRegions = allowedRegions;
+        Function<MobConfig, Location> locationSupplier = (candidate) ->
+                findLocationByConfig(player, candidate, center, force, finalAllowedRegions);
         Location location = locationSupplier.apply(mobConfig);
         int retryTimes = 30;
         for (int i = 0; i < retryTimes; i++) {
@@ -193,23 +198,88 @@ public class InfSpawnControler implements ISpawnControler {
         return mobSupplier.apply(location);
     }
 
-    private Location findLocationByConfig(Player player, MobConfig mobConfig, Location center, boolean force) {
+    private Location findLocationByConfig(Player player, MobConfig mobConfig, Location center, boolean force, List<RegionConfig> allowedRegions) {
         World world = center.getWorld();
         Location spawnLocation = null;
         final EntityType type = mobConfig.type;
         if (MobManager.FluidLocationWrapper.isSkyMob(type)){
-            spawnLocation = findLocation(world, center, Material::isAir);
+            spawnLocation = findSkyLocation(world, center);
         }else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
-            spawnLocation = findLocation(world, center, material -> material.equals(Material.WATER));
+            spawnLocation = findWaterLocation(world, center);
         }else {
             spawnLocation = findFloorLocation(world, center);
         }
 
         if (spawnLocation == null)return null;
-        if (recheckLocation(spawnLocation, mobConfig, force, player)){
+        if (recheckLocation(spawnLocation, mobConfig, force, player, allowedRegions)){
             centerSpawnLocation(spawnLocation);
             return spawnLocation;
         }else return null;
+    }
+
+    private Location findSkyLocation(World world, Location center) {
+        if (world == null || center == null) {
+            return null;
+        }
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+        int minSpawnDistance = getMinSpawnDistance(world);
+        for (int i = 0; i < 20; i++) {
+            Location candidate = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, location -> true);
+            if (candidate == null) {
+                continue;
+            }
+            int x = candidate.getBlockX();
+            int z = candidate.getBlockZ();
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+            int topY = world.getHighestBlockYAt(x, z);
+            int offset = (int) Math.round(Utils.random(8, 24));
+            int y = Math.min(world.getMaxHeight() - 2, topY + Math.max(2, offset));
+            if (y <= world.getMinHeight()) {
+                continue;
+            }
+            Location spawn = new Location(world, x + 0.5, y, z + 0.5);
+            if (spawn.getBlock().getType().isAir() && spawn.getBlock().getRelative(BlockFace.UP).getType().isAir()) {
+                return spawn;
+            }
+        }
+        return null;
+    }
+
+    private Location findWaterLocation(World world, Location center) {
+        if (world == null || center == null) {
+            return null;
+        }
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+        int minSpawnDistance = getMinSpawnDistance(world);
+        for (int i = 0; i < 20; i++) {
+            Location candidate = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, location -> true);
+            if (candidate == null) {
+                continue;
+            }
+            int x = candidate.getBlockX();
+            int z = candidate.getBlockZ();
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+            int topY = world.getHighestBlockYAt(x, z);
+            int minY = world.getMinHeight();
+            for (int y = topY; y >= minY; y--) {
+                Block block = world.getBlockAt(x, y, z);
+                if (block.getType() == Material.WATER) {
+                    Block above = block.getRelative(BlockFace.UP);
+                    if (above.getType() == Material.WATER || above.getType().isAir()) {
+                        return block.getLocation().add(0.5, 0, 0.5);
+                    }
+                    continue;
+                }
+                if (block.getType().isSolid()) {
+                    break;
+                }
+            }
+        }
+        return null;
     }
 
     private Location findLocation(World world, Location center, Predicate<Material> air) {
@@ -236,13 +306,22 @@ public class InfSpawnControler implements ISpawnControler {
         return spawnLocation;
     }
 
-    private boolean recheckLocation(Location location, MobConfig mobConfig, boolean force, Player player) {
+    private boolean recheckLocation(Location location, MobConfig mobConfig, boolean force, Player player, List<RegionConfig> allowedRegions) {
         if (location == null || mobConfig == null || location.getWorld() == null) {
             return false;
         }
         // Block spawning within regions that have empty mobs list
-        if (isInEmptyMobsRegion(location)) {
+        if (!force && isInEmptyMobsRegion(location)) {
             return false;
+        }
+        if (!force) {
+            if (allowedRegions != null && !allowedRegions.isEmpty()) {
+                boolean inAllowedRegion = allowedRegions.stream()
+                        .anyMatch(regionConfig -> regionConfig.region != null && regionConfig.region.contains(location));
+                if (!inAllowedRegion) {
+                    return false;
+                }
+            }
         }
         World world = location.getWorld();
         if (canSpawn(world,location) || force) {

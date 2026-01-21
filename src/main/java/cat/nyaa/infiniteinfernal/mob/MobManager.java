@@ -181,35 +181,16 @@ public class MobManager {
     public List<WeightedPair<MobConfig, Integer>> getSpawnableMob(Location location) {
         World world = location.getWorld();
         if (world == null) return new ArrayList<>();
-        Biome biome = location.getBlock().getBiome();
-        String biomeKey = biome.getKey().getKey();
         Config config = InfPlugin.plugin.config();
         List<RegionConfig> regions = config.getRegionsForLocation(location);
-        if (!regions.isEmpty()) {
-            return getSpawnConfigsForRegion(regions, location);
-        }
-        List<WeightedPair<Integer, Integer>> validLevels = getValidLevels(location);
         List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
-        validLevels.stream().forEach(pair -> {
-            Integer level = pair.getKey();
-            if (level != null) {
-                List<MobConfig> collect = natualSpawnLists.get(level);
-                FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
-                if (!collect.isEmpty()) {
-                    collect.stream()
-                            .filter(config1 -> {
-                                List<String> biomes = config1.spawn.biomes;
-                                List<String> worlds = config1.spawn.worlds;
-                                // Empty/null worlds means all worlds; empty/null biomes means all biomes
-                                boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
-                                boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
-                                return worldMatch && biomeMatch;
-                            })
-                            .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
-                            .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, mobConfig.getWeight(), mobConfig.getWeight())));
-                }
-            }
-        });
+        if (!regions.isEmpty() && regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty())) {
+            return spawnConfs;
+        }
+        if (!regions.isEmpty()) {
+            spawnConfs.addAll(getSpawnConfigsForRegion(regions, location));
+        }
+        spawnConfs.addAll(getNaturalSpawnConfigs(location));
         return spawnConfs;
     }
 
@@ -400,17 +381,58 @@ public class MobManager {
 
     public IMob spawnInRegion(List<RegionConfig> regions, Location center) {
         WeightedPair<MobConfig, Integer> mobConfig = selectConfigInRegion(regions, center);
+        if (mobConfig == null) {
+            return null;
+        }
         return spawnMobByConfig(mobConfig.getKey(), center, mobConfig.getValue());
     }
 
     public WeightedPair<MobConfig, Integer> selectConfigInRegion(List<RegionConfig> regions, Location center){
-        List<WeightedPair<MobConfig, Integer>> spawnConfs = getSpawnConfigsForRegion(regions, center);
+        if (!regions.isEmpty() && regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty())) {
+            return null;
+        }
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        spawnConfs.addAll(getSpawnConfigsForRegion(regions, center));
+        spawnConfs.addAll(getNaturalSpawnConfigs(center));
         if (!spawnConfs.isEmpty()) {
             WeightedPair<MobConfig, Integer> selected = Utils.weightedRandomPick(spawnConfs);
             if (selected == null) return null;
             return selected;
         }
         return null;
+    }
+
+    private List<WeightedPair<MobConfig, Integer>> getNaturalSpawnConfigs(Location location) {
+        World world = location.getWorld();
+        if (world == null) {
+            return new ArrayList<>();
+        }
+        Biome biome = location.getBlock().getBiome();
+        String biomeKey = biome.getKey().getKey();
+        List<WeightedPair<Integer, Integer>> validLevels = getValidLevels(location);
+        List<WeightedPair<MobConfig, Integer>> spawnConfs = new ArrayList<>();
+        FluidLocationWrapper fluidLocationWrapper = new FluidLocationWrapper(location);
+        validLevels.forEach(pair -> {
+            Integer level = pair.getKey();
+            if (level == null) {
+                return;
+            }
+            List<MobConfig> collect = natualSpawnLists.get(level);
+            if (collect == null || collect.isEmpty()) {
+                return;
+            }
+            collect.stream()
+                    .filter(config1 -> {
+                        List<String> biomes = config1.spawn.biomes;
+                        List<String> worlds = config1.spawn.worlds;
+                        boolean worldMatch = worlds == null || worlds.isEmpty() || worlds.contains(world.getName());
+                        boolean biomeMatch = isBiomeMatch(biomes, biomeKey);
+                        return worldMatch && biomeMatch;
+                    })
+                    .filter(mobConfig -> fluidLocationWrapper.isValid(mobConfig.type))
+                    .forEach(mobConfig -> spawnConfs.add(new WeightedPair<>(mobConfig, level, mobConfig.getWeight())));
+        });
+        return spawnConfs;
     }
 
     private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsForRegion(List<RegionConfig> regions, Location location) {

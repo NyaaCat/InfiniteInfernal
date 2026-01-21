@@ -4,8 +4,6 @@ import cat.nyaa.infiniteinfernal.ability.ActiveAbility;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.util.stream.Stream;
 
@@ -22,16 +20,7 @@ public class AbilityAoePotion extends ActiveAbility {
     @Override
     public void active(IMob iMob) {
         Stream<LivingEntity> entityStream = Utils.getValidTargets(iMob, iMob.getEntity().getNearbyEntities(radius,radius,radius));
-        PotionEffectType effectType = PotionEffectType.getByName(this.effect);
-        PotionEffect effect = effectType.createEffect(duration,amplifier);
-        entityStream.forEach(livingEntity -> {
-            PotionEffect potionEffect = livingEntity.getPotionEffect(effectType);
-            if (potionEffect != null && potionEffect.getAmplifier()>amplifier){
-                return;
-            }
-            livingEntity.removePotionEffect(effectType);
-            livingEntity.addPotionEffect(effect, true);
-        });
+        entityStream.forEach(livingEntity -> Utils.doEffect(effect, livingEntity, duration, amplifier, getName()));
     }
 
     @Override
