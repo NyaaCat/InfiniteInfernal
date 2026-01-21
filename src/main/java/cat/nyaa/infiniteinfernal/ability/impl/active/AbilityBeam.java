@@ -111,7 +111,7 @@ public class AbilityBeam extends ActiveAbility {
         public MovingTask(IMob iMob, Vector direction) {
             this.iMob = iMob;
             damage = AbilityBeam.this.damageMultiplier * iMob.getDamage();
-            extraData = Utils.parseExtraData(particle.extraData, particle.type);
+            extraData = Utils.parseExtraData(particle);
             this.direction = direction;
         }
 

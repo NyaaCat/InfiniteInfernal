@@ -36,7 +36,7 @@ public class AbilitySkillEffect extends ActiveAbility {
         Location location = entity.getLocation();
         World world = entity.getWorld();
         if (particleEnabled){
-            world.spawnParticle(particle.type, location, particle.amount, particle.getOffsetX(), particle.getOffsetY(), particle.getOffsetZ(), particle.speed, Utils.parseExtraData(particle.extraData, particle.type), particle.forced);
+            world.spawnParticle(particle.type, location, particle.amount, particle.getOffsetX(), particle.getOffsetY(), particle.getOffsetZ(), particle.speed, Utils.parseExtraData(particle), particle.forced);
         }
         if (soundEnabled){
             world.playSound(location, sound, (float) volume, (float) pitch);

@@ -346,6 +346,30 @@ public class Utils {
         return parseExtraData(extraData, null);
     }
 
+    public static Object parseExtraData(ParticleConfig particleConfig) {
+        if (particleConfig == null || particleConfig.type == null) {
+            return null;
+        }
+        String extraData = particleConfig.extraData;
+        boolean hasExtra = extraData != null && !extraData.isEmpty();
+        Object parsed = hasExtra ? parseExtraData(extraData, particleConfig.type) : null;
+        if (parsed != null) {
+            return parsed;
+        }
+        Class<?> dataType = particleConfig.type.getDataType();
+        if (dataType == Particle.DustOptions.class) {
+            return new Particle.DustOptions(colorFromOffsets(particleConfig), sizeFromSpeed(particleConfig.speed));
+        }
+        if (dataType == Particle.DustTransition.class) {
+            Color color = colorFromOffsets(particleConfig);
+            return new Particle.DustTransition(color, color, sizeFromSpeed(particleConfig.speed));
+        }
+        if (dataType == Color.class) {
+            return colorFromOffsets(particleConfig);
+        }
+        return null;
+    }
+
     public static Object parseExtraData(String extraData, Particle particle) {
         if (particle == null) {
             return parseExtraDataWithoutParticle(extraData);
@@ -394,14 +418,17 @@ public class Utils {
             return null;
         }
         try {
-            String[] split = extraData.split(",", 4);
-            if (split.length < 4) {
+            String[] split = extraData.split(",", -1);
+            if (split.length < 3) {
                 return null;
             }
-            int r = Integer.parseInt(split[0]);
-            int g = Integer.parseInt(split[1]);
-            int b = Integer.parseInt(split[2]);
-            float size = Float.parseFloat(split[3]);
+            Integer r = parseColorComponent(split[0]);
+            Integer g = parseColorComponent(split[1]);
+            Integer b = parseColorComponent(split[2]);
+            if (r == null || g == null || b == null) {
+                return null;
+            }
+            float size = split.length >= 4 ? parseFloatValue(split[3], 1.0f) : 1.0f;
             return new Particle.DustOptions(Color.fromRGB(r, g, b), size);
         } catch (Exception ignored) {
             return null;
@@ -413,17 +440,20 @@ public class Utils {
             return null;
         }
         try {
-            String[] split = extraData.split(",", 7);
-            if (split.length < 7) {
+            String[] split = extraData.split(",", -1);
+            if (split.length < 6) {
                 return null;
             }
-            int r1 = Integer.parseInt(split[0]);
-            int g1 = Integer.parseInt(split[1]);
-            int b1 = Integer.parseInt(split[2]);
-            int r2 = Integer.parseInt(split[3]);
-            int g2 = Integer.parseInt(split[4]);
-            int b2 = Integer.parseInt(split[5]);
-            float size = Float.parseFloat(split[6]);
+            Integer r1 = parseColorComponent(split[0]);
+            Integer g1 = parseColorComponent(split[1]);
+            Integer b1 = parseColorComponent(split[2]);
+            Integer r2 = parseColorComponent(split[3]);
+            Integer g2 = parseColorComponent(split[4]);
+            Integer b2 = parseColorComponent(split[5]);
+            if (r1 == null || g1 == null || b1 == null || r2 == null || g2 == null || b2 == null) {
+                return null;
+            }
+            float size = split.length >= 7 ? parseFloatValue(split[6], 1.0f) : 1.0f;
             return new Particle.DustTransition(Color.fromRGB(r1, g1, b1), Color.fromRGB(r2, g2, b2), size);
         } catch (Exception ignored) {
             return null;
@@ -457,17 +487,84 @@ public class Utils {
             return null;
         }
         try {
-            String[] split = extraData.split(",", 3);
+            String[] split = extraData.split(",", -1);
             if (split.length < 3) {
                 return null;
             }
-            int r = Integer.parseInt(split[0]);
-            int g = Integer.parseInt(split[1]);
-            int b = Integer.parseInt(split[2]);
+            Integer r = parseColorComponent(split[0]);
+            Integer g = parseColorComponent(split[1]);
+            Integer b = parseColorComponent(split[2]);
+            if (r == null || g == null || b == null) {
+                return null;
+            }
             return Color.fromRGB(r, g, b);
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private static float parseFloatValue(String value, float fallback) {
+        if (value == null || value.isEmpty()) {
+            return fallback;
+        }
+        try {
+            return Float.parseFloat(value.trim());
+        } catch (Exception ignored) {
+            return fallback;
+        }
+    }
+
+    private static Integer parseColorComponent(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            double parsed = Double.parseDouble(value.trim());
+            double scaled = parsed <= 1.0 ? parsed * 255.0 : parsed;
+            int result = (int) Math.round(scaled);
+            if (result < 0) {
+                return 0;
+            }
+            if (result > 255) {
+                return 255;
+            }
+            return result;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static float sizeFromSpeed(double speed) {
+        if (speed <= 0) {
+            return 1.0f;
+        }
+        float size = (float) speed;
+        return size <= 0 ? 1.0f : size;
+    }
+
+    private static Color colorFromOffsets(ParticleConfig particleConfig) {
+        double x = particleConfig.getOffsetX();
+        double y = particleConfig.getOffsetY();
+        double z = particleConfig.getOffsetZ();
+        if (x == 0 && y == 0 && z == 0) {
+            return Color.WHITE;
+        }
+        int r = normalizeColorComponent(x);
+        int g = normalizeColorComponent(y);
+        int b = normalizeColorComponent(z);
+        return Color.fromRGB(r, g, b);
+    }
+
+    private static int normalizeColorComponent(double value) {
+        double scaled = value <= 1.0 ? value * 255.0 : value;
+        int result = (int) Math.round(scaled);
+        if (result < 0) {
+            return 0;
+        }
+        if (result > 255) {
+            return 255;
+        }
+        return result;
     }
 
     public static List<Location> getRoundLocations(Location location, double radius) {
@@ -551,7 +648,7 @@ public class Utils {
                 particleConfig.getOffsetY(),
                 particleConfig.getOffsetZ(),
                 particleConfig.speed,
-                parseExtraData(particleConfig.extraData, particleConfig.type),
+                parseExtraData(particleConfig),
                 particleConfig.forced
         );
     }
