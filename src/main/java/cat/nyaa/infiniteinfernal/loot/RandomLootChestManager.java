@@ -316,7 +316,7 @@ public class RandomLootChestManager implements Listener {
         List<RegionConfig> regions = config.getRegionsForLocation(location);
         MobManager mobManager = MobManager.instance();
         if (!regions.isEmpty() && regions.stream().anyMatch(region -> region.mobs.isEmpty())) {
-            return mobManager.getNaturalSpawnableMob(location);
+            return mobManager.getBiomeSpawnableMob(location);
         }
         List<WeightedPair<MobConfig, Integer>> spawnable = mobManager.getSpawnableMob(location);
         if ((spawnable == null || spawnable.isEmpty()) && !regions.isEmpty()) {

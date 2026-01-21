@@ -43,6 +43,7 @@ public class MobManager {
 
     Map<String, MobConfig> nameCfgMap = new LinkedHashMap<>();
     Map<Integer, List<MobConfig>> natualSpawnLists = new LinkedHashMap<>();
+    Map<Integer, List<MobConfig>> biomeSpawnLists = new LinkedHashMap<>();
 
     private MobManager() {
         this.load();
@@ -94,6 +95,7 @@ public class MobManager {
 //        worldMobMap.clear();
         nameCfgMap.clear();
         natualSpawnLists.clear();
+        biomeSpawnLists.clear();
     }
 
     private void buildCfgMaps(NamedDirConfigs<MobConfig> mobConfigs) {
@@ -104,17 +106,20 @@ public class MobManager {
     }
 
     private void buildNatualSpawnList(NamedDirConfigs<MobConfig> mobConfigs) {
-        mobConfigs.values().stream()
-                .filter(config -> config.spawn.autoSpawn)
-                .forEach(config -> {
-                    List<Integer> validLevels = MobConfig.parseLevels(config.spawn.levels);
-                    if ((!validLevels.isEmpty())) {
-                        validLevels.forEach(level -> {
-                            List<MobConfig> natualSpawnList = this.natualSpawnLists.computeIfAbsent(level, integer -> new ArrayList<>());
-                            natualSpawnList.add(config);
-                        });
-                    }
-                });
+        mobConfigs.values().forEach(config -> {
+            List<Integer> validLevels = MobConfig.parseLevels(config.spawn.levels);
+            if (validLevels.isEmpty()) {
+                return;
+            }
+            validLevels.forEach(level -> {
+                List<MobConfig> biomeList = this.biomeSpawnLists.computeIfAbsent(level, integer -> new ArrayList<>());
+                biomeList.add(config);
+                if (config.spawn.autoSpawn) {
+                    List<MobConfig> natualSpawnList = this.natualSpawnLists.computeIfAbsent(level, integer -> new ArrayList<>());
+                    natualSpawnList.add(config);
+                }
+            });
+        });
     }
 
     public static MobManager instance() {
@@ -196,7 +201,11 @@ public class MobManager {
     }
 
     public List<WeightedPair<MobConfig, Integer>> getNaturalSpawnableMob(Location location) {
-        return getNaturalSpawnConfigs(location);
+        return getSpawnConfigsFromList(location, natualSpawnLists);
+    }
+
+    public List<WeightedPair<MobConfig, Integer>> getBiomeSpawnableMob(Location location) {
+        return getSpawnConfigsFromList(location, biomeSpawnLists);
     }
 
     public Collection<MobConfig> getMobConfigs() {
@@ -450,6 +459,10 @@ public class MobManager {
     }
 
     private List<WeightedPair<MobConfig, Integer>> getNaturalSpawnConfigs(Location location) {
+        return getSpawnConfigsFromList(location, natualSpawnLists);
+    }
+
+    private List<WeightedPair<MobConfig, Integer>> getSpawnConfigsFromList(Location location, Map<Integer, List<MobConfig>> spawnLists) {
         World world = location.getWorld();
         if (world == null) {
             return new ArrayList<>();
@@ -464,7 +477,7 @@ public class MobManager {
             if (level == null) {
                 return;
             }
-            List<MobConfig> collect = natualSpawnLists.get(level);
+            List<MobConfig> collect = spawnLists.get(level);
             if (collect == null || collect.isEmpty()) {
                 return;
             }
