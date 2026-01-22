@@ -99,10 +99,16 @@ public class MainLoopTask {
         }
         if (playersNearMob.size() == 0) {
             mobManager.removeMob(iMob, false);
-        }
-        LivingEntity target = iMob.getTarget();
-        if (target == null || !target.getWorld().equals(iMob.getEntity().getWorld()))
             return;
+        }
+        // Allow abilities to fire if there are players nearby, even without a specific currentTarget.
+        // Each ability will find its own target using Utils.randomSelectTarget() with its own range.
+        // This allows abilities like teleport (range 64) to work even when player is outside
+        // aggro range (typically 56 blocks).
+        LivingEntity target = iMob.getTarget();
+        if (target != null && !target.getWorld().equals(iMob.getEntity().getWorld())) {
+            return;
+        }
 
         List<IAbilitySet> abilities = iMob.getAbilities().stream()
                 .filter(IAbilitySet::containsActive)
