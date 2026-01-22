@@ -520,4 +520,14 @@ public class TargetDummy implements IMob {
     public void updateBossBar(KeyedBossBar bossBar, LivingEntity entity) {
         lastUpdatedCounter.updateBossbar();
     }
+
+    @Override
+    public void incrementNoTargetTicks() {
+        // TargetDummy doesn't despawn based on aggro
+    }
+
+    @Override
+    public void resetNoTargetTicks() {
+        // TargetDummy doesn't track aggro
+    }
 }

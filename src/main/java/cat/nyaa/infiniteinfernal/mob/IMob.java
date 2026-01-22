@@ -49,4 +49,15 @@ public interface IMob {
     void setLastDamageCause(EntityDamageEvent event);
 
     void updateBossBar(KeyedBossBar bossBar, LivingEntity entity);
+
+    /**
+     * Increment the counter tracking ticks without a valid target.
+     * If threshold is exceeded, the mob will despawn.
+     */
+    void incrementNoTargetTicks();
+
+    /**
+     * Reset the no-target counter when a valid target is found.
+     */
+    void resetNoTargetTicks();
 }

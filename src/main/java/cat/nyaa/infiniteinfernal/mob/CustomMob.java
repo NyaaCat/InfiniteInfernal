@@ -56,6 +56,9 @@ public class CustomMob implements IMob {
     private boolean enableDynamicHealth;
     private String dynamicHealthExpression = "";
     private double followDistance = 48;
+    private int noTargetTicks = 0;
+    // Despawn after this many mob-active-intervals without a valid target (~19 seconds at 75 ticks/interval)
+    private static final int NO_TARGET_DESPAWN_THRESHOLD = 5;
 
     public CustomMob(MobConfig config, int level) {
         this.config = config;
@@ -424,6 +427,20 @@ public class CustomMob implements IMob {
         } else {
             bossBar.setColor(BarColor.BLUE);
         }
+    }
+
+    @Override
+    public void incrementNoTargetTicks() {
+        noTargetTicks++;
+        if (noTargetTicks >= NO_TARGET_DESPAWN_THRESHOLD) {
+            // No valid target for too long - despawn
+            MobManager.instance().removeMob(this, false);
+        }
+    }
+
+    @Override
+    public void resetNoTargetTicks() {
+        noTargetTicks = 0;
     }
 
     private class NamedLazyNumber implements Expression.LazyNumber{
