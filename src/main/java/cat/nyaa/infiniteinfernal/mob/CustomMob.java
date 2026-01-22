@@ -288,18 +288,26 @@ public class CustomMob implements IMob {
     public void retarget(LivingEntity entity) {
         LivingEntity mobEntity = getEntity();
         if (mobEntity instanceof Mob) {
+            // If no new target found (null), keep the current target - don't clear it
+            // This prevents abilities from stopping when player temporarily moves out of aggro range
+            if (entity == null) {
+                return;
+            }
             LivingEntity target = ((Mob) mobEntity).getTarget();
             if (target == null) {
-                if (entity == null) return;
-                ((Mob) mobEntity).setTarget(entity);
+                // Set currentTarget BEFORE setTarget() to prevent EntityTargetEvent handler
+                // from cancelling the event (it checks if new target matches currentTarget)
                 this.currentTarget = entity;
+                ((Mob) mobEntity).setTarget(entity);
                 return;
             }
             if (target.equals(entity)) {
                 return;
             }
-            ((Mob) mobEntity).setTarget(entity);
+            // Set currentTarget BEFORE setTarget() to prevent EntityTargetEvent handler
+            // from cancelling the event (it checks if new target matches currentTarget)
             this.currentTarget = entity;
+            ((Mob) mobEntity).setTarget(entity);
         }
     }
 
