@@ -10,9 +10,6 @@ import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
@@ -30,9 +27,6 @@ import java.util.stream.Stream;
 
 public class Utils {
     private static Random random = new Random();
-    private static final UUID NEGATIVE_HEALTH_BOOST_UUID = UUID.fromString("0f1d6f70-9e14-4d35-bc29-5a644a62f2f1");
-    private static final String NEGATIVE_HEALTH_BOOST_NAME = "inf_negative_health_boost";
-    private static final Map<UUID, Long> NEGATIVE_HEALTH_BOOST_EXPIRE = new HashMap<>();
 
     public static <T> T randomPick(List<T> list) {
         return list.isEmpty() ? null : list.get(random.nextInt(list.size()));
@@ -243,9 +237,7 @@ public class Utils {
         PotionEffectType eff = PotionEffectType.getByName(effect);
         if (eff != null) {
             if (amplifier < 0) {
-                if (PotionEffectType.HEALTH_BOOST.equals(eff)) {
-                    applyNegativeHealthBoost(target, duration, amplifier);
-                }
+                Bukkit.getLogger().warning("[InfiniteInfernal] Negative potion effect amplifier ignored: effect=" + effect + ", amplifier=" + amplifier + ", ability=" + ability + " (not supported in MC 1.21+)");
                 return;
             }
             PotionEffect potionEffect = target.getPotionEffect(eff);
@@ -257,49 +249,6 @@ public class Utils {
         } else {
             throw new IllegalConfigException("effect " + effect + " in ability " + ability + " don't exists");
         }
-    }
-
-    private static void applyNegativeHealthBoost(LivingEntity target, int duration, int amplifier) {
-        if (target == null || duration <= 0) {
-            return;
-        }
-        AttributeInstance attribute = target.getAttribute(Attribute.MAX_HEALTH);
-        if (attribute == null) {
-            return;
-        }
-        double amount = -4.0d * Math.abs(amplifier);
-        if (amount == 0d) {
-            return;
-        }
-        AttributeModifier existing = attribute.getModifier(NEGATIVE_HEALTH_BOOST_UUID);
-        if (existing != null) {
-            attribute.removeModifier(existing);
-        }
-        AttributeModifier modifier = new AttributeModifier(NEGATIVE_HEALTH_BOOST_UUID, NEGATIVE_HEALTH_BOOST_NAME, amount, AttributeModifier.Operation.ADD_NUMBER);
-        attribute.addModifier(modifier);
-        double maxHealth = attribute.getValue();
-        if (target.getHealth() > maxHealth) {
-            target.setHealth(Math.max(0.01d, maxHealth));
-        }
-        long expiresAt = System.currentTimeMillis() + (duration * 50L);
-        NEGATIVE_HEALTH_BOOST_EXPIRE.put(target.getUniqueId(), expiresAt);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Long currentExpire = NEGATIVE_HEALTH_BOOST_EXPIRE.get(target.getUniqueId());
-                if (currentExpire == null || currentExpire > System.currentTimeMillis()) {
-                    return;
-                }
-                AttributeInstance attr = target.getAttribute(Attribute.MAX_HEALTH);
-                if (attr != null) {
-                    AttributeModifier modifier = attr.getModifier(NEGATIVE_HEALTH_BOOST_UUID);
-                    if (modifier != null) {
-                        attr.removeModifier(modifier);
-                    }
-                }
-                NEGATIVE_HEALTH_BOOST_EXPIRE.remove(target.getUniqueId(), currentExpire);
-            }
-        }.runTaskLater(InfPlugin.plugin, duration);
     }
 
     public static PotionEffectType parseEffect(String effect, String ability) {
