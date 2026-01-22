@@ -95,4 +95,43 @@ group:
     roll: "{playerName} got item {itemName} * {amount}"
   kick:
     player: "kicked player %s"
+config:
+  get:
+    success: "&aConfig value &f%s&a: &e%s"
+  set:
+    success: "&aSuccessfully set &f%s&a to &e%s"
+  add:
+    list:
+      success: "&aAdded &e%d&a item(s) to &f%s"
+    map:
+      success: "&aAdded entry &e%s&a to &f%s"
+  remove:
+    list:
+      success: "&aRemoved &e%s&a from &f%s"
+      not_found: "&cValue &e%s&c not found in &f%s"
+    map:
+      success: "&aRemoved key &e%s&a from &f%s"
+      not_found: "&cKey &e%s&c not found in &f%s"
+  delete:
+    success: "&aSuccessfully deleted &f%s"
+    failed: "&cFailed to delete &f%s"
+  list:
+    header: "&6Keys at &f%s&6:"
+    entry: "&7  - &f%s &7%s"
+    empty: "&eNo keys at &f%s"
+  reload:
+    success: "&aConfiguration reloaded successfully"
+  save:
+    success: "&aConfiguration saved successfully"
+  error:
+    invalid_path: "&cInvalid path &f%s&c: %s"
+    no_value: "&cNo value provided"
+    set_failed: "&cFailed to set &f%s&c: %s"
+    add_failed: "&cFailed to add to &f%s&c: %s"
+    remove_failed: "&cFailed to remove from &f%s&c: %s"
+    delete_failed: "&cFailed to delete &f%s&c: %s"
+    list_failed: "&cFailed to list &f%s&c: %s"
+    not_collection: "&cPath &f%s&c is not a list or map"
+enabled: "&aInfinite Infernal &2enabled"
+disabled: "&cInfinite Infernal &4disabled"
 

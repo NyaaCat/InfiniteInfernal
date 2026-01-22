@@ -248,6 +248,77 @@ maxSpawnAmountOverride: 50        # 区域最大怪物数量
 | `/imi near` | 只接收附近的击杀 |
 | `/imi off` | 关闭消息 |
 
+### 配置命令 (`/ii config`)
+
+使用点分路径进行运行时配置管理。
+
+| 命令 | 权限 | 说明 |
+|------|------|------|
+| `/ii config get <路径>` | `im.config` | 读取配置值 |
+| `/ii config set <路径> <值>` | `im.config` | 设置配置值 |
+| `/ii config add <路径> <值>` | `im.config` | 向列表/映射添加值 |
+| `/ii config remove <路径> <值>` | `im.config` | 从列表/映射移除值 |
+| `/ii config delete <路径>` | `im.config` | 删除路径处的条目 |
+| `/ii config list [路径]` | `im.config` | 列出路径处的键 |
+| `/ii config reload` | `im.config` | 从磁盘重载配置 |
+| `/ii config save` | `im.config` | 保存配置到磁盘 |
+
+#### 路径语法
+
+- `/` 分隔逻辑部分（配置区段、文件）
+- `.` 访问对象内的属性
+
+**路径示例：**
+```
+language                    # 主配置字段
+bossbar.enabled             # 嵌套属性
+worlds/world.aggro.range.max    # 世界配置，嵌套属性
+mobs/zombie-1.healthOverride    # 怪物配置属性
+mobs/zombie-1.spawn.weight      # 怪物配置中的嵌套属性
+levels/5.attr.health            # 等级5配置，嵌套属性
+abilities/set-1.weight          # 技能组属性
+regions/dungeon.mobs            # 区域配置，列表属性
+```
+
+#### 值格式
+
+| 类型 | 格式 | 示例 |
+|------|------|------|
+| 单个值 | 纯文本 | `100`, `true`, `ZOMBIE` |
+| 带空格的字符串 | 引号包裹 | `"Hello World"` |
+| 列表（完全替换） | 逗号分隔 | `a,b,c` |
+| 列表（添加多个） | 空格分隔参数 | `/ii config add tags tag1 tag2` |
+| 映射条目 | 键:值 | `/ii config add worlds/world.trueDamage fire:2.0` |
+
+#### 示例
+
+```bash
+# 获取值
+/ii config get language
+/ii config get bossbar.enabled
+/ii config get worlds/world.aggro.range.max
+/ii config get mobs/zombie-1.healthOverride
+
+# 设置值
+/ii config set language zh_CN
+/ii config set bossbar.enabled true
+/ii config set mobs/zombie-1.healthOverride 5000
+
+# 列表操作
+/ii config add tags im_boss                    # 添加单个项目
+/ii config add mobs/zombie-1.abilities set-2 set-3   # 添加多个
+/ii config remove tags im_mob                  # 移除项目
+/ii config set tags a,b,c                      # 替换整个列表
+
+# 映射操作
+/ii config add worlds/world.trueDamage freeze:3.0    # 添加条目
+/ii config remove worlds/world.trueDamage freeze     # 移除条目
+
+# 持久化
+/ii config save                                # 保存所有更改
+/ii config reload                              # 从磁盘重载
+```
+
 ## 权限
 
 | 权限 | 默认 | 说明 |
@@ -260,6 +331,7 @@ maxSpawnAmountOverride: 50        # 区域最大怪物数量
 | `im.setdrop` | op | 配置掉落 |
 | `im.inspect` | op | 查看掉落表 |
 | `im.kill.all` | op | 杀死所有怪物 |
+| `im.config` | op | 运行时配置命令 |
 | `im.debug` | op | 调试命令 |
 | `im.group` | true | 组队命令 |
 | `imi.command` | true | 消息控制 |

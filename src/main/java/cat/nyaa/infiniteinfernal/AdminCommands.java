@@ -2,6 +2,8 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.AbilityCollection;
 import cat.nyaa.infiniteinfernal.ability.IAbility;
+import cat.nyaa.infiniteinfernal.config.ConfigPathResolver;
+import cat.nyaa.infiniteinfernal.config.TypeConverter;
 import cat.nyaa.infiniteinfernal.configs.*;
 import cat.nyaa.infiniteinfernal.group.GroupCommands;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
@@ -73,6 +75,7 @@ public class AdminCommands extends CommandReceiver {
         modifyCommand = new ModifyCommand(plugin, i18n);
         deleteCommand = new DeleteCommand(plugin, i18n);
         targetDummyCommands = new TargetDummyCommand(plugin, i18n);
+        configCommand = new ConfigCommand(plugin, i18n);
         this.groupCommands = groupCommands;
     }
 
@@ -284,6 +287,9 @@ public class AdminCommands extends CommandReceiver {
 
     @SubCommand(value = "targetDummy", permission = "im.admin")
     TargetDummyCommand targetDummyCommands;
+
+    @SubCommand(value = "config", permission = "im.config")
+    ConfigCommand configCommand;
 
     public List<String> enableCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -2154,4 +2160,460 @@ public class AdminCommands extends CommandReceiver {
 
 
     //</editor-fold>
+
+    /**
+     * Config command for reading, setting, and managing configuration values at runtime.
+     * Uses dot-notation paths to access nested config values.
+     *
+     * Commands:
+     * /ii config get <path>              - Read a config value
+     * /ii config set <path> <value>      - Set a config value
+     * /ii config add <path> <value>      - Add value to list, or add key:value to map
+     * /ii config remove <path> <value>   - Remove value from list, or key from map
+     * /ii config delete <path>           - Delete entire entry at path
+     * /ii config list [path]             - List keys/entries at path
+     * /ii config reload                  - Reload config from disk
+     * /ii config save                    - Save config to disk
+     */
+    public static class ConfigCommand extends CommandReceiver {
+        private final InfPlugin plugin;
+
+        public ConfigCommand(JavaPlugin plugin, ILocalizer i18n) {
+            super(plugin, i18n);
+            this.plugin = (InfPlugin) plugin;
+        }
+
+        @Override
+        public String getHelpPrefix() {
+            return "config";
+        }
+
+        private ConfigPathResolver getResolver() {
+            return new ConfigPathResolver(plugin.config());
+        }
+
+        @SubCommand(value = "get", permission = "im.config", tabCompleter = "pathCompleter")
+        public void onGet(CommandSender sender, Arguments arguments) {
+            String path = arguments.nextString();
+            try {
+                ConfigPathResolver.PathResult result = getResolver().resolve(path);
+                String formatted = TypeConverter.formatValue(result.value);
+                new Message(I18n.format("config.get.success", path, formatted)).send(sender);
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.invalid_path", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "set", permission = "im.config", tabCompleter = "setCompleter")
+        public void onSet(CommandSender sender, Arguments arguments) {
+            String path = arguments.nextString();
+            if (arguments.top() == null) {
+                new Message(I18n.format("config.error.no_value")).send(sender);
+                return;
+            }
+
+            try {
+                ConfigPathResolver resolver = getResolver();
+                ConfigPathResolver.PathResult result = resolver.resolve(path);
+
+                // Collect all remaining arguments as the value
+                StringBuilder valueBuilder = new StringBuilder();
+                while (arguments.top() != null) {
+                    if (valueBuilder.length() > 0) valueBuilder.append(" ");
+                    valueBuilder.append(arguments.nextString());
+                }
+                String valueStr = valueBuilder.toString();
+
+                Object convertedValue;
+                if (List.class.isAssignableFrom(result.type)) {
+                    // Handle list replacement with comma-separated values
+                    Class<?> elementType = result.getListElementType();
+                    List<Object> newList = TypeConverter.convertToList(valueStr, elementType);
+                    @SuppressWarnings("unchecked")
+                    List<Object> existingList = (List<Object>) result.value;
+                    existingList.clear();
+                    existingList.addAll(newList);
+                    saveConfig(path);
+                    new Message(I18n.format("config.set.success", path, TypeConverter.formatValue(existingList))).send(sender);
+                    return;
+                } else {
+                    convertedValue = TypeConverter.convert(valueStr, result.type);
+                }
+
+                resolver.setValue(path, convertedValue);
+                saveConfig(path);
+                new Message(I18n.format("config.set.success", path, TypeConverter.formatValue(convertedValue))).send(sender);
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.set_failed", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "add", permission = "im.config", tabCompleter = "addCompleter")
+        public void onAdd(CommandSender sender, Arguments arguments) {
+            String path = arguments.nextString();
+            if (arguments.top() == null) {
+                new Message(I18n.format("config.error.no_value")).send(sender);
+                return;
+            }
+
+            try {
+                ConfigPathResolver resolver = getResolver();
+                ConfigPathResolver.PathResult result = resolver.resolve(path);
+
+                if (result.value instanceof List) {
+                    // Add to list - collect all remaining arguments
+                    @SuppressWarnings("unchecked")
+                    List<Object> list = (List<Object>) result.value;
+                    Class<?> elementType = result.getListElementType();
+                    int addedCount = 0;
+                    while (arguments.top() != null) {
+                        String valueStr = arguments.nextString();
+                        Object converted = TypeConverter.convert(valueStr, elementType);
+                        list.add(converted);
+                        addedCount++;
+                    }
+                    saveConfig(path);
+                    new Message(I18n.format("config.add.list.success", addedCount, path)).send(sender);
+                } else if (result.value instanceof Map) {
+                    // Add to map - expect key:value format
+                    String entryStr = arguments.nextString();
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> map = (Map<String, Object>) result.value;
+                    Class<?> valueType = result.getMapValueType();
+                    Map.Entry<String, Object> entry = TypeConverter.parseMapEntry(entryStr, valueType);
+                    map.put(entry.getKey(), entry.getValue());
+                    saveConfig(path);
+                    new Message(I18n.format("config.add.map.success", entry.getKey(), path)).send(sender);
+                } else {
+                    new Message(I18n.format("config.error.not_collection", path)).send(sender);
+                }
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.add_failed", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "remove", permission = "im.config", tabCompleter = "removeCompleter")
+        public void onRemove(CommandSender sender, Arguments arguments) {
+            String path = arguments.nextString();
+            if (arguments.top() == null) {
+                new Message(I18n.format("config.error.no_value")).send(sender);
+                return;
+            }
+            String valueStr = arguments.nextString();
+
+            try {
+                ConfigPathResolver resolver = getResolver();
+                ConfigPathResolver.PathResult result = resolver.resolve(path);
+
+                if (result.value instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Object> list = (List<Object>) result.value;
+                    Class<?> elementType = result.getListElementType();
+                    Object toRemove = TypeConverter.convert(valueStr, elementType);
+                    if (list.remove(toRemove)) {
+                        saveConfig(path);
+                        new Message(I18n.format("config.remove.list.success", valueStr, path)).send(sender);
+                    } else {
+                        new Message(I18n.format("config.remove.list.not_found", valueStr, path)).send(sender);
+                    }
+                } else if (result.value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> map = (Map<String, Object>) result.value;
+                    if (map.remove(valueStr) != null) {
+                        saveConfig(path);
+                        new Message(I18n.format("config.remove.map.success", valueStr, path)).send(sender);
+                    } else {
+                        new Message(I18n.format("config.remove.map.not_found", valueStr, path)).send(sender);
+                    }
+                } else {
+                    new Message(I18n.format("config.error.not_collection", path)).send(sender);
+                }
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.remove_failed", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "delete", permission = "im.config", tabCompleter = "pathCompleter")
+        public void onDelete(CommandSender sender, Arguments arguments) {
+            String path = arguments.nextString();
+
+            try {
+                ConfigPathResolver resolver = getResolver();
+                if (resolver.deleteValue(path)) {
+                    saveConfig(path);
+                    new Message(I18n.format("config.delete.success", path)).send(sender);
+                } else {
+                    new Message(I18n.format("config.delete.failed", path)).send(sender);
+                }
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.delete_failed", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "list", permission = "im.config", tabCompleter = "pathCompleter")
+        public void onList(CommandSender sender, Arguments arguments) {
+            String path = arguments.top();
+            if (path != null) {
+                arguments.nextString();
+            }
+
+            try {
+                ConfigPathResolver resolver = getResolver();
+                List<String> keys = resolver.listKeys(path != null ? path : "");
+
+                if (keys.isEmpty()) {
+                    new Message(I18n.format("config.list.empty", path != null ? path : "root")).send(sender);
+                    return;
+                }
+
+                new Message(I18n.format("config.list.header", path != null ? path : "root")).send(sender);
+                for (String key : keys) {
+                    String fullPath = path != null && !path.isEmpty() ? path + "." + key : key;
+                    try {
+                        ConfigPathResolver.PathResult result = resolver.resolve(fullPath);
+                        String typeInfo = getTypeInfo(result);
+                        new Message(I18n.format("config.list.entry", key, typeInfo)).send(sender);
+                    } catch (IllegalArgumentException e) {
+                        new Message(I18n.format("config.list.entry", key, "")).send(sender);
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                new Message(I18n.format("config.error.list_failed", path, e.getMessage())).send(sender);
+            }
+        }
+
+        @SubCommand(value = "reload", permission = "im.config")
+        public void onReload(CommandSender sender, Arguments arguments) {
+            plugin.onReload();
+            new Message(I18n.format("config.reload.success")).send(sender);
+        }
+
+        @SubCommand(value = "save", permission = "im.config")
+        public void onSave(CommandSender sender, Arguments arguments) {
+            plugin.config().save();
+            new Message(I18n.format("config.save.success")).send(sender);
+        }
+
+        private String getTypeInfo(ConfigPathResolver.PathResult result) {
+            if (result.value == null) return "(null)";
+            if (result.value instanceof List) {
+                return "(list, " + ((List<?>) result.value).size() + " items)";
+            }
+            if (result.value instanceof Map) {
+                return "(map, " + ((Map<?, ?>) result.value).size() + " entries)";
+            }
+            if (result.value instanceof ISerializable) {
+                return "(object)";
+            }
+            return "= " + TypeConverter.formatValue(result.value);
+        }
+
+        private void saveConfig(String path) {
+            // Determine which config to save based on the path
+            if (path.startsWith("mobs/")) {
+                String[] parts = path.substring(5).split("\\.", 2);
+                MobConfig mobConfig = plugin.config().mobConfigs.get(parts[0]);
+                if (mobConfig != null) mobConfig.save();
+            } else if (path.startsWith("levels/")) {
+                plugin.config().levelConfigs.saveToDir();
+            } else if (path.startsWith("abilities/")) {
+                String[] parts = path.substring(10).split("\\.", 2);
+                AbilitySetConfig abilityConfig = plugin.config().abilityConfigs.get(parts[0]);
+                if (abilityConfig != null) abilityConfig.save();
+            } else if (path.startsWith("regions/")) {
+                String[] parts = path.substring(8).split("\\.", 2);
+                RegionConfig regionConfig = plugin.config().regionConfigs.get(parts[0]);
+                if (regionConfig != null) regionConfig.save();
+            } else {
+                // Main config
+                plugin.config().save();
+            }
+        }
+
+        // Tab completers
+
+        public List<String> pathCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            if (arguments.remains() == 1) {
+                String current = arguments.top();
+                completeStr.addAll(getPathCompletions(current != null ? current : ""));
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        public List<String> setCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    String current = arguments.top();
+                    completeStr.addAll(getPathCompletions(current != null ? current : ""));
+                    break;
+                case 2:
+                    String path = arguments.nextString();
+                    try {
+                        ConfigPathResolver.PathResult result = getResolver().resolve(path);
+                        completeStr.addAll(TypeConverter.getCompletions(result.type));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        public List<String> addCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    String current = arguments.top();
+                    completeStr.addAll(getPathCompletions(current != null ? current : ""));
+                    break;
+                case 2:
+                    String path = arguments.nextString();
+                    try {
+                        ConfigPathResolver.PathResult result = getResolver().resolve(path);
+                        if (result.value instanceof List) {
+                            Class<?> elementType = result.getListElementType();
+                            completeStr.addAll(TypeConverter.getCompletions(elementType));
+                        } else if (result.value instanceof Map) {
+                            completeStr.add("key:value");
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        public List<String> removeCompleter(CommandSender sender, Arguments arguments) {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    String current = arguments.top();
+                    completeStr.addAll(getPathCompletions(current != null ? current : ""));
+                    break;
+                case 2:
+                    String path = arguments.nextString();
+                    try {
+                        ConfigPathResolver.PathResult result = getResolver().resolve(path);
+                        if (result.value instanceof List) {
+                            List<?> list = (List<?>) result.value;
+                            for (Object item : list) {
+                                completeStr.add(String.valueOf(item));
+                            }
+                        } else if (result.value instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) result.value;
+                            for (Object key : map.keySet()) {
+                                completeStr.add(String.valueOf(key));
+                            }
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        }
+
+        private List<String> getPathCompletions(String currentInput) {
+            List<String> completions = new ArrayList<>();
+            ConfigPathResolver resolver = getResolver();
+
+            if (currentInput.isEmpty()) {
+                // Top-level completions
+                completions.addAll(Arrays.asList("language", "nameTag", "bossbar", "tags", "groupShareRange",
+                        "enableActionbarInfo", "groupCapacity", "worlds", "enabled", "mobs", "levels", "abilities", "regions"));
+                return completions;
+            }
+
+            // Check if we need to complete a standalone config
+            if (currentInput.equals("mobs") || currentInput.startsWith("mobs/")) {
+                if (currentInput.equals("mobs") || currentInput.equals("mobs/")) {
+                    for (String key : plugin.config().mobConfigs.keys()) {
+                        completions.add("mobs/" + key);
+                    }
+                } else {
+                    String[] parts = currentInput.substring(5).split("\\.", 2);
+                    String mobName = parts[0];
+                    MobConfig mob = plugin.config().mobConfigs.get(mobName);
+                    if (mob != null && parts.length == 1 && !currentInput.contains(".")) {
+                        // Suggest properties
+                        for (String field : getSerializableFieldNames(MobConfig.class)) {
+                            completions.add("mobs/" + mobName + "." + field);
+                        }
+                    }
+                }
+                return completions;
+            }
+
+            if (currentInput.equals("levels") || currentInput.startsWith("levels/")) {
+                if (currentInput.equals("levels") || currentInput.equals("levels/")) {
+                    for (Integer key : plugin.config().levelConfigs.keys()) {
+                        completions.add("levels/" + key);
+                    }
+                }
+                return completions;
+            }
+
+            if (currentInput.equals("abilities") || currentInput.startsWith("abilities/")) {
+                if (currentInput.equals("abilities") || currentInput.equals("abilities/")) {
+                    for (String key : plugin.config().abilityConfigs.keys()) {
+                        completions.add("abilities/" + key);
+                    }
+                }
+                return completions;
+            }
+
+            if (currentInput.equals("regions") || currentInput.startsWith("regions/")) {
+                if (currentInput.equals("regions") || currentInput.equals("regions/")) {
+                    for (String key : plugin.config().regionConfigs.keys()) {
+                        completions.add("regions/" + key);
+                    }
+                }
+                return completions;
+            }
+
+            if (currentInput.equals("worlds") || currentInput.startsWith("worlds/")) {
+                if (currentInput.equals("worlds") || currentInput.equals("worlds/")) {
+                    for (String key : plugin.config().worlds.keySet()) {
+                        completions.add("worlds/" + key);
+                    }
+                } else {
+                    String[] parts = currentInput.substring(7).split("\\.", 2);
+                    String worldName = parts[0];
+                    WorldConfig world = plugin.config().worlds.get(worldName);
+                    if (world != null && parts.length == 1 && !currentInput.contains(".")) {
+                        for (String field : getSerializableFieldNames(WorldConfig.class)) {
+                            completions.add("worlds/" + worldName + "." + field);
+                        }
+                    }
+                }
+                return completions;
+            }
+
+            // Main config fields
+            try {
+                List<String> keys = resolver.listKeys(currentInput);
+                for (String key : keys) {
+                    completions.add(currentInput + "." + key);
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            return completions;
+        }
+
+        private List<String> getSerializableFieldNames(Class<?> clazz) {
+            List<String> names = new ArrayList<>();
+            Class<?> current = clazz;
+            while (current != null && current != Object.class) {
+                for (java.lang.reflect.Field field : current.getDeclaredFields()) {
+                    ISerializable.Serializable annotation = field.getAnnotation(ISerializable.Serializable.class);
+                    if (annotation != null) {
+                        names.add(field.getName());
+                    }
+                }
+                current = current.getSuperclass();
+            }
+            return names;
+        }
+    }
 }

@@ -248,6 +248,77 @@ maxSpawnAmountOverride: 50        # Max mobs in region
 | `/imi near` | Nearby kills only |
 | `/imi off` | Disable messages |
 
+### Config Commands (`/ii config`)
+
+Runtime configuration management using dot-notation paths.
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/ii config get <path>` | `im.config` | Read a config value |
+| `/ii config set <path> <value>` | `im.config` | Set a config value |
+| `/ii config add <path> <value>` | `im.config` | Add value to list/map |
+| `/ii config remove <path> <value>` | `im.config` | Remove value from list/map |
+| `/ii config delete <path>` | `im.config` | Delete entry at path |
+| `/ii config list [path]` | `im.config` | List keys at path |
+| `/ii config reload` | `im.config` | Reload config from disk |
+| `/ii config save` | `im.config` | Save config to disk |
+
+#### Path Syntax
+
+- `/` separates logical parts (config sections, files)
+- `.` accesses properties within an object
+
+**Path Examples:**
+```
+language                    # Main config field
+bossbar.enabled             # Nested property
+worlds/world.aggro.range.max    # World config, nested properties
+mobs/zombie-1.healthOverride    # Mob config property
+mobs/zombie-1.spawn.weight      # Nested in mob config
+levels/5.attr.health            # Level 5 config, nested property
+abilities/set-1.weight          # Ability set property
+regions/dungeon.mobs            # Region config, list property
+```
+
+#### Value Formats
+
+| Type | Format | Example |
+|------|--------|---------|
+| Single value | plain text | `100`, `true`, `ZOMBIE` |
+| String with spaces | quoted | `"Hello World"` |
+| List (full replace) | comma-separated | `a,b,c` |
+| List (add multiple) | space-separated args | `/ii config add tags tag1 tag2` |
+| Map entry | key:value | `/ii config add worlds/world.trueDamage fire:2.0` |
+
+#### Examples
+
+```bash
+# Get values
+/ii config get language
+/ii config get bossbar.enabled
+/ii config get worlds/world.aggro.range.max
+/ii config get mobs/zombie-1.healthOverride
+
+# Set values
+/ii config set language en_US
+/ii config set bossbar.enabled true
+/ii config set mobs/zombie-1.healthOverride 5000
+
+# List operations
+/ii config add tags im_boss                    # Add single item
+/ii config add mobs/zombie-1.abilities set-2 set-3   # Add multiple
+/ii config remove tags im_mob                  # Remove item
+/ii config set tags a,b,c                      # Replace entire list
+
+# Map operations
+/ii config add worlds/world.trueDamage freeze:3.0    # Add entry
+/ii config remove worlds/world.trueDamage freeze     # Remove entry
+
+# Persistence
+/ii config save                                # Save all changes
+/ii config reload                              # Reload from disk
+```
+
 ## Permissions
 
 | Permission | Default | Description |
@@ -260,6 +331,7 @@ maxSpawnAmountOverride: 50        # Max mobs in region
 | `im.setdrop` | op | Configure drops |
 | `im.inspect` | op | View loot tables |
 | `im.kill.all` | op | Kill all mobs |
+| `im.config` | op | Runtime config commands |
 | `im.debug` | op | Debug commands |
 | `im.group` | true | Group commands |
 | `imi.command` | true | Message control |

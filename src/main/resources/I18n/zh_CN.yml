@@ -92,3 +92,42 @@ group:
     roll: "{playerName} 通过roll点得到了 {itemName} * {amount}"
   kick:
     player: "踢出了玩家 %s"
+config:
+  get:
+    success: "&a配置值 &f%s&a: &e%s"
+  set:
+    success: "&a成功设置 &f%s&a 为 &e%s"
+  add:
+    list:
+      success: "&a已添加 &e%d&a 个项目到 &f%s"
+    map:
+      success: "&a已添加条目 &e%s&a 到 &f%s"
+  remove:
+    list:
+      success: "&a已从 &f%s&a 移除 &e%s"
+      not_found: "&c在 &f%s&c 中未找到值 &e%s"
+    map:
+      success: "&a已从 &f%s&a 移除键 &e%s"
+      not_found: "&c在 &f%s&c 中未找到键 &e%s"
+  delete:
+    success: "&a成功删除 &f%s"
+    failed: "&c删除 &f%s &c失败"
+  list:
+    header: "&6&f%s&6 的键列表:"
+    entry: "&7  - &f%s &7%s"
+    empty: "&e&f%s &e无键"
+  reload:
+    success: "&a配置重载成功"
+  save:
+    success: "&a配置保存成功"
+  error:
+    invalid_path: "&c无效路径 &f%s&c: %s"
+    no_value: "&c未提供值"
+    set_failed: "&c设置 &f%s&c 失败: %s"
+    add_failed: "&c添加到 &f%s&c 失败: %s"
+    remove_failed: "&c从 &f%s&c 移除失败: %s"
+    delete_failed: "&c删除 &f%s&c 失败: %s"
+    list_failed: "&c列出 &f%s&c 失败: %s"
+    not_collection: "&c路径 &f%s&c 不是列表或映射"
+enabled: "&a无限黑化 &2已启用"
+disabled: "&c无限黑化 &4已禁用"
