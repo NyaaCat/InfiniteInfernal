@@ -23,7 +23,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,17 +182,15 @@ public class InfSpawnControler implements ISpawnControler {
         }
 
         List<RegionConfig> finalAllowedRegions = allowedRegions;
-        Function<MobConfig, Location> locationSupplier = (candidate) ->
-                findLocationByConfig(player, candidate, center, force, finalAllowedRegions);
-        Location location = locationSupplier.apply(mobConfig);
-        int retryTimes = 30;
-        for (int i = 0; i < retryTimes; i++) {
-            if (location != null){
-                break;
-            }
-            location = locationSupplier.apply(mobConfig);
+        // findLocationByConfig now handles multiple attempts internally with LOS prioritization
+        Location location = findLocationByConfig(player, mobConfig, center, force, finalAllowedRegions);
+
+        // Additional retries if first attempt fails
+        for (int i = 0; i < 3 && location == null; i++) {
+            location = findLocationByConfig(player, mobConfig, center, force, finalAllowedRegions);
         }
-        if (location == null){
+
+        if (location == null) {
             return null;
         }
         return mobSupplier.apply(location);
@@ -196,33 +198,126 @@ public class InfSpawnControler implements ISpawnControler {
 
     private Location findLocationByConfig(Player player, MobConfig mobConfig, Location center, boolean force, List<RegionConfig> allowedRegions) {
         World world = center.getWorld();
-        Location spawnLocation = null;
         final EntityType type = mobConfig.type;
 
-        // Use region-aware spawning when in a region
-        if (allowedRegions != null && !allowedRegions.isEmpty()) {
-            if (MobManager.FluidLocationWrapper.isSkyMob(type)){
-                spawnLocation = findSkyLocationInRegion(world, center, allowedRegions);
-            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
-                spawnLocation = findWaterLocationInRegion(world, center, allowedRegions);
-            } else {
-                spawnLocation = findFloorLocationInRegion(world, center, allowedRegions);
+        // Collect multiple candidate locations and prefer those with LOS
+        List<Location> candidates = new ArrayList<>();
+        Location losCandidate = null;
+        Location anyCandidate = null;
+
+        // Try to find locations, prioritizing LOS
+        int maxAttempts = 15;
+        for (int attempt = 0; attempt < maxAttempts && losCandidate == null; attempt++) {
+            Location spawnLocation = findRawLocation(world, center, type, allowedRegions);
+
+            if (spawnLocation == null) continue;
+            if (!recheckLocation(spawnLocation, mobConfig, force, player, allowedRegions)) continue;
+
+            centerSpawnLocation(spawnLocation);
+
+            if (anyCandidate == null) {
+                anyCandidate = spawnLocation;
             }
-        } else {
-            if (MobManager.FluidLocationWrapper.isSkyMob(type)){
-                spawnLocation = findSkyLocation(world, center);
-            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
-                spawnLocation = findWaterLocation(world, center);
+
+            if (hasLineOfSight(player, spawnLocation)) {
+                losCandidate = spawnLocation;
             } else {
-                spawnLocation = findFloorLocation(world, center);
+                candidates.add(spawnLocation);
             }
         }
 
-        if (spawnLocation == null)return null;
-        if (recheckLocation(spawnLocation, mobConfig, force, player, allowedRegions)){
+        // Prefer LOS location (80% of successful spawns should have LOS)
+        if (losCandidate != null) {
+            return losCandidate;
+        }
+
+        // Allow non-LOS spawn occasionally for variety/ambush (20% chance if we have candidates)
+        if (anyCandidate != null && Utils.possibility(0.2)) {
+            return anyCandidate;
+        }
+
+        // Try a few more times specifically for LOS
+        for (int attempt = 0; attempt < 5; attempt++) {
+            Location spawnLocation = findRawLocation(world, center, type, allowedRegions);
+            if (spawnLocation == null) continue;
+            if (!recheckLocation(spawnLocation, mobConfig, force, player, allowedRegions)) continue;
             centerSpawnLocation(spawnLocation);
-            return spawnLocation;
-        }else return null;
+            if (hasLineOfSight(player, spawnLocation)) {
+                return spawnLocation;
+            }
+        }
+
+        // If still no LOS location, use any valid candidate
+        return anyCandidate;
+    }
+
+    /**
+     * Finds a raw spawn location without LOS checking.
+     */
+    private Location findRawLocation(World world, Location center, EntityType type, List<RegionConfig> allowedRegions) {
+        if (allowedRegions != null && !allowedRegions.isEmpty()) {
+            if (MobManager.FluidLocationWrapper.isSkyMob(type)) {
+                return findSkyLocationInRegion(world, center, allowedRegions);
+            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)) {
+                return findWaterLocationInRegion(world, center, allowedRegions);
+            } else {
+                return findFloorLocationInRegion(world, center, allowedRegions);
+            }
+        } else {
+            if (MobManager.FluidLocationWrapper.isSkyMob(type)) {
+                return findSkyLocation(world, center);
+            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)) {
+                return findWaterLocation(world, center);
+            } else {
+                return findFloorLocation(world, center);
+            }
+        }
+    }
+
+    /**
+     * Checks if there is a clear line of sight from the player to the spawn location.
+     * Uses raytrace to detect solid blocks between the two points.
+     */
+    private boolean hasLineOfSight(Player player, Location spawnLocation) {
+        if (player == null || spawnLocation == null) {
+            return false;
+        }
+
+        Location eyeLocation = player.getEyeLocation();
+        World world = eyeLocation.getWorld();
+        if (world == null || !world.equals(spawnLocation.getWorld())) {
+            return false;
+        }
+
+        // Adjust spawn location to approximate mob eye level (1.5 blocks up from feet)
+        Location targetLocation = spawnLocation.clone().add(0, 1.5, 0);
+
+        Vector direction = targetLocation.toVector().subtract(eyeLocation.toVector());
+        double distance = direction.length();
+
+        if (distance < 1) {
+            return true; // Too close, consider LOS
+        }
+
+        direction.normalize();
+
+        // Raycast from player eye to spawn location
+        RayTraceResult result = world.rayTraceBlocks(
+                eyeLocation,
+                direction,
+                distance,
+                FluidCollisionMode.NEVER,
+                true
+        );
+
+        // If no hit, there's clear LOS
+        if (result == null) {
+            return true;
+        }
+
+        // Check if the hit block is very close to the target (within 2 blocks)
+        Location hitLocation = result.getHitPosition().toLocation(world);
+        return hitLocation.distance(targetLocation) < 2.0;
     }
 
     private Location findSkyLocation(World world, Location center) {
