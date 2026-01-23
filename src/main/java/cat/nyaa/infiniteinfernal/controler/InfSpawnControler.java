@@ -61,10 +61,6 @@ public class InfSpawnControler implements ISpawnControler {
         return canSpawn.get();
     }
 
-    private boolean isTooClose(Player player, Location location) {
-        return location.distance(player.getLocation()) < getMinSpawnDistance(player.getWorld());
-    }
-
     @Override
     public boolean canSpawnNearPlayer(Player player, Location location) {
         if(player.getGameMode().equals(GameMode.SPECTATOR)){
@@ -202,12 +198,24 @@ public class InfSpawnControler implements ISpawnControler {
         World world = center.getWorld();
         Location spawnLocation = null;
         final EntityType type = mobConfig.type;
-        if (MobManager.FluidLocationWrapper.isSkyMob(type)){
-            spawnLocation = findSkyLocation(world, center);
-        }else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
-            spawnLocation = findWaterLocation(world, center);
-        }else {
-            spawnLocation = findFloorLocation(world, center);
+
+        // Use region-aware spawning when in a region
+        if (allowedRegions != null && !allowedRegions.isEmpty()) {
+            if (MobManager.FluidLocationWrapper.isSkyMob(type)){
+                spawnLocation = findSkyLocationInRegion(world, center, allowedRegions);
+            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
+                spawnLocation = findWaterLocationInRegion(world, center, allowedRegions);
+            } else {
+                spawnLocation = findFloorLocationInRegion(world, center, allowedRegions);
+            }
+        } else {
+            if (MobManager.FluidLocationWrapper.isSkyMob(type)){
+                spawnLocation = findSkyLocation(world, center);
+            } else if (MobManager.FluidLocationWrapper.isWaterMob(type)){
+                spawnLocation = findWaterLocation(world, center);
+            } else {
+                spawnLocation = findFloorLocation(world, center);
+            }
         }
 
         if (spawnLocation == null)return null;
@@ -304,6 +312,186 @@ public class InfSpawnControler implements ISpawnControler {
             spawnLocation = Utils.randomFloorSpawnLocation(location, minSpawnDistance, maxSpawnDistance);
         }
         return spawnLocation;
+    }
+
+    /**
+     * Finds a floor spawn location constrained to within the allowed regions.
+     * This prevents spawn attempts from failing due to locations falling outside region bounds.
+     */
+    private Location findFloorLocationInRegion(World world, Location center, List<RegionConfig> regions) {
+        if (world == null || center == null || regions == null || regions.isEmpty()) {
+            return findFloorLocation(world, center);
+        }
+
+        int minSpawnDistance = getMinSpawnDistance(world);
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+
+        for (int i = 0; i < 20; i++) {
+            Location candidate;
+            if (Utils.possibility(0.7)) {
+                candidate = Utils.randomFloorSpawnLocationInFront(center, minSpawnDistance, maxSpawnDistance);
+            } else {
+                candidate = Utils.randomFloorSpawnLocation(center, minSpawnDistance, maxSpawnDistance);
+            }
+
+            if (candidate != null && isInAnyRegion(candidate, regions) && !isTooClose(null, candidate)) {
+                return candidate;
+            }
+        }
+
+        // Fallback: try spawning directly within region bounds
+        for (RegionConfig region : regions) {
+            Location candidate = randomLocationInRegion(world, region, center, minSpawnDistance);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a sky spawn location constrained to within the allowed regions.
+     */
+    private Location findSkyLocationInRegion(World world, Location center, List<RegionConfig> regions) {
+        if (world == null || center == null || regions == null || regions.isEmpty()) {
+            return findSkyLocation(world, center);
+        }
+
+        int minSpawnDistance = getMinSpawnDistance(world);
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+
+        for (int i = 0; i < 20; i++) {
+            Location candidate = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, location -> true);
+            if (candidate == null) {
+                continue;
+            }
+            if (!isInAnyRegion(candidate, regions)) {
+                continue;
+            }
+            int x = candidate.getBlockX();
+            int z = candidate.getBlockZ();
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+
+            // For regions, use region Y bounds instead of world bounds
+            int minY = regions.stream().mapToInt(r -> r.region.yMin).min().orElse(world.getMinHeight() + 1);
+            int maxY = regions.stream().mapToInt(r -> r.region.yMax).max().orElse(world.getMaxHeight() - 2);
+            if (maxY <= minY) {
+                continue;
+            }
+            int y = (int) Math.round(Utils.random(minY, maxY));
+            Location spawn = new Location(world, x + 0.5, y, z + 0.5);
+            if (spawn.getBlock().getType().isAir() && spawn.getBlock().getRelative(org.bukkit.block.BlockFace.UP).getType().isAir()) {
+                if (!isTooClose(null, spawn)) {
+                    return spawn;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a water spawn location constrained to within the allowed regions.
+     */
+    private Location findWaterLocationInRegion(World world, Location center, List<RegionConfig> regions) {
+        if (world == null || center == null || regions == null || regions.isEmpty()) {
+            return findWaterLocation(world, center);
+        }
+
+        int minSpawnDistance = getMinSpawnDistance(world);
+        int maxSpawnDistance = getMaxSpawnDistance(world);
+
+        for (int i = 0; i < 20; i++) {
+            Location candidate = Utils.randomSpawnLocation(center, minSpawnDistance, maxSpawnDistance, location -> true);
+            if (candidate == null) {
+                continue;
+            }
+            if (!isInAnyRegion(candidate, regions)) {
+                continue;
+            }
+            int x = candidate.getBlockX();
+            int z = candidate.getBlockZ();
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+            int topY = world.getHighestBlockYAt(x, z);
+            int minY = regions.stream().mapToInt(r -> r.region.yMin).min().orElse(world.getMinHeight());
+            for (int y = topY; y >= minY; y--) {
+                org.bukkit.block.Block block = world.getBlockAt(x, y, z);
+                if (block.getType() == Material.WATER) {
+                    org.bukkit.block.Block above = block.getRelative(org.bukkit.block.BlockFace.UP);
+                    if (above.getType() == Material.WATER || above.getType().isAir()) {
+                        Location spawn = block.getLocation().add(0.5, 0, 0.5);
+                        if (!isTooClose(null, spawn)) {
+                            return spawn;
+                        }
+                    }
+                    continue;
+                }
+                if (block.getType().isSolid()) {
+                    break;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if a location is within any of the given regions.
+     */
+    private boolean isInAnyRegion(Location location, List<RegionConfig> regions) {
+        if (location == null || regions == null) {
+            return false;
+        }
+        return regions.stream().anyMatch(r -> r.region != null && r.region.contains(location));
+    }
+
+    /**
+     * Generates a random spawn location within a region's bounds.
+     */
+    private Location randomLocationInRegion(World world, RegionConfig regionConfig, Location playerLoc, int minDistance) {
+        if (regionConfig == null || regionConfig.region == null || world == null) {
+            return null;
+        }
+        RegionConfig.Region region = regionConfig.region;
+        for (int attempt = 0; attempt < 15; attempt++) {
+            int x = region.xMin + (int) (Utils.random() * (region.xMax - region.xMin));
+            int z = region.zMin + (int) (Utils.random() * (region.zMax - region.zMin));
+
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+
+            // Search for valid Y within region bounds
+            for (int y = region.yMax; y >= region.yMin; y--) {
+                Location candidate = new Location(world, x + 0.5, y, z + 0.5);
+
+                // Check minimum distance from player
+                if (playerLoc != null && candidate.distance(playerLoc) < minDistance) {
+                    continue;
+                }
+
+                Location validLoc = Utils.findValidSpawnLocationInY(candidate);
+                if (validLoc != null && region.contains(validLoc)) {
+                    return validLoc;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isTooClose(Player player, Location location) {
+        if (player == null) {
+            // When player is null, check against all nearby players
+            World world = location.getWorld();
+            if (world == null) return false;
+            int minDistance = getMinSpawnDistance(world);
+            return world.getPlayers().stream()
+                    .filter(p -> !p.getGameMode().equals(GameMode.SPECTATOR))
+                    .anyMatch(p -> location.distance(p.getLocation()) < minDistance);
+        }
+        return location.distance(player.getLocation()) < getMinSpawnDistance(player.getWorld());
     }
 
     private boolean recheckLocation(Location location, MobConfig mobConfig, boolean force, Player player, List<RegionConfig> allowedRegions) {
