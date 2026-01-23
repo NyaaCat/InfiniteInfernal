@@ -24,6 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -43,6 +44,28 @@ public class Events implements Listener {
 
     public Events(InfPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    /**
+     * Un-cancel EntityTeleportEvent for mobs being force-teleported by stuck mob system.
+     * This runs at MONITOR priority to override RPGItems Stuck power's cancellation.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityTeleportMonitor(EntityTeleportEvent event) {
+        if (MainLoopTask.FORCE_TELEPORTING_ENTITIES.contains(event.getEntity().getUniqueId())) {
+            event.setCancelled(false);
+        }
+    }
+
+    /**
+     * Un-cancel EntityMoveEvent for mobs being force-teleported by stuck mob system.
+     * This runs at MONITOR priority to override RPGItems Stuck power's cancellation.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityMoveMonitor(EntityMoveEvent event) {
+        if (MainLoopTask.FORCE_TELEPORTING_ENTITIES.contains(event.getEntity().getUniqueId())) {
+            event.setCancelled(false);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

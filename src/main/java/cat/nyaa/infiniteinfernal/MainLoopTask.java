@@ -38,6 +38,11 @@ import java.util.stream.Collectors;
 public class MainLoopTask {
     private static List<BukkitRunnable> runnables = new ArrayList<>();
 
+    // Track entities that are being force-teleported by our stuck mob system
+    // Events.java will check this to un-cancel teleport/move events
+    public static final java.util.Set<java.util.UUID> FORCE_TELEPORTING_ENTITIES =
+            java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+
     public static void start() {
         stop();
         String dementia = InfPlugin.plugin.config.addEffects.get("dementia");
@@ -461,10 +466,14 @@ public class MainLoopTask {
         }
 
         /**
-         * Force repositions an entity by directly setting position, bypassing EntityTeleportEvent.
-         * This works around plugins like RPGItems Stuck power that cancel teleport events.
+         * Force repositions an entity, bypassing plugins that cancel teleport/move events.
+         *
+         * Strategy: Mark the entity as "force teleporting" so our event listeners
+         * (at MONITOR priority) can un-cancel the events that RPGItems cancels.
          */
         private void forceRepositionBypassEvent(LivingEntity entity, Location targetLoc) {
+            java.util.UUID entityId = entity.getUniqueId();
+
             // Reset velocity to prevent momentum issues
             entity.setVelocity(new Vector(0, 0, 0));
 
@@ -479,62 +488,108 @@ public class MainLoopTask {
             // Set fall distance to 0 to prevent fall damage
             entity.setFallDistance(0);
 
-            // Use NMS to directly set position without firing EntityTeleportEvent
-            // This bypasses RPGItems Stuck power and similar event-cancelling plugins
+            // Mark entity as being force-teleported
+            // Our event listeners will un-cancel any teleport/move events for this entity
+            FORCE_TELEPORTING_ENTITIES.add(entityId);
+
+            // Perform the teleport - our MONITOR priority listeners will un-cancel if needed
+            boolean success = entity.teleport(targetLoc);
+
+            // Keep the flag active for a short time to handle EntityMoveEvent
+            // which fires after the teleport completes
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    FORCE_TELEPORTING_ENTITIES.remove(entityId);
+                }
+            }.runTaskLater(InfPlugin.plugin, 5);
+
+            // If teleport returned false (cancelled before our listener could act),
+            // try direct NMS position setting
+            if (!success || entity.getLocation().distanceSquared(targetLoc) > 4) {
+                forcePositionViaNMS(entity, targetLoc);
+            }
+        }
+
+        /**
+         * Directly set entity position via NMS, bypassing Bukkit events entirely.
+         */
+        private void forcePositionViaNMS(LivingEntity entity, Location targetLoc) {
             try {
-                // Get the NMS entity handle via CraftBukkit
                 Object craftEntity = entity;
                 java.lang.reflect.Method getHandleMethod = craftEntity.getClass().getMethod("getHandle");
                 Object nmsEntity = getHandleMethod.invoke(craftEntity);
 
-                // Find and call absMoveTo or moveTo method on NMS entity
-                // Paper/Spigot 1.21+: net.minecraft.world.entity.Entity.absMoveTo(double, double, double, float, float)
-                java.lang.reflect.Method absMoveToMethod = null;
+                // Try absMoveTo first (most reliable for full position + rotation)
                 for (java.lang.reflect.Method method : nmsEntity.getClass().getMethods()) {
                     if (method.getName().equals("absMoveTo") && method.getParameterCount() == 5) {
                         Class<?>[] params = method.getParameterTypes();
                         if (params[0] == double.class && params[1] == double.class &&
                             params[2] == double.class && params[3] == float.class && params[4] == float.class) {
-                            absMoveToMethod = method;
-                            break;
-                        }
-                    }
-                }
+                            method.invoke(nmsEntity, targetLoc.getX(), targetLoc.getY(), targetLoc.getZ(),
+                                    targetLoc.getYaw(), targetLoc.getPitch());
 
-                if (absMoveToMethod != null) {
-                    absMoveToMethod.invoke(nmsEntity,
-                            targetLoc.getX(),
-                            targetLoc.getY(),
-                            targetLoc.getZ(),
-                            targetLoc.getYaw(),
-                            targetLoc.getPitch());
-                    return;
-                }
-
-                // Fallback: try moveTo method
-                for (java.lang.reflect.Method method : nmsEntity.getClass().getMethods()) {
-                    if (method.getName().equals("moveTo") && method.getParameterCount() == 5) {
-                        Class<?>[] params = method.getParameterTypes();
-                        if (params[0] == double.class && params[1] == double.class &&
-                            params[2] == double.class && params[3] == float.class && params[4] == float.class) {
-                            method.invoke(nmsEntity,
-                                    targetLoc.getX(),
-                                    targetLoc.getY(),
-                                    targetLoc.getZ(),
-                                    targetLoc.getYaw(),
-                                    targetLoc.getPitch());
+                            // Force sync to clients
+                            forceEntitySync(nmsEntity);
                             return;
                         }
                     }
                 }
 
-            } catch (Exception e) {
-                // NMS approach failed, log and fallback to regular teleport
-                Bukkit.getLogger().warning("[InfiniteInfernal] NMS teleport bypass failed, using regular teleport: " + e.getMessage());
-            }
+                // Fallback: try setPosRaw + setRot
+                for (java.lang.reflect.Method method : nmsEntity.getClass().getMethods()) {
+                    if (method.getName().equals("setPosRaw") && method.getParameterCount() == 3) {
+                        Class<?>[] params = method.getParameterTypes();
+                        if (params[0] == double.class && params[1] == double.class && params[2] == double.class) {
+                            method.invoke(nmsEntity, targetLoc.getX(), targetLoc.getY(), targetLoc.getZ());
 
-            // Fallback: use regular teleport (may be cancelled by other plugins)
-            entity.teleport(targetLoc);
+                            // Set rotation
+                            for (java.lang.reflect.Method rotMethod : nmsEntity.getClass().getMethods()) {
+                                if (rotMethod.getName().equals("setRot") && rotMethod.getParameterCount() == 2) {
+                                    rotMethod.invoke(nmsEntity, targetLoc.getYaw(), targetLoc.getPitch());
+                                    break;
+                                }
+                            }
+
+                            forceEntitySync(nmsEntity);
+                            return;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Bukkit.getLogger().warning("[InfiniteInfernal] NMS position set failed: " + e.getMessage());
+            }
+        }
+
+        /**
+         * Force entity to sync its position to clients.
+         */
+        private void forceEntitySync(Object nmsEntity) {
+            try {
+                // Set hasImpulse = true to force position sync
+                for (java.lang.reflect.Field field : nmsEntity.getClass().getFields()) {
+                    if (field.getName().equals("hasImpulse")) {
+                        field.setAccessible(true);
+                        field.setBoolean(nmsEntity, true);
+                        return;
+                    }
+                }
+
+                // Try declared fields
+                Class<?> clazz = nmsEntity.getClass();
+                while (clazz != null && clazz != Object.class) {
+                    try {
+                        java.lang.reflect.Field field = clazz.getDeclaredField("hasImpulse");
+                        field.setAccessible(true);
+                        field.setBoolean(nmsEntity, true);
+                        return;
+                    } catch (NoSuchFieldException e) {
+                        clazz = clazz.getSuperclass();
+                    }
+                }
+            } catch (Exception e) {
+                // Silently fail
+            }
         }
 
         /**
