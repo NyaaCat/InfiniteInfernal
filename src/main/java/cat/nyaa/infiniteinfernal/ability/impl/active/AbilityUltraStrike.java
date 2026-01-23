@@ -87,7 +87,7 @@ public class AbilityUltraStrike extends ActiveAbility {
     private void boom(Location location, IMob iMob) {
         location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1, 1.5f);
         location.getWorld().spawnParticle(Particle.FLAME, location, 100, 0, 0, 0, 1, null, false);
-        location.getWorld().spawnParticle(Particle.DRAGON_BREATH, location, 100, 0, 0, 0, 1, null, false);
+        location.getWorld().spawnParticle(Particle.DRAGON_BREATH, location, 100, 0, 0, 0, 1, 1.0f, false);
         Utils.getValidTargets(iMob, location.getWorld().getNearbyEntities(location, explodeRange, explodeRange, explodeRange))
                 .forEach(entity -> {
                     if (!entity.equals(iMob)) {
