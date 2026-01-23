@@ -2,6 +2,7 @@ package cat.nyaa.infiniteinfernal;
 
 import cat.nyaa.infiniteinfernal.ability.AbilityActive;
 import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
+import cat.nyaa.infiniteinfernal.configs.RegionConfig;
 import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.CustomMob;
 import cat.nyaa.infiniteinfernal.mob.IMob;
@@ -98,11 +99,30 @@ public class MainLoopTask {
 
     private static ICorrector iCorrector = null;
 
+    /**
+     * Checks if a location is within a region that has an empty mobs list.
+     * Empty mobs list means the region is a no-spawn zone - mobs entering should be despawned.
+     */
+    private static boolean isInNoSpawnRegion(Location location) {
+        List<RegionConfig> regions = InfPlugin.plugin.config().getRegionsForLocation(location);
+        if (regions.isEmpty()) {
+            return false;
+        }
+        return regions.stream().anyMatch(regionConfig -> regionConfig.mobs.isEmpty());
+    }
+
     private static void mobEffect(IMob iMob) {
         MobManager mobManager = MobManager.instance();
         LivingEntity entity = iMob.getEntity();
         if (entity == null || entity.isDead()) {
             mobManager.removeMob(iMob, false);
+            return;
+        }
+        // Check if mob has entered a no-spawn region (empty mobs list) and despawn it
+        if (isInNoSpawnRegion(entity.getLocation())) {
+            entity.remove(); // Despawn without loot drop
+            mobManager.removeMob(iMob, false);
+            return;
         }
         iMob.showParticleEffect();
         iMob.autoRetarget();
