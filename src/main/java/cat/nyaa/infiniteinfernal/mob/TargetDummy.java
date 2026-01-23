@@ -530,4 +530,25 @@ public class TargetDummy implements IMob {
     public void resetNoTargetTicks() {
         // TargetDummy doesn't track aggro
     }
+
+    @Override
+    public void updateLastPosition() {
+        // TargetDummy is stationary, doesn't need position tracking
+    }
+
+    @Override
+    public boolean isStuck(double threshold) {
+        // TargetDummy is intentionally stationary
+        return false;
+    }
+
+    @Override
+    public int getStuckTicks() {
+        return 0;
+    }
+
+    @Override
+    public void resetStuckTracking() {
+        // TargetDummy doesn't need stuck tracking
+    }
 }

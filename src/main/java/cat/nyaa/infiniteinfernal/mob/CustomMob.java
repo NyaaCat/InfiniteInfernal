@@ -60,6 +60,10 @@ public class CustomMob implements IMob {
     // Despawn after this many mob-active-intervals without a valid target (~19 seconds at 75 ticks/interval)
     private static final int NO_TARGET_DESPAWN_THRESHOLD = 5;
 
+    // Stuck detection fields
+    private Location lastKnownPosition = null;
+    private int stuckTicks = 0;
+
     public CustomMob(MobConfig config, int level) {
         this.config = config;
         generateFromConfig(config, level);
@@ -441,6 +445,61 @@ public class CustomMob implements IMob {
     @Override
     public void resetNoTargetTicks() {
         noTargetTicks = 0;
+    }
+
+    @Override
+    public void updateLastPosition() {
+        if (entity == null || entity.isDead()) return;
+        Location currentPos = entity.getLocation();
+        if (lastKnownPosition == null) {
+            lastKnownPosition = currentPos.clone();
+            stuckTicks = 0;
+            return;
+        }
+        // Only compare if in same world
+        if (!currentPos.getWorld().equals(lastKnownPosition.getWorld())) {
+            lastKnownPosition = currentPos.clone();
+            stuckTicks = 0;
+            return;
+        }
+        // Position is updated externally, stuck check happens in isStuck()
+    }
+
+    @Override
+    public boolean isStuck(double threshold) {
+        if (entity == null || entity.isDead() || lastKnownPosition == null) return false;
+        Location currentPos = entity.getLocation();
+        if (!currentPos.getWorld().equals(lastKnownPosition.getWorld())) {
+            return false;
+        }
+        double distance = currentPos.distance(lastKnownPosition);
+        if (distance >= threshold) {
+            // Mob has moved - update position and reset counter
+            lastKnownPosition = currentPos.clone();
+            stuckTicks = 0;
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int getStuckTicks() {
+        return stuckTicks;
+    }
+
+    @Override
+    public void resetStuckTracking() {
+        if (entity != null && !entity.isDead()) {
+            lastKnownPosition = entity.getLocation().clone();
+        }
+        stuckTicks = 0;
+    }
+
+    /**
+     * Increment stuck ticks counter. Called by the stuck detection task.
+     */
+    public void incrementStuckTicks(int ticks) {
+        stuckTicks += ticks;
     }
 
     private class NamedLazyNumber implements Expression.LazyNumber{

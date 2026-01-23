@@ -75,12 +75,30 @@ public class InfSpawnControler implements ISpawnControler {
         if (!regionsForLocation.isEmpty() && regionsForLocation.stream().noneMatch(regionConfig -> regionConfig.region.contains(location))){
             return false;
         }
-        int nearbyMobs = (int) MobManager.instance().getMobsNearPlayer(player)
-                .stream().filter(iMob -> {
-                    if (regionsForLocation.isEmpty())return true;
-                    Location location1 = iMob.getEntity().getLocation();
-                    return regionsForLocation.stream().anyMatch(regionConfig -> regionConfig.region.contains(location1));
+
+        // Calculate nearby mobs directly for accuracy instead of relying on cached list
+        // The cached list (getMobsNearPlayer) is updated asynchronously and may be stale
+        // during a spawn cycle where multiple mobs spawn in quick succession
+        World world = player.getWorld();
+        int nearbyDistance = getMaxSpawnDistance(world);
+        List<IMob> allMobsInWorld = MobManager.instance().getMobsInWorld(world);
+
+        int nearbyMobs = (int) allMobsInWorld.stream()
+                .filter(iMob -> {
+                    LivingEntity entity = iMob.getEntity();
+                    if (entity == null || entity.isDead()) return false;
+                    if (!entity.getWorld().equals(world)) return false;
+
+                    // Check if mob is within spawn range of player
+                    double distance = entity.getLocation().distance(playerLocation);
+                    if (distance > nearbyDistance * 1.5) return false;
+
+                    // Apply region filter if player is in a region
+                    if (regionsForLocation.isEmpty()) return true;
+                    Location mobLocation = entity.getLocation();
+                    return regionsForLocation.stream().anyMatch(regionConfig -> regionConfig.region.contains(mobLocation));
                 }).count();
+
         return nearbyMobs < getMaxSpawnAmount(player);
     }
 

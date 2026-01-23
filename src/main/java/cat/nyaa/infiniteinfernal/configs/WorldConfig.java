@@ -105,6 +105,58 @@ public class WorldConfig implements ISerializable {
     @Serializable
     public double despawnRange = 128;
 
+    @Serializable(name = "stuck-mob-teleport")
+    public StuckMobConfig stuckMobConfig = new StuckMobConfig();
+
+    public static class StuckMobConfig implements ISerializable {
+        @Serializable(name = "enabled")
+        public boolean enabled = true;
+
+        @Serializable(name = "stuck-threshold-ticks")
+        public int stuckThresholdTicks = 300;
+
+        @Serializable(name = "movement-threshold")
+        public double movementThreshold = 2.0;
+
+        @Serializable(name = "teleport-distance-min")
+        public int teleportDistanceMin = 8;
+
+        @Serializable(name = "teleport-distance-max")
+        public int teleportDistanceMax = 16;
+
+        @Serializable(name = "check-interval-ticks")
+        public int checkIntervalTicks = 20;
+
+        @Serializable(name = "particle-trail")
+        public ParticleTrailConfig particleTrail = new ParticleTrailConfig();
+    }
+
+    public static class ParticleTrailConfig implements ISerializable {
+        @Serializable(name = "enabled")
+        public boolean enabled = true;
+
+        @Serializable(name = "particle-type")
+        public String particleType = "WITCH";
+
+        @Serializable(name = "particles-per-block")
+        public double particlesPerBlock = 2.0;
+
+        @Serializable(name = "particle-count")
+        public int particleCount = 3;
+
+        @Serializable(name = "offset-x")
+        public double offsetX = 0.2;
+
+        @Serializable(name = "offset-y")
+        public double offsetY = 0.2;
+
+        @Serializable(name = "offset-z")
+        public double offsetZ = 0.2;
+
+        @Serializable(name = "speed")
+        public double speed = 0.05;
+    }
+
     public double getTruedamage(String type) {
         return trueDamage.getOrDefault(type, 0d);
     }

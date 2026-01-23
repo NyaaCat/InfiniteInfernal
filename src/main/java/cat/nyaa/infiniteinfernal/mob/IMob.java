@@ -4,6 +4,7 @@ import cat.nyaa.infiniteinfernal.ability.IAbilitySet;
 import cat.nyaa.infiniteinfernal.configs.MobConfig;
 import cat.nyaa.infiniteinfernal.controler.Aggro;
 import cat.nyaa.infiniteinfernal.loot.ILootItem;
+import org.bukkit.Location;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -60,4 +61,28 @@ public interface IMob {
      * Reset the no-target counter when a valid target is found.
      */
     void resetNoTargetTicks();
+
+    /**
+     * Update the last known position for stuck detection.
+     * Should be called periodically to track movement.
+     */
+    void updateLastPosition();
+
+    /**
+     * Check if the mob is stuck (hasn't moved beyond threshold since last update).
+     * @param threshold minimum distance to be considered "moved"
+     * @return true if mob has moved less than threshold since last position update
+     */
+    boolean isStuck(double threshold);
+
+    /**
+     * Get the number of ticks since last significant movement.
+     * @return ticks since last movement
+     */
+    int getStuckTicks();
+
+    /**
+     * Reset stuck tracking after teleportation or other intervention.
+     */
+    void resetStuckTracking();
 }
