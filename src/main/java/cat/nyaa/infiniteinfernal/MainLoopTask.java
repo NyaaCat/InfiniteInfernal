@@ -417,30 +417,24 @@ public class MainLoopTask {
             if (teleportLoc != null) {
                 Location fromLoc = entity.getLocation().clone();
 
-                // Force teleport - bypass other plugins that might cancel it
-                // First try normal teleport
-                boolean teleported = entity.teleport(teleportLoc);
-
-                // If teleport was cancelled or failed, force reposition
-                if (!teleported || entity.getLocation().distanceSquared(teleportLoc) > 4) {
-                    forceReposition(entity, teleportLoc);
-                }
-
-                // Spawn particle trail from old position to new position
+                // Spawn arc particle effect BEFORE teleport (pre-effect)
                 if (stuckConfig.particleTrail.enabled) {
-                    spawnTeleportParticleTrail(fromLoc, teleportLoc, stuckConfig.particleTrail);
+                    spawnTeleportArcEffect(fromLoc, teleportLoc, stuckConfig.particleTrail);
                 }
+
+                // Force teleport bypassing EntityTeleportEvent (used by RPGItems Stuck power)
+                forceRepositionBypassEvent(entity, teleportLoc);
 
                 iMob.resetStuckTracking();
             }
         }
 
         /**
-         * Force repositions an entity, bypassing teleport event cancellation.
-         * Uses velocity reset and direct location setting.
+         * Force repositions an entity by directly setting position, bypassing EntityTeleportEvent.
+         * This works around plugins like RPGItems Stuck power that cancel teleport events.
          */
-        private void forceReposition(LivingEntity entity, Location targetLoc) {
-            // Reset velocity to prevent any momentum issues
+        private void forceRepositionBypassEvent(LivingEntity entity, Location targetLoc) {
+            // Reset velocity to prevent momentum issues
             entity.setVelocity(new Vector(0, 0, 0));
 
             // Remove from any vehicle first
@@ -451,37 +445,72 @@ public class MainLoopTask {
             // Eject any passengers
             entity.eject();
 
-            // Use teleport with a scheduled retry if initial fails
-            new BukkitRunnable() {
-                int attempts = 0;
-                @Override
-                public void run() {
-                    if (entity.isDead() || attempts >= 3) {
-                        this.cancel();
-                        return;
-                    }
-                    attempts++;
+            // Set fall distance to 0 to prevent fall damage
+            entity.setFallDistance(0);
 
-                    // Set fall distance to 0 to prevent fall damage
-                    entity.setFallDistance(0);
-                    entity.setVelocity(new Vector(0, 0, 0));
+            // Use NMS to directly set position without firing EntityTeleportEvent
+            // This bypasses RPGItems Stuck power and similar event-cancelling plugins
+            try {
+                // Get the NMS entity handle via CraftBukkit
+                Object craftEntity = entity;
+                java.lang.reflect.Method getHandleMethod = craftEntity.getClass().getMethod("getHandle");
+                Object nmsEntity = getHandleMethod.invoke(craftEntity);
 
-                    // Try teleport again
-                    entity.teleport(targetLoc);
-
-                    // Check if successfully moved
-                    if (entity.getLocation().distanceSquared(targetLoc) < 4) {
-                        this.cancel();
+                // Find and call absMoveTo or moveTo method on NMS entity
+                // Paper/Spigot 1.21+: net.minecraft.world.entity.Entity.absMoveTo(double, double, double, float, float)
+                java.lang.reflect.Method absMoveToMethod = null;
+                for (java.lang.reflect.Method method : nmsEntity.getClass().getMethods()) {
+                    if (method.getName().equals("absMoveTo") && method.getParameterCount() == 5) {
+                        Class<?>[] params = method.getParameterTypes();
+                        if (params[0] == double.class && params[1] == double.class &&
+                            params[2] == double.class && params[3] == float.class && params[4] == float.class) {
+                            absMoveToMethod = method;
+                            break;
+                        }
                     }
                 }
-            }.runTaskTimer(InfPlugin.plugin, 1, 2);
+
+                if (absMoveToMethod != null) {
+                    absMoveToMethod.invoke(nmsEntity,
+                            targetLoc.getX(),
+                            targetLoc.getY(),
+                            targetLoc.getZ(),
+                            targetLoc.getYaw(),
+                            targetLoc.getPitch());
+                    return;
+                }
+
+                // Fallback: try moveTo method
+                for (java.lang.reflect.Method method : nmsEntity.getClass().getMethods()) {
+                    if (method.getName().equals("moveTo") && method.getParameterCount() == 5) {
+                        Class<?>[] params = method.getParameterTypes();
+                        if (params[0] == double.class && params[1] == double.class &&
+                            params[2] == double.class && params[3] == float.class && params[4] == float.class) {
+                            method.invoke(nmsEntity,
+                                    targetLoc.getX(),
+                                    targetLoc.getY(),
+                                    targetLoc.getZ(),
+                                    targetLoc.getYaw(),
+                                    targetLoc.getPitch());
+                            return;
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                // NMS approach failed, log and fallback to regular teleport
+                Bukkit.getLogger().warning("[InfiniteInfernal] NMS teleport bypass failed, using regular teleport: " + e.getMessage());
+            }
+
+            // Fallback: use regular teleport (may be cancelled by other plugins)
+            entity.teleport(targetLoc);
         }
 
         /**
-         * Spawns a directed particle trail between two locations.
-         * Particles are spawned gradually along the path.
+         * Spawns an arc-shaped particle effect from source to target location.
+         * The arc curves upward in the middle for visual effect.
          */
-        private void spawnTeleportParticleTrail(Location from, Location to, WorldConfig.ParticleTrailConfig config) {
+        private void spawnTeleportArcEffect(Location from, Location to, WorldConfig.ParticleTrailConfig config) {
             World world = from.getWorld();
             if (world == null || !world.equals(to.getWorld())) return;
 
@@ -493,38 +522,48 @@ public class MainLoopTask {
                 particleType = Particle.WITCH;
             }
 
+            // Calculate arc parameters
             double dx = to.getX() - from.getX();
-            double dy = to.getY() - from.getY() + 1; // Adjust to eye level
+            double dy = to.getY() - from.getY();
             double dz = to.getZ() - from.getZ();
-            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+            double totalDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-            if (distance < 1) return;
+            if (totalDistance < 1) return;
 
-            // Normalize direction
-            dx /= distance;
-            dy /= distance;
-            dz /= distance;
+            // Arc height proportional to distance (max 5 blocks)
+            double arcHeight = Math.min(5.0, horizontalDistance * 0.3);
 
-            double step = 1.0 / config.particlesPerBlock;
+            int totalParticles = (int) (totalDistance * config.particlesPerBlock);
+            totalParticles = Math.max(10, Math.min(totalParticles, 50)); // Clamp between 10-50
+
             final Particle finalParticleType = particleType;
-            final double finalDx = dx;
-            final double finalDy = dy;
-            final double finalDz = dz;
+            final double finalArcHeight = arcHeight;
+            final int finalTotalParticles = totalParticles;
 
-            // Spawn particles over time for visual effect
+            // Spawn particles along the arc over time
             new BukkitRunnable() {
-                double traveled = 0;
+                int particleIndex = 0;
                 int ticksElapsed = 0;
+                final int particlesPerTick = Math.max(2, finalTotalParticles / 10);
 
                 @Override
                 public void run() {
                     ticksElapsed++;
 
-                    // Spawn several particles per tick for smooth trail
-                    for (int i = 0; i < 3 && traveled < distance; i++) {
-                        double x = from.getX() + finalDx * traveled;
-                        double y = from.getY() + 1 + finalDy * traveled;
-                        double z = from.getZ() + finalDz * traveled;
+                    for (int i = 0; i < particlesPerTick && particleIndex < finalTotalParticles; i++) {
+                        // t goes from 0 to 1 along the arc
+                        double t = (double) particleIndex / (finalTotalParticles - 1);
+
+                        // Linear interpolation for X and Z
+                        double x = from.getX() + dx * t;
+                        double z = from.getZ() + dz * t;
+
+                        // Parabolic arc for Y: y = base + arcHeight * 4 * t * (1 - t)
+                        // This creates a smooth arc peaking at t=0.5
+                        double baseY = from.getY() + 1 + dy * t; // +1 for eye level
+                        double arcOffset = finalArcHeight * 4.0 * t * (1.0 - t);
+                        double y = baseY + arcOffset;
 
                         world.spawnParticle(
                                 finalParticleType,
@@ -536,11 +575,11 @@ public class MainLoopTask {
                                 config.speed
                         );
 
-                        traveled += step;
+                        particleIndex++;
                     }
 
-                    // Stop after reaching destination or timeout
-                    if (traveled >= distance || ticksElapsed > 20) {
+                    // Stop after all particles spawned or timeout
+                    if (particleIndex >= finalTotalParticles || ticksElapsed > 15) {
                         this.cancel();
                     }
                 }
