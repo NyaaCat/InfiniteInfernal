@@ -7,6 +7,7 @@ import cat.nyaa.infiniteinfernal.configs.WorldConfig;
 import cat.nyaa.infiniteinfernal.mob.CustomMob;
 import cat.nyaa.infiniteinfernal.mob.IMob;
 import cat.nyaa.infiniteinfernal.mob.MobManager;
+import cat.nyaa.infiniteinfernal.mob.TargetDummy;
 import cat.nyaa.infiniteinfernal.utils.CorrectionParser;
 import cat.nyaa.infiniteinfernal.utils.ICorrector;
 import cat.nyaa.infiniteinfernal.utils.Utils;
@@ -119,7 +120,8 @@ public class MainLoopTask {
             return;
         }
         // Check if mob has entered a no-spawn region (empty mobs list) and despawn it
-        if (isInNoSpawnRegion(entity.getLocation())) {
+        // Exception: Allow target dummies to remain in no-spawn regions
+        if (isInNoSpawnRegion(entity.getLocation()) && !(iMob instanceof TargetDummy)) {
             entity.remove(); // Despawn without loot drop
             mobManager.removeMob(iMob, false);
             return;
