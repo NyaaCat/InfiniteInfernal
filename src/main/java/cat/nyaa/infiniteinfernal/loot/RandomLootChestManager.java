@@ -342,6 +342,10 @@ public class RandomLootChestManager implements Listener {
             if (candidate == null || candidate.getKey() == null || candidate.getValue() == null) {
                 continue;
             }
+            // Skip non-naturally spawning mobs (e.g., bosses) from loot chest drops
+            if (!candidate.getKey().spawn.autoSpawn) {
+                continue;
+            }
             int level = candidate.getValue();
             int mobWeight = Math.max(1, candidate.getWeight());
             Map<ILootItem, Integer> mobLoot = getLootForMob(candidate.getKey(), level);
