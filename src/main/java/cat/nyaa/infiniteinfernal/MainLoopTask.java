@@ -397,12 +397,21 @@ public class MainLoopTask {
             }
         }
 
+        // Track mobs that are pending teleport to prevent duplicate teleport scheduling
+        private final java.util.Set<java.util.UUID> pendingTeleports = java.util.Collections.newSetFromMap(
+                new java.util.concurrent.ConcurrentHashMap<>());
+
         private void teleportStuckMob(IMob iMob, WorldConfig.StuckMobConfig stuckConfig) {
             LivingEntity entity = iMob.getEntity();
             LivingEntity target = iMob.getTarget();
 
             if (entity == null || entity.isDead()) return;
             if (target == null || target.isDead() || !(target instanceof Player)) return;
+
+            // Prevent scheduling multiple teleports for the same mob
+            if (pendingTeleports.contains(entity.getUniqueId())) {
+                return;
+            }
 
             Player targetPlayer = (Player) target;
             Location targetLoc = targetPlayer.getLocation();
@@ -417,15 +426,37 @@ public class MainLoopTask {
             if (teleportLoc != null) {
                 Location fromLoc = entity.getLocation().clone();
 
-                // Spawn arc particle effect BEFORE teleport (pre-effect)
+                // Mark mob as pending teleport
+                pendingTeleports.add(entity.getUniqueId());
+
+                int preEffectDuration = stuckConfig.preEffectDurationTicks;
+
+                // Spawn arc particle effect as pre-effect (lingers for configured duration)
                 if (stuckConfig.particleTrail.enabled) {
-                    spawnTeleportArcEffect(fromLoc, teleportLoc, stuckConfig.particleTrail);
+                    spawnTeleportArcEffect(fromLoc, teleportLoc, stuckConfig.particleTrail, preEffectDuration);
                 }
 
-                // Force teleport bypassing EntityTeleportEvent (used by RPGItems Stuck power)
-                forceRepositionBypassEvent(entity, teleportLoc);
+                // Schedule the actual teleport after pre-effect duration
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        pendingTeleports.remove(entity.getUniqueId());
 
-                iMob.resetStuckTracking();
+                        // Verify entity is still valid
+                        if (entity.isDead()) return;
+
+                        // Re-verify target is still valid and get updated location
+                        LivingEntity currentTarget = iMob.getTarget();
+                        if (currentTarget == null || currentTarget.isDead() || !(currentTarget instanceof Player)) {
+                            return;
+                        }
+
+                        // Use original calculated teleport location (not updated target position)
+                        // This ensures the arc effect matches where the mob actually teleports
+                        forceRepositionBypassEvent(entity, teleportLoc);
+                        iMob.resetStuckTracking();
+                    }
+                }.runTaskLater(InfPlugin.plugin, preEffectDuration);
             }
         }
 
@@ -509,8 +540,14 @@ public class MainLoopTask {
         /**
          * Spawns an arc-shaped particle effect from source to target location.
          * The arc curves upward in the middle for visual effect.
+         * Particles are spawned repeatedly for the specified duration.
+         *
+         * @param from Source location
+         * @param to Target location
+         * @param config Particle configuration
+         * @param durationTicks How long to keep spawning particles (in ticks)
          */
-        private void spawnTeleportArcEffect(Location from, Location to, WorldConfig.ParticleTrailConfig config) {
+        private void spawnTeleportArcEffect(Location from, Location to, WorldConfig.ParticleTrailConfig config, int durationTicks) {
             World world = from.getWorld();
             if (world == null || !world.equals(to.getWorld())) return;
 
@@ -534,26 +571,39 @@ public class MainLoopTask {
             // Arc height proportional to distance (max 5 blocks)
             double arcHeight = Math.min(5.0, horizontalDistance * 0.3);
 
-            int totalParticles = (int) (totalDistance * config.particlesPerBlock);
-            totalParticles = Math.max(10, Math.min(totalParticles, 50)); // Clamp between 10-50
+            // Number of points along the arc
+            int arcPoints = (int) (totalDistance * config.particlesPerBlock);
+            arcPoints = Math.max(10, Math.min(arcPoints, 40)); // Clamp between 10-40
 
             final Particle finalParticleType = particleType;
             final double finalArcHeight = arcHeight;
-            final int finalTotalParticles = totalParticles;
+            final int finalArcPoints = arcPoints;
 
-            // Spawn particles along the arc over time
+            // Spawn particles along the arc repeatedly for the duration
             new BukkitRunnable() {
-                int particleIndex = 0;
                 int ticksElapsed = 0;
-                final int particlesPerTick = Math.max(2, finalTotalParticles / 10);
+                // Spawn full arc every few ticks for continuous effect
+                final int spawnInterval = 5; // Respawn arc every 5 ticks
 
                 @Override
                 public void run() {
                     ticksElapsed++;
 
-                    for (int i = 0; i < particlesPerTick && particleIndex < finalTotalParticles; i++) {
+                    // Spawn arc particles at intervals
+                    if (ticksElapsed % spawnInterval == 0 || ticksElapsed == 1) {
+                        spawnArcParticles();
+                    }
+
+                    // Stop after duration
+                    if (ticksElapsed >= durationTicks) {
+                        this.cancel();
+                    }
+                }
+
+                private void spawnArcParticles() {
+                    for (int i = 0; i < finalArcPoints; i++) {
                         // t goes from 0 to 1 along the arc
-                        double t = (double) particleIndex / (finalTotalParticles - 1);
+                        double t = (double) i / (finalArcPoints - 1);
 
                         // Linear interpolation for X and Z
                         double x = from.getX() + dx * t;
@@ -574,13 +624,6 @@ public class MainLoopTask {
                                 config.offsetZ,
                                 config.speed
                         );
-
-                        particleIndex++;
-                    }
-
-                    // Stop after all particles spawned or timeout
-                    if (particleIndex >= finalTotalParticles || ticksElapsed > 15) {
-                        this.cancel();
                     }
                 }
             }.runTaskTimer(InfPlugin.plugin, 0, 1);

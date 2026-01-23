@@ -127,6 +127,9 @@ public class WorldConfig implements ISerializable {
         @Serializable(name = "check-interval-ticks")
         public int checkIntervalTicks = 20;
 
+        @Serializable(name = "pre-effect-duration-ticks")
+        public int preEffectDurationTicks = 100; // 5 seconds
+
         @Serializable(name = "particle-trail")
         public ParticleTrailConfig particleTrail = new ParticleTrailConfig();
     }
