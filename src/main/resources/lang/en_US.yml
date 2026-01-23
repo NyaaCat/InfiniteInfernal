@@ -1,0 +1,261 @@
+loot:
+  add:
+    success: "Item {itemName} &r* {amount}, id: %s, dynamic: %b, added successfully"
+    error:
+      exists: "Item id: %s already used by \"{itemName} &r* {amount}\", add failed"
+      no_item: "No item in main hand"
+  get:
+    success: "Successfully gave {itemName} &r* {amount}"
+    no_item: "No item named \"%s\""
+  set:
+    success: "Successfully set {itemName} &r* {amount} to drop at level %d, weight: %d"
+    no_item: "No item named \"%s\""
+inspect:
+  item:
+    success: "{itemName} * {amount}, id %s, dynamic: %b"
+    no_item: "No item named \"%s\""
+  level:
+    success: "Query success, level %d"
+    info: "{itemName} &r* {amount}, weight: %d, dynamic: %b"
+    no_level: "Level %d does not exist or has no loot"
+  info:
+    normal: "&6Mob: &f%s"
+    level: "&6Level: &f%d"
+    level_mob: "&7  - &f%s"
+    ability_set_name: "&6Ability set: &f%s"
+    ability_set_weight: "&7  Weight: &f%d"
+    region_spawn_name: "&6Region spawn: &f%s"
+    region_spawn_info: "&7  - &f%s"
+  error:
+    invalid_action: "Unknown command %s"
+    no_spawnable_mob: "&cNo spawnable mob found"
+killall:
+  success: "Successfully killed %d infernal mobs"
+  error:
+    unknown_world: "Unknown world %s"
+imi:
+  state_all: "Current mode: All, will receive all kill messages"
+  state_near: "Current mode: Nearby, will receive nearby kill messages"
+  state_self: "Current mode: Self, will receive own kill messages"
+  state_off: "Current mode: Off, will not receive kill messages"
+  global_success: "&aGlobal kill message %s"
+imd:
+  auto: "&aDrop message mode: &eAuto"
+  "on": "&aDrop message mode: &aOn"
+  "off": "&aDrop message mode: &cOff"
+damage:
+  mob_hurt: "&c&lDamage -%%.2f"
+friendly_fire:
+  hint: "Hit friendly!"
+  lv1: "You slightly damaged your ally, penalty applied"
+  lv2: "You damaged your ally, penalty applied"
+  lv3: "You severely damaged your ally, penalty applied"
+error:
+  not_player: "Only players can execute this command"
+  permission: "You don't have permission"
+  wrong_argument: "Wrong argument"
+  we_not_enabled: "&cWorldEdit is not enabled"
+  custom_mob:
+    no_loot: "No loot item \"%s\""
+  mob:
+    spawn_no_id: "No mob with id %s"
+    num_format: "Number format error %s"
+    bad_config: "Bad config file %s"
+  abilities:
+    bad_config: "Bad ability config %s"
+message:
+  stuck: "You are stuck and cannot move or teleport"
+  error:
+    drop: "No drop message, please contact admin"
+    special_drop: "No special drop message, please contact admin"
+group:
+  chat_format: "<{playerName}> {message}"
+  join:
+    success: "Player %s joined group %s"
+    no_group: "No group \"%s\""
+    already_in: "You're already in group %s"
+    capacity: "Group is full"
+  leave:
+    no_group: "Player %s doesn't have a group"
+    success: "Player %s left group"
+  invite:
+    no_group: "You don't have a group, use /ig group <groupName> to create one."
+    requested: "You invited player %s to join group %s"
+    no_session: "You don't have an invitation."
+    denied_inviter: "Player %s denied your request"
+    denied_player: "You rejected to join group %s"
+    timeout: "Invitation timed out."
+    message: "Player %s invited you to join group %s.\n Use /ig accept to accept, or /ig deny to deny."
+  add_player:
+    no_group: "There's no group %s"
+  create:
+    exists: "Group %s exists"
+    success: "Group %s created"
+  list:
+    message:
+      players: "Group %s has players:"
+      groups: "There are groups:"
+  admin:
+    no_group_name: "There's no group %s"
+  manage:
+    admin:
+      add_success: "Successfully added player %s to group %s"
+      remove_success: "Successfully removed player %s from group %s"
+    no_group: "There's no group %s"
+    expdropmode_change: "Exp drop mode changed to %s"
+    lootmode_change: "Loot mode changed to %s"
+  disband:
+    no_group: "You don't have a group"
+    confirm_message: "Are you sure to disband group %s? Repeat command to confirm."
+    message: "Your group has disbanded"
+    aborted: "Disband aborted"
+  drop:
+    roll: "{playerName} got item {itemName} * {amount}"
+  kick:
+    player: "Kicked player %s"
+config:
+  get:
+    success: "&aConfig value &f%s&a: &e%s"
+  set:
+    success: "&aSuccessfully set &f%s&a to &e%s"
+  add:
+    list:
+      success: "&aAdded &e%d&a item(s) to &f%s"
+    map:
+      success: "&aAdded entry &e%s&a to &f%s"
+  remove:
+    list:
+      success: "&aRemoved &e%s&a from &f%s"
+      not_found: "&cValue &e%s&c not found in &f%s"
+    map:
+      success: "&aRemoved key &e%s&a from &f%s"
+      not_found: "&cKey &e%s&c not found in &f%s"
+  delete:
+    success: "&aSuccessfully deleted &f%s"
+    failed: "&cFailed to delete &f%s"
+  list:
+    header: "&6Keys at &f%s&6:"
+    entry: "&7  - &f%s &7%s"
+    empty: "&eNo keys at &f%s"
+  reload:
+    success: "&aConfiguration reloaded successfully"
+  save:
+    success: "&aConfiguration saved successfully"
+  error:
+    invalid_path: "&cInvalid path &f%s&c: %s"
+    no_value: "&cNo value provided"
+    set_failed: "&cFailed to set &f%s&c: %s"
+    add_failed: "&cFailed to add to &f%s&c: %s"
+    remove_failed: "&cFailed to remove from &f%s&c: %s"
+    delete_failed: "&cFailed to delete &f%s&c: %s"
+    list_failed: "&cFailed to list &f%s&c: %s"
+    not_collection: "&cPath &f%s&c is not a list or map"
+create:
+  success: "&aSuccessfully created &f%s"
+  mob:
+    exists: "&cMob &f%s&c already exists"
+  ability:
+    success: "&aSuccessfully created ability set &f%s"
+  error:
+    ability_exists: "&cAbility set &f%s&c already exists"
+    invalid_ability: "&cInvalid ability &f%s"
+    no_selection: "&cNo WorldEdit selection"
+delete:
+  no_mob: "&cMob &f%s&c does not exist"
+  mob:
+    info: "&6Deleting mob: &f%s"
+    confirm: "&eRepeat command to confirm deletion"
+    success: "&aSuccessfully deleted mob &f%s"
+    failed: "&cFailed to delete mob &f%s"
+  ability:
+    info: "&6Deleting ability set: &f%s"
+    confirm: "&eRepeat command to confirm deletion"
+    success: "&aSuccessfully deleted ability set &f%s"
+    fail: "&cFailed to delete ability set &f%s"
+    no_ability_set: "&cAbility set &f%s&c does not exist"
+  region:
+    info: "&6Deleting region: &f%s"
+    success: "&aSuccessfully deleted region &f%s"
+    failed: "&cFailed to delete region &f%s"
+    no_region: "&cRegion &f%s&c does not exist"
+  info:
+    influenced_config: "&7  Influenced config: &f%s"
+modify:
+  ability:
+    add:
+      success: "&aSuccessfully added ability &f%s&a to set &f%s"
+      unknown_ability: "&cUnknown ability &f%s"
+      unknown_ability_set: "&cUnknown ability set &f%s"
+      unsupported_command: "&cUnsupported command"
+    remove:
+      success: "&aSuccessfully removed ability &f%s&a from set"
+      not_exist: "&cAbility &f%s&c does not exist in set"
+    set:
+      success: "&aSuccessfully set ability field &f%s&a to &e%s"
+      failed: "&cFailed to set ability field &f%s"
+      unknown_ability: "&cUnknown ability &f%s"
+  biome:
+    add:
+      success: "&aSuccessfully added biome &f%s"
+      exists: "&cBiome &f%s&c already exists"
+    remove:
+      success: "&aSuccessfully removed biome &f%s"
+      not_exist: "&cBiome &f%s&c does not exist"
+  mob:
+    dont_exist: "&cMob &f%s&c does not exist"
+    name:
+      success: "&aSuccessfully set mob name to &f%s"
+    type:
+      success: "&aSuccessfully set mob type to &f%s"
+    nbt:
+      success: "&aSuccessfully set mob NBT"
+    health_override:
+      success: "&aSuccessfully set health override to &f%s"
+    dynamic_health:
+      success: "&aSuccessfully set dynamic health to &f%s"
+    dynamic_health_expression:
+      success: "&aSuccessfully set dynamic health expression to &f%s"
+    ability:
+      add:
+        success: "&aSuccessfully added ability &f%s&a to mob"
+        no_ability: "&cAbility set &f%s&c does not exist"
+      remove:
+        success: "&aSuccessfully removed ability &f%s&a from mob"
+        no_ability: "&cMob does not have ability &f%s"
+      list_info: "&7  - &f%s"
+      unknown_action: "&cUnknown action &f%s"
+    spawn:
+      world:
+        success: "&aSuccessfully modified spawn world"
+        info: "&6Spawn worlds: &f%s"
+        included: "&eBiome &f%s&e is already included"
+        not_included: "&cBiome &f%s&c is not included"
+        not_exist: "&cWorld &f%s&c does not exist"
+        error_empty: "&cCannot remove last spawn world"
+      biome:
+        info: "&6Spawn biomes: &f%s"
+        empty: "&7  (empty - all biomes)"
+    loot:
+      vanilla: "&aSuccessfully set vanilla loot to &f%s"
+      imLoot: "&aSuccessfully set IM loot to &f%s"
+      expOverride: "&aSuccessfully set exp override to &f%s"
+      special:
+        chance: "&aSuccessfully set special loot chance to &f%s"
+        add:
+          success: "&aSuccessfully added special loot &f%s"
+          invalid: "&cInvalid loot format"
+          not_included: "&cLoot &f%s&c is not included"
+        list:
+          info: "&7  - &f%s"
+          empty: "&7  (no special loot)"
+  region:
+    success: "&aSuccessfully modified region &f%s"
+    not_exist: "&cRegion &f%s&c does not exist"
+    mob_not_exist: "&cMob &f%s&c does not exist"
+    mobs:
+      not_exist: "&cMob &f%s&c is not in region spawn list"
+      remove:
+        success: "&aSuccessfully removed mob &f%s&a from region"
+        not_exist: "&cMob &f%s&c is not in region spawn list"
+enabled: "&aInfinite Infernal &2enabled"
+disabled: "&cInfinite Infernal &4disabled"

@@ -1,0 +1,261 @@
+loot:
+  add:
+    success: "物品 {itemName} &r* {amount}, id: %s, 动态几率: %b, 添加成功"
+    error:
+      exists: "物品id: %s 已被应用于\"{itemName} &r* {amount}\", 添加失败"
+      no_item: "主手没有物品"
+  get:
+    success: "成功给予 {itemName} &r* {amount}"
+    no_item: "没有名为\"%s\"的物品"
+  set:
+    success: "成功设置 {itemName} &r* {amount} 在等级 %d 掉落， 权重： %d"
+    no_item: "没有名为\"%s\"的物品"
+inspect:
+  item:
+    success: "{itemName} * {amount}, id %s, 动态掉落: %b"
+    no_item: "没有名为\"%s\"的物品"
+  level:
+    success: "查询成功, 等级 %d"
+    info: "{itemName} &r* {amount}, 权重: %d, 动态掉落: %b"
+    no_level: "等级 %d 不存在或无掉落"
+  info:
+    normal: "&6生物: &f%s"
+    level: "&6等级: &f%d"
+    level_mob: "&7  - &f%s"
+    ability_set_name: "&6技能组: &f%s"
+    ability_set_weight: "&7  权重: &f%d"
+    region_spawn_name: "&6区域刷怪: &f%s"
+    region_spawn_info: "&7  - &f%s"
+  error:
+    invalid_action: "未知命令 %s"
+    no_spawnable_mob: "&c未找到可生成的生物"
+killall:
+  success: "成功清理了 %d 只黑化怪"
+  error:
+    unknown_world: "未知世界 %s"
+imi:
+  state_all: "当前模式: 全部, 将接收全部击杀信息"
+  state_near: "当前模式: 附近, 将接收附近击杀信息"
+  state_self: "当前模式: 自我, 将接收自己的击杀信息"
+  state_off: "当前模式: 关闭, 将不再接收击杀信息"
+  global_success: "&a全局击杀信息 %s"
+imd:
+  auto: "&a掉落信息模式: &e自动"
+  "on": "&a掉落信息模式: &a开启"
+  "off": "&a掉落信息模式: &c关闭"
+damage:
+  mob_hurt: "&c&l伤害 -%%.2f"
+friendly_fire:
+  hint: "击中友军!"
+  lv1: "你轻微伤害了队友，已受到惩罚"
+  lv2: "你伤害了队友，已受到惩罚"
+  lv3: "你严重伤害了队友，已受到惩罚"
+error:
+  not_player: "只有玩家才能执行该命令"
+  permission: "你没有足够的权限"
+  wrong_argument: "参数错误"
+  we_not_enabled: "&cWorldEdit 未启用"
+  custom_mob:
+    no_loot: "没有掉落物品\"%s\""
+  mob:
+    spawn_no_id: "没有id为 %s 的生物"
+    num_format: "数字格式错误 %s"
+    bad_config: "错误配置文件 %s"
+  abilities:
+    bad_config: "错误的技能配置 %s"
+message:
+  stuck: "你被定身了，不能移动或传送"
+  error:
+    drop: "没有掉落提示信息，请联系管理员"
+    special_drop: "没有特殊掉落提示信息，请联系管理员"
+group:
+  chat_format: "<{playerName}> {message}"
+  join:
+    success: "&6玩家 &r%s &e加入了队伍 %s"
+    no_group: "&4没有名为 &r\"%s\" &4的队伍"
+    already_in: "&6你已经在队伍 &r%s &6里了"
+    capacity: "队伍已满"
+  leave:
+    no_group: "&4玩家 &r%s &c没有队伍"
+    success: "玩家 %s 离开了队伍"
+  invite:
+    no_group: "你不在任何队伍中,使用/ig create <队伍名> 创建一个队伍"
+    requested: "你邀请了玩家 %s 加入队伍 %s"
+    no_session: "你没有收到任何请求"
+    denied_inviter: "玩家 %s 拒绝了你的邀请"
+    denied_player: "你拒绝加入队伍 %s"
+    timeout: "邀请超时"
+    message: "玩家 %s 邀请你加入队伍 %s.\n 使用 /ig accept 同意邀请, 或者 /ig deny 拒绝."
+  add_player:
+    no_group: "队伍 %s 不存在"
+  create:
+    exists: "已经存在队伍 %s"
+    success: "成功创建队伍 %s"
+  list:
+    message:
+      players: "队伍 %s 中的玩家:"
+      groups: "队伍列表:"
+  admin:
+    no_group_name: "队伍 %s 不存在"
+  manage:
+    admin:
+      add_success: "成功添加玩家 %s 到队伍 %s"
+      remove_success: "成功移除玩家 %s 从队伍 %s"
+    no_group: "队伍 %s 不存在"
+    expdropmode_change: "经验分配模式修改为 %s"
+    lootmode_change: "掉落分配模式改为 %s"
+  disband:
+    no_group: "你不在任何队伍中"
+    confirm_message: "你确定要解散队伍 %s 吗? 重复输入此命令确认"
+    message: "你的队伍已经解散"
+    aborted: "解散超时"
+  drop:
+    roll: "{playerName} 通过roll点得到了 {itemName} * {amount}"
+  kick:
+    player: "踢出了玩家 %s"
+config:
+  get:
+    success: "&a配置值 &f%s&a: &e%s"
+  set:
+    success: "&a成功设置 &f%s&a 为 &e%s"
+  add:
+    list:
+      success: "&a已添加 &e%d&a 个项目到 &f%s"
+    map:
+      success: "&a已添加条目 &e%s&a 到 &f%s"
+  remove:
+    list:
+      success: "&a已从 &f%s&a 移除 &e%s"
+      not_found: "&c在 &f%s&c 中未找到值 &e%s"
+    map:
+      success: "&a已从 &f%s&a 移除键 &e%s"
+      not_found: "&c在 &f%s&c 中未找到键 &e%s"
+  delete:
+    success: "&a成功删除 &f%s"
+    failed: "&c删除 &f%s &c失败"
+  list:
+    header: "&6&f%s&6 的键列表:"
+    entry: "&7  - &f%s &7%s"
+    empty: "&e&f%s &e无键"
+  reload:
+    success: "&a配置重载成功"
+  save:
+    success: "&a配置保存成功"
+  error:
+    invalid_path: "&c无效路径 &f%s&c: %s"
+    no_value: "&c未提供值"
+    set_failed: "&c设置 &f%s&c 失败: %s"
+    add_failed: "&c添加到 &f%s&c 失败: %s"
+    remove_failed: "&c从 &f%s&c 移除失败: %s"
+    delete_failed: "&c删除 &f%s&c 失败: %s"
+    list_failed: "&c列出 &f%s&c 失败: %s"
+    not_collection: "&c路径 &f%s&c 不是列表或映射"
+create:
+  success: "&a成功创建 &f%s"
+  mob:
+    exists: "&c生物 &f%s&c 已存在"
+  ability:
+    success: "&a成功创建技能组 &f%s"
+  error:
+    ability_exists: "&c技能组 &f%s&c 已存在"
+    invalid_ability: "&c无效的技能 &f%s"
+    no_selection: "&c没有 WorldEdit 选区"
+delete:
+  no_mob: "&c生物 &f%s&c 不存在"
+  mob:
+    info: "&6删除生物: &f%s"
+    confirm: "&e重复命令以确认删除"
+    success: "&a成功删除生物 &f%s"
+    failed: "&c删除生物 &f%s &c失败"
+  ability:
+    info: "&6删除技能组: &f%s"
+    confirm: "&e重复命令以确认删除"
+    success: "&a成功删除技能组 &f%s"
+    fail: "&c删除技能组 &f%s &c失败"
+    no_ability_set: "&c技能组 &f%s&c 不存在"
+  region:
+    info: "&6删除区域: &f%s"
+    success: "&a成功删除区域 &f%s"
+    failed: "&c删除区域 &f%s &c失败"
+    no_region: "&c区域 &f%s&c 不存在"
+  info:
+    influenced_config: "&7  受影响的配置: &f%s"
+modify:
+  ability:
+    add:
+      success: "&a成功添加技能 &f%s&a 到技能组 &f%s"
+      unknown_ability: "&c未知技能 &f%s"
+      unknown_ability_set: "&c未知技能组 &f%s"
+      unsupported_command: "&c不支持的命令"
+    remove:
+      success: "&a成功从技能组移除技能 &f%s"
+      not_exist: "&c技能 &f%s&c 不存在于技能组中"
+    set:
+      success: "&a成功设置技能字段 &f%s&a 为 &e%s"
+      failed: "&c设置技能字段 &f%s &c失败"
+      unknown_ability: "&c未知技能 &f%s"
+  biome:
+    add:
+      success: "&a成功添加生物群系 &f%s"
+      exists: "&c生物群系 &f%s&c 已存在"
+    remove:
+      success: "&a成功移除生物群系 &f%s"
+      not_exist: "&c生物群系 &f%s&c 不存在"
+  mob:
+    dont_exist: "&c生物 &f%s&c 不存在"
+    name:
+      success: "&a成功设置生物名称为 &f%s"
+    type:
+      success: "&a成功设置生物类型为 &f%s"
+    nbt:
+      success: "&a成功设置生物 NBT"
+    health_override:
+      success: "&a成功设置生命值覆盖为 &f%s"
+    dynamic_health:
+      success: "&a成功设置动态生命值为 &f%s"
+    dynamic_health_expression:
+      success: "&a成功设置动态生命值表达式为 &f%s"
+    ability:
+      add:
+        success: "&a成功添加技能 &f%s&a 到生物"
+        no_ability: "&c技能组 &f%s&c 不存在"
+      remove:
+        success: "&a成功从生物移除技能 &f%s"
+        no_ability: "&c生物没有技能 &f%s"
+      list_info: "&7  - &f%s"
+      unknown_action: "&c未知操作 &f%s"
+    spawn:
+      world:
+        success: "&a成功修改生成世界"
+        info: "&6生成世界: &f%s"
+        included: "&e生物群系 &f%s&e 已包含"
+        not_included: "&c生物群系 &f%s&c 未包含"
+        not_exist: "&c世界 &f%s&c 不存在"
+        error_empty: "&c无法移除最后一个生成世界"
+      biome:
+        info: "&6生成生物群系: &f%s"
+        empty: "&7  (空 - 所有生物群系)"
+    loot:
+      vanilla: "&a成功设置原版掉落为 &f%s"
+      imLoot: "&a成功设置 IM 掉落为 &f%s"
+      expOverride: "&a成功设置经验覆盖为 &f%s"
+      special:
+        chance: "&a成功设置特殊掉落几率为 &f%s"
+        add:
+          success: "&a成功添加特殊掉落 &f%s"
+          invalid: "&c无效的掉落格式"
+          not_included: "&c掉落 &f%s&c 未包含"
+        list:
+          info: "&7  - &f%s"
+          empty: "&7  (无特殊掉落)"
+  region:
+    success: "&a成功修改区域 &f%s"
+    not_exist: "&c区域 &f%s&c 不存在"
+    mob_not_exist: "&c生物 &f%s&c 不存在"
+    mobs:
+      not_exist: "&c生物 &f%s&c 不在区域生成列表中"
+      remove:
+        success: "&a成功从区域移除生物 &f%s"
+        not_exist: "&c生物 &f%s&c 不在区域生成列表中"
+enabled: "&a无限黑化 &2已启用"
+disabled: "&c无限黑化 &4已禁用"

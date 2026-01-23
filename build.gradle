@@ -56,8 +56,14 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.yaml:snakeyaml:2.2'
     implementation('cat.nyaa:nyaacore:9.10')
     compileOnly "io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT"
     shade "com.udojava:EvalEx:2.7"
