@@ -1,0 +1,669 @@
+# ============================================================
+# 辉针城 Boss 配置
+# Shining Needle Castle Boss Configuration
+#
+# 主题：东方Project 辉针城
+# Theme: Touhou Project - Shining Needle Castle
+#
+# 设计理念：
+# - 少名针妙丸与"打碎常识的槌"的逆转主题
+# - 小人族的灵活与分身特性
+# - 以弱胜强、逆境反击的精神
+# - 针与缝纫的攻击方式
+# ============================================================
+
+# ============================================================
+# BOSS 配置文件 (mobs/shining-needle-boss.yml)
+# ============================================================
+#
+# 使用方法：将以下内容保存到 mobs/shining-needle-boss.yml
+#
+# ---
+# name: '&d✦ &5逆境针姬 &d✦'
+# type: VEX                          # 小型飞行生物，符合小人形象
+#
+# abilities:
+#   - shining-needle-boss-main       # 主要技能集
+#   - shining-needle-boss-passive    # 被动技能集
+#
+# healthOverride: -1
+# enableDynamicHealth: true
+# dynamicHealthExpression: 'maxHealth * (1 + playerCount * 0.3)'
+#
+# spawn:
+#   autoSpawn: false                 # Boss不自然生成
+#   weight: 0
+#   levels:
+#     - '15-20'
+#   worlds:
+#     - world
+#
+# loot:
+#   vanilla: false
+#   imLoot: true
+#   special:
+#     chance: 100.0
+#     list:
+#       - miracle-mallet:100         # 打碎常识的槌
+# ---
+#
+# ============================================================
+
+# ============================================================
+# 技能集配置 (abilities/shining-needle-boss-main.yml)
+# ============================================================
+
+weight: 100
+
+abilities:
+
+  # --------------------------------------------------------
+  # 【核心技能1】逆转回声 - 伤害反弹机制
+  # Echo Reversal - Damage Reflection
+  #
+  # 设计理念：体现"打碎常识的槌"的逆转能力
+  # 玩家的攻击会被记录并反弹回去
+  # --------------------------------------------------------
+  逆转回声:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityEchoStrike
+
+    # === 目标选择 ===
+    range: 35.0
+
+    # === 时间参数 ===
+    markDuration: 120                # 标记持续6秒
+    echoDelay: 80                    # 回声延迟4秒
+    warningTicks: 30                 # 释放前1.5秒警告
+
+    # === 伤害计算 - "以其人之道还治其人之身" ===
+    echoMultiplier: 0.6              # 反弹60%伤害
+    maxEchoDamage: 40.0              # 最大反弹伤害
+    echoDamageDistribution: 0.8      # 80%给标记者
+
+    # === 单人模式 ===
+    soloEchoMultiplier: 0.4          # 单人40%反弹
+    soloMaxEchoDamage: 25.0
+
+    # === 视觉反馈 ===
+    showDamageAccumulator: true
+    markEffectName: "GLOWING"
+    markEffectAmplifier: 0
+
+    # === 消息配置 ===
+    messageDisplayType: "BOSSBAR"
+    bossbarColor: "PURPLE"
+    bossbarStyle: "SEGMENTED_20"
+
+    msgMarked: "&d✦ 你被【逆转之印】标记！"
+    msgAccumulating: "&5累积逆转: &f{damage}"
+    msgWarning: "&c⚠ 逆转即将释放！停止攻击！"
+    msgRelease: "&4逆转释放！「以彼之道，还施彼身」！受到 {damage} 伤害！"
+    msgTip: "&7&o「弱者的反击，就是将你的力量还给你」"
+
+    # === 粒子配置 - 紫色针状粒子 ===
+    markParticle:
+      type: END_ROD
+      amount: 20
+      deltaX: 0.3
+      deltaY: 0.8
+      deltaZ: 0.3
+      speed: 0.05
+      forced: true
+
+    chargeParticle:
+      type: WITCH
+      amount: 10
+      deltaX: 0.2
+      deltaY: 0.5
+      deltaZ: 0.2
+      speed: 0.02
+      forced: true
+
+    releaseParticle:
+      type: FLASH
+      amount: 1
+      forced: true
+
+    # === 音效配置 ===
+    markSound: ENTITY_ILLUSIONER_CAST_SPELL
+    markPitch: 1.8
+    markVolume: 1.0
+    releaseSound: ENTITY_ILLUSIONER_PREPARE_BLINDNESS
+    releasePitch: 0.5
+    releaseVolume: 1.5
+
+  # --------------------------------------------------------
+  # 【核心技能2】时空歪曲 - 槌的时空能力
+  # Temporal Distortion - Mallet's Space-Time Power
+  #
+  # 设计理念：打碎常识的槌可以扭曲时空
+  # --------------------------------------------------------
+  时空歪曲:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityTemporalRift
+
+    # === 区域参数 ===
+    radius: 6.0                      # 较小半径，符合"小"的主题
+    duration: 160                    # 8秒持续
+    warningTicks: 30
+
+    # === 效果参数 ===
+    slowAmplifier: 2                 # 缓慢III
+    bossSpeedMultiplier: 2.0         # Boss加速翻倍
+
+    # === 多人锚定 - 需要站在对角才能破解 ===
+    anchorPlayersRequired: 2
+    anchorDistance: 4.0              # 较短距离
+    anchorCollapseBonus: 0.4
+
+    # === 单人模式 ===
+    soloEscapeDamage: 35.0
+    soloRadiusMultiplier: 0.8
+
+    # === 多人缩放 ===
+    scaleWithPlayers: true
+    radiusPerPlayer: 1.0
+
+    # === 消息配置 ===
+    messageDisplayType: "BOSSBAR"
+    bossbarColor: "PURPLE"
+    bossbarStyle: "SEGMENTED_10"
+
+    msgWarning: "&d✦ 「打碎常识的槌」正在扭曲时空..."
+    msgActive: "&5时空歪曲！你被困在扭曲的空间中！"
+    msgAnchorHint: "&e&o站在区域两端可以稳定时空"
+    msgSoloHint: "&e&o造成 {damage} 伤害可以打破扭曲"
+    msgProgress: "&6稳定进度: {progress}%"
+    msgCollapsed: "&a时空恢复正常！"
+    msgExpired: "&7时空扭曲消散了..."
+
+    # === 粒子配置 - 紫色漩涡 ===
+    warningParticle:
+      type: PORTAL
+      amount: 60
+      deltaX: 0.5
+      deltaY: 2.0
+      deltaZ: 0.5
+      speed: 0.8
+      forced: true
+
+    activeParticle:
+      type: DUST_COLOR_TRANSITION
+      amount: 40
+      deltaX: 0.3
+      deltaY: 0.3
+      deltaZ: 0.3
+      speed: 1.5
+      extraData: "200,100,255,100,0,200,1.5"
+      forced: true
+
+    collapseParticle:
+      type: REVERSE_PORTAL
+      amount: 150
+      speed: 1.5
+      forced: true
+
+    # === 音效配置 ===
+    warningSound: BLOCK_BEACON_AMBIENT
+    warningPitch: 0.3
+    warningVolume: 1.5
+    activeSound: BLOCK_PORTAL_AMBIENT
+    activePitch: 0.5
+    activeVolume: 1.0
+    collapseSound: ENTITY_ILLUSIONER_MIRROR_MOVE
+
+  # --------------------------------------------------------
+  # 【核心技能3】针雨 - 投射物攻击
+  # Needle Rain - Projectile Attack
+  #
+  # 设计理念：小人族的针攻击，改造自WebShot
+  # --------------------------------------------------------
+  针雨:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityWebShot
+
+    # === 投射物配置 - 快速连射 ===
+    projectileSpeed: 2.0             # 快速飞行
+    burstCount: 5                    # 5连发
+    burstInterval: 3                 # 快速连射
+
+    # === 命中效果 - 针刺减速 ===
+    webDuration: 30                  # 短暂蛛网
+    webRadius: 1
+    slowEffect: true
+    slowAmplifier: 3                 # 强力减速
+    slowDuration: 60                 # 3秒减速
+
+    # === 粒子配置 - 银色针状 ===
+    projectileParticle:
+      type: END_ROD
+      amount: 5
+      deltaX: 0.05
+      deltaY: 0.05
+      deltaZ: 0.05
+      speed: 0
+
+    hitParticle:
+      type: CRIT
+      amount: 15
+      deltaX: 0.3
+      deltaY: 0.3
+      deltaZ: 0.3
+      speed: 0.1
+
+    # === 音效配置 ===
+    shootSound: ENTITY_ARROW_SHOOT
+    hitSound: ENTITY_ARROW_HIT_PLAYER
+
+  # --------------------------------------------------------
+  # 【核心技能4】小人分身 - 镜像迷惑
+  # Miniature Clones - Mirror Images
+  #
+  # 设计理念：小人族的分身术
+  # --------------------------------------------------------
+  小人分身:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityMirrorImage
+
+    # === 分身配置 - 多个假分身 ===
+    imageCount: 4                    # 4个分身
+    imageDuration: 120               # 6秒存在
+    imageHealth: 1.0                 # 一击即碎
+    spawnRadius: 4.0
+
+    # === 本体配置 ===
+    ownerInvisible: true             # 本体短暂隐身
+    ownerInvisibleDuration: 60       # 3秒隐身
+
+    # === 粒子配置 ===
+    spawnParticle:
+      type: WITCH
+      amount: 40
+      deltaX: 0.4
+      deltaY: 1.0
+      deltaZ: 0.4
+      speed: 0.15
+      forced: true
+
+    deathParticle:
+      type: END_ROD
+      amount: 25
+      deltaX: 0.3
+      deltaY: 0.6
+      deltaZ: 0.3
+      speed: 0.08
+
+    # === 音效配置 ===
+    spawnSound: ENTITY_ILLUSIONER_CAST_SPELL
+    deathSound: BLOCK_GLASS_BREAK
+
+  # --------------------------------------------------------
+  # 【核心技能5】重力逆转 - 推拉场
+  # Gravity Reversal - Push/Pull Fields
+  #
+  # 设计理念：槌可以逆转事物，包括重力
+  # --------------------------------------------------------
+  重力逆转:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityGravityWell
+
+    # === 重力井配置 ===
+    wellCount: 3
+    wellRadius: 4.0
+    duration: 120
+    spawnDelay: 15
+
+    # === 单人模式 ===
+    soloWellCount: 2
+    soloWellRadius: 3.5
+
+    # === 力场强度 ===
+    pullStrength: 0.6
+    pushStrength: 1.0
+
+    # === 核心伤害 ===
+    coreDamage: 3.0
+    coreRadius: 1.2
+
+    # === 生成位置 ===
+    minDistanceFromBoss: 3.0
+    maxDistanceFromBoss: 15.0
+
+    # === 零重力安全区 ===
+    nullZoneRadius: 1.8
+    guaranteeNullZone: true
+
+    # === 消息配置 ===
+    messageDisplayType: "ACTIONBAR"
+    bossbarColor: "PURPLE"
+    bossbarStyle: "SOLID"
+
+    msgActivate: "&d重力正在被逆转！"
+    msgSafeZone: "&a安全区: {direction} {distance}格"
+    msgWarning: "&c你正在被拉扯！"
+    msgCoreDamage: "&4核心区域！快逃！"
+
+    # === 粒子配置 ===
+    blackHoleParticle:
+      type: WITCH
+      amount: 25
+      speed: 0.08
+      forced: true
+
+    whiteHoleParticle:
+      type: END_ROD
+      amount: 25
+      speed: 0.12
+      forced: true
+
+    nullZoneParticle:
+      type: DUST
+      amount: 20
+      deltaX: 0.2
+      deltaY: 0.2
+      deltaZ: 0.2
+      speed: 1.2
+      extraData: "200,180,255,1.2"
+      forced: true
+
+    # === 音效配置 ===
+    spawnSound: ENTITY_ENDERMAN_TELEPORT
+    spawnPitch: 0.7
+    spawnVolume: 1.2
+    nullZoneSound: BLOCK_BEACON_ACTIVATE
+
+  # --------------------------------------------------------
+  # 【核心技能6】跃击突刺 - 跳跃攻击
+  # Needle Dive - Leap Attack
+  #
+  # 设计理念：小人族的突进攻击
+  # --------------------------------------------------------
+  跃击突刺:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityLeapSlam
+
+    # === 跳跃配置 - 灵活快速 ===
+    leapRange: 12.0
+    leapHeight: 1.8                  # 高跳
+    fallDamageImmune: true
+
+    # === 落地伤害 ===
+    slamRadius: 3.0                  # 较小范围
+    slamDamageMultiplier: 1.8        # 高伤害
+    slamKnockback: 2.0               # 强击退
+
+    # === 落地效果 ===
+    slamSlowDuration: 40
+    slamSlowAmplifier: 2
+
+    # === 粒子配置 ===
+    leapParticle:
+      type: END_ROD
+      amount: 15
+      deltaX: 0.2
+      deltaY: 0.1
+      deltaZ: 0.2
+      speed: 0.03
+
+    slamParticle:
+      type: CRIT_MAGIC
+      amount: 40
+      deltaX: 0.8
+      deltaY: 0.3
+      deltaZ: 0.8
+      speed: 0.1
+
+    # === 音效配置 ===
+    leapSound: ENTITY_ILLUSIONER_PREPARE_MIRROR
+    slamSound: ENTITY_PLAYER_ATTACK_SWEEP
+
+# ============================================================
+# 被动技能集配置 (abilities/shining-needle-boss-passive.yml)
+# ============================================================
+
+# --- 另一个文件 ---
+# weight: 100
+# abilities:
+
+  # --------------------------------------------------------
+  # 【被动技能1】针之闪避 - 灵活闪现
+  # Needle Dodge - Agile Blink
+  #
+  # 设计理念：小人族的灵活性
+  # --------------------------------------------------------
+  针之闪避:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityBlink
+
+    # === 触发配置 - 高概率闪避 ===
+    blinkChance: 0.35                # 35%概率
+    cooldownTicks: 40                # 2秒冷却
+
+    # === 传送配置 ===
+    blinkDistance: 6.0
+    blinkBehindAttacker: true
+
+    # === 传送后效果 ===
+    postBlinkEffect: "SPEED"
+    postBlinkDuration: 60
+    postBlinkAmplifier: 2            # 速度III
+
+    # === 粒子配置 ===
+    vanishParticle:
+      type: END_ROD
+      amount: 35
+      deltaX: 0.4
+      deltaY: 0.8
+      deltaZ: 0.4
+      speed: 0.08
+
+    appearParticle:
+      type: WITCH
+      amount: 45
+      deltaX: 0.5
+      deltaY: 1.0
+      deltaZ: 0.5
+      speed: 0.12
+
+    # === 音效配置 ===
+    blinkSound: ENTITY_ILLUSIONER_MIRROR_MOVE
+
+  # --------------------------------------------------------
+  # 【被动技能2】逆境狂暴 - 低血强化
+  # Reversal Fury - Low Health Enrage
+  #
+  # 设计理念：「弱者的反击」- 越弱越强
+  # --------------------------------------------------------
+  逆境狂暴:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityEnrage
+
+    # === 触发配置 - 30%血量触发 ===
+    healthThreshold: 0.30
+    triggerOnce: true
+
+    # === 狂暴效果 - 强力增益 ===
+    enrageEffect1: "STRENGTH"
+    enrageEffect1Duration: -1
+    enrageEffect1Amplifier: 2        # 力量III
+
+    enrageEffect2: "SPEED"
+    enrageEffect2Duration: -1
+    enrageEffect2Amplifier: 2        # 速度III
+
+    enrageEffect3: "RESISTANCE"
+    enrageEffect3Duration: -1
+    enrageEffect3Amplifier: 1        # 抗性II
+
+    # === 视觉效果 ===
+    glowingEffect: true
+
+    # === 粒子配置 ===
+    enrageParticle:
+      type: TOTEM_OF_UNDYING
+      amount: 50
+      deltaX: 1.0
+      deltaY: 2.0
+      deltaZ: 1.0
+      speed: 0.5
+
+    # === 音效配置 ===
+    enrageSound: ENTITY_ENDER_DRAGON_GROWL
+
+  # --------------------------------------------------------
+  # 【被动技能3】针之结界 - 元素光环
+  # Needle Barrier - Elemental Aura
+  #
+  # 设计理念：周围的针形成防护结界
+  # --------------------------------------------------------
+  针之结界:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityElementalAura
+
+    # === 光环配置 ===
+    auraRadius: 4.0                  # 小范围光环
+    auraInterval: 30                 # 1.5秒间隔
+
+    # === 效果配置 - 轻度debuff ===
+    auraEffect1: "WEAKNESS"
+    auraEffect1Duration: 40
+    auraEffect1Amplifier: 0
+
+    auraEffect2: ""
+    auraEffect2Duration: 0
+    auraEffect2Amplifier: 0
+
+    auraEffect3: ""
+    auraEffect3Duration: 0
+    auraEffect3Amplifier: 0
+
+    auraDamage: 1.0                  # 轻微伤害
+
+    # === 粒子配置 ===
+    auraParticle:
+      type: END_ROD
+      amount: 3
+      deltaX: 0.1
+      deltaY: 0.1
+      deltaZ: 0.1
+      speed: 0.01
+
+    # === 音效配置 ===
+    auraSound: ""
+
+  # --------------------------------------------------------
+  # 【被动技能4】暗影突袭 - 隐身攻击
+  # Shadow Assault - Stealth Attack
+  #
+  # 设计理念：小人族的隐蔽突袭
+  # --------------------------------------------------------
+  暗影突袭:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.active.AbilityShadowStep
+
+    # === 潜行配置 ===
+    stealthDuration: 80              # 4秒潜行
+    speedAmplifier: 3                # 速度IV
+    bonusDamageMultiplier: 2.5       # 2.5倍伤害
+    revealOnAttack: true
+
+    # === 粒子配置 ===
+    stealthParticle:
+      type: SMOKE
+      amount: 8
+      deltaX: 0.15
+      deltaY: 0.4
+      deltaZ: 0.15
+      speed: 0.01
+
+    revealParticle:
+      type: WITCH
+      amount: 40
+      deltaX: 0.6
+      deltaY: 1.2
+      deltaZ: 0.6
+      speed: 0.15
+
+    # === 音效配置 ===
+    stealthSound: ENTITY_ILLUSIONER_PREPARE_BLINDNESS
+    revealSound: ENTITY_ILLUSIONER_CAST_SPELL
+
+  # --------------------------------------------------------
+  # 【被动技能5】死亡之针 - 死亡毒云
+  # Death Needles - Poison Cloud on Death
+  #
+  # 设计理念：死亡时释放大量毒针
+  # --------------------------------------------------------
+  死亡之针:
+    __class__: cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityPoisonTrail
+
+    # === 移动尾迹 - 禁用 ===
+    trailEnabled: false
+    trailInterval: 20
+    trailRadius: 0
+    trailDuration: 0
+    trailPoisonEffect: ""
+    trailPoisonDuration: 0
+    trailPoisonAmplifier: 0
+
+    # === 死亡毒云 - 启用 ===
+    deathCloudEnabled: true
+    deathCloudRadius: 8.0            # 大范围
+    deathCloudDuration: 150          # 7.5秒
+    deathCloudDamage: 3.0
+
+    deathCloudEffect: "WITHER"
+    deathCloudEffectDuration: 80
+    deathCloudEffectAmplifier: 1
+
+    # === 粒子配置 ===
+    trailParticle:
+      type: END_ROD
+      amount: 5
+      speed: 0.02
+
+    deathParticle:
+      type: WITCH
+      amount: 80
+      deltaX: 2.0
+      deltaY: 1.0
+      deltaZ: 2.0
+      speed: 0.1
+
+    # === 音效配置 ===
+    trailSound: ""
+    deathSound: ENTITY_WITHER_SPAWN
+
+# ============================================================
+# 战斗流程说明
+# Combat Flow Description
+# ============================================================
+#
+# 阶段1 (100%-70% HP):
+#   - 使用「针雨」进行远程攻击
+#   - 使用「跃击突刺」进行突进
+#   - 「针之闪避」提供被动躲避
+#
+# 阶段2 (70%-30% HP):
+#   - 开始使用「时空歪曲」控场
+#   - 「小人分身」制造混乱
+#   - 「重力逆转」增加机动压力
+#   - 「逆转回声」反弹玩家伤害
+#
+# 阶段3 (30% HP 以下):
+#   - 触发「逆境狂暴」大幅强化
+#   - 所有技能更加频繁
+#   - 「暗影突袭」进行致命打击
+#
+# 死亡:
+#   - 「死亡之针」释放大范围毒云
+#   - 玩家需要立即撤离
+#
+# ============================================================
+# 推荐难度配置
+# ============================================================
+#
+# 等级 15-20 适用
+# 建议 2-4 名玩家挑战
+# 单人模式下技能有相应削弱
+#
+# ============================================================
+# 配色主题
+# ============================================================
+#
+# 主色调：紫色 (辉针城主题色)
+# 辅助色：银白色 (针的颜色)
+# 粒子：END_ROD (银白针状) + WITCH (紫色魔法)
+#
+# ============================================================

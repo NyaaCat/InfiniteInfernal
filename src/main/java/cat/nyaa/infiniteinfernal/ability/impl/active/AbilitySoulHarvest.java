@@ -135,10 +135,10 @@ public class AbilitySoulHarvest extends ActiveAbility implements AbilityHurt, Ab
     public String harvestSound = "ENTITY_WITHER_SPAWN";
 
     @Serializable
-    public float harvestPitch = 0.5f;
+    public double harvestPitch = 0.5;
 
     @Serializable
-    public float harvestVolume = 2.0f;
+    public double harvestVolume = 2.0;
 
     @Serializable
     public String windowOpenSound = "BLOCK_BEACON_ACTIVATE";
@@ -554,10 +554,10 @@ public class AbilitySoulHarvest extends ActiveAbility implements AbilityHurt, Ab
         }
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }

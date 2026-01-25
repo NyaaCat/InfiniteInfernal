@@ -131,28 +131,28 @@ public class AbilityChainLightning extends ActiveAbility implements AbilityAttac
     public String strikeSound = "ENTITY_LIGHTNING_BOLT_THUNDER";
 
     @Serializable
-    public float strikePitch = 1.0f;
+    public double strikePitch = 1.0;
 
     @Serializable
-    public float strikeVolume = 1.0f;
+    public double strikeVolume = 1.0;
 
     @Serializable
     public String chainSound = "BLOCK_NOTE_BLOCK_PLING";
 
     @Serializable
-    public float chainPitch = 1.5f;
+    public double chainPitch = 1.5;
 
     @Serializable
-    public float chainVolume = 0.8f;
+    public double chainVolume = 0.8;
 
     @Serializable
     public String circuitSound = "ENTITY_GENERIC_EXPLODE";
 
     @Serializable
-    public float circuitPitch = 0.5f;
+    public double circuitPitch = 0.5;
 
     @Serializable
-    public float circuitVolume = 2.0f;
+    public double circuitVolume = 2.0;
 
     // === State Tracking ===
     private static final Map<UUID, ChargedState> chargedPlayers = new ConcurrentHashMap<>();
@@ -501,10 +501,10 @@ public class AbilityChainLightning extends ActiveAbility implements AbilityAttac
         player.sendActionBar(component);
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }

@@ -122,19 +122,19 @@ public class AbilityTemporalRift extends ActiveAbility implements AbilityHurt {
     public String warningSound = "BLOCK_BEACON_AMBIENT";
 
     @Serializable
-    public float warningPitch = 0.5f;
+    public double warningPitch = 0.5;
 
     @Serializable
-    public float warningVolume = 1.5f;
+    public double warningVolume = 1.5;
 
     @Serializable
     public String activeSound = "BLOCK_PORTAL_AMBIENT";
 
     @Serializable
-    public float activePitch = 0.3f;
+    public double activePitch = 0.3;
 
     @Serializable
-    public float activeVolume = 2.0f;
+    public double activeVolume = 2.0;
 
     @Serializable
     public String collapseSound = "ENTITY_ILLUSIONER_MIRROR_MOVE";
@@ -411,10 +411,10 @@ public class AbilityTemporalRift extends ActiveAbility implements AbilityHurt {
         }
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }

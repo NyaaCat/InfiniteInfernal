@@ -128,10 +128,10 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
     public String warningSound = "ENTITY_ENDERMAN_STARE";
 
     @Serializable
-    public float warningPitch = 1.2f;
+    public double warningPitch = 1.2;
 
     @Serializable
-    public float warningVolume = 1.5f;
+    public double warningVolume = 1.5;
 
     @Serializable
     public String shiftOutSound = "ENTITY_ENDERMAN_TELEPORT";
@@ -516,10 +516,10 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
         }
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }

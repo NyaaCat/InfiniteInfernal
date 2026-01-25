@@ -116,10 +116,10 @@ public class AbilityGravityWell extends ActiveAbility {
     public String spawnSound = "ENTITY_ENDERMAN_TELEPORT";
 
     @Serializable
-    public float spawnPitch = 0.5f;
+    public double spawnPitch = 0.5;
 
     @Serializable
-    public float spawnVolume = 1.5f;
+    public double spawnVolume = 1.5;
 
     @Serializable
     public String nullZoneSound = "BLOCK_BEACON_ACTIVATE";
@@ -471,10 +471,10 @@ public class AbilityGravityWell extends ActiveAbility {
         }
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }

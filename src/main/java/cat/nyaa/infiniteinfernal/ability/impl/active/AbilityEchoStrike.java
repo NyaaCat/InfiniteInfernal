@@ -113,19 +113,19 @@ public class AbilityEchoStrike extends ActiveAbility implements AbilityHurt {
     public String markSound = "ENTITY_ELDER_GUARDIAN_CURSE";
 
     @Serializable
-    public float markPitch = 1.5f;
+    public double markPitch = 1.5;
 
     @Serializable
-    public float markVolume = 1.0f;
+    public double markVolume = 1.0;
 
     @Serializable
     public String releaseSound = "ENTITY_WITHER_SHOOT";
 
     @Serializable
-    public float releasePitch = 0.5f;
+    public double releasePitch = 0.5;
 
     @Serializable
-    public float releaseVolume = 2.0f;
+    public double releaseVolume = 2.0;
 
     // === State Tracking ===
     private static final Map<UUID, EchoState> activeEchoes = new ConcurrentHashMap<>();
@@ -355,10 +355,10 @@ public class AbilityEchoStrike extends ActiveAbility implements AbilityHurt {
         }
     }
 
-    private void playSound(World world, Location location, String soundName, float volume, float pitch) {
+    private void playSound(World world, Location location, String soundName, double volume, double pitch) {
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            world.playSound(location, sound, volume, pitch);
+            world.playSound(location, sound, (float) volume, (float) pitch);
         } catch (IllegalArgumentException e) {
             // Invalid sound, ignore
         }
