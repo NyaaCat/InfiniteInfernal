@@ -76,6 +76,10 @@ public class AbilityTemporalRift extends ActiveAbility implements AbilityHurt {
     @Serializable
     public double radiusPerPlayer = 1.5;
 
+    // === Detection Range ===
+    @Serializable
+    public double detectionRange = 128.0;
+
     // === Message Configuration ===
     @Serializable
     public String messageDisplayType = "BOSSBAR";
@@ -173,7 +177,7 @@ public class AbilityTemporalRift extends ActiveAbility implements AbilityHurt {
         UUID mobId = boss.getUniqueId();
 
         // Calculate effective radius
-        List<Player> nearbyPlayers = getNearbyPlayers(iMob, 50);
+        List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
         int playerCount = nearbyPlayers.size();
         boolean isSoloMode = playerCount <= 1;
 
@@ -287,7 +291,7 @@ public class AbilityTemporalRift extends ActiveAbility implements AbilityHurt {
     private void endRift(UUID mobId, IMob iMob, RiftState state, boolean wasCollapsed) {
         activeRifts.remove(mobId);
 
-        List<Player> nearbyPlayers = getNearbyPlayers(iMob, 50);
+        List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
         World world = state.center.getWorld();
 
         if (wasCollapsed) {

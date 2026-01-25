@@ -79,6 +79,14 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
     @Serializable
     public boolean clonesPersistAfterShift = false;
 
+    // === Detection Range ===
+    @Serializable
+    public double detectionRange = 128.0;
+
+    // === Shifted Phase Damage Reduction ===
+    @Serializable
+    public double shiftedDamageMultiplier = 0.1;
+
     // === Message Configuration ===
     @Serializable
     public String messageDisplayType = "BOSSBAR";
@@ -203,7 +211,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
 
         if (activePhases.containsKey(mobId)) return;
 
-        List<Player> nearbyPlayers = getNearbyPlayers(iMob, 50);
+        List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
         boolean isSoloMode = nearbyPlayers.size() <= 1;
 
         double effectiveThreshold = calculateThreshold(nearbyPlayers.size(), isSoloMode);
@@ -239,7 +247,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
 
                 ticks++;
 
-                List<Player> nearbyPlayers = getNearbyPlayers(iMob, 50);
+                List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
                 double progress = state.accumulatedDamage / state.effectiveThreshold;
 
                 // Check if threshold reached
@@ -303,7 +311,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
         Location bossLoc = boss.getLocation();
 
         state.isShifted = true;
-        List<Player> nearbyPlayers = getNearbyPlayers(iMob, 50);
+        List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
 
         // Notify players
         sendMessage(nearbyPlayers, msgShiftOut);
@@ -351,7 +359,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
 
                 // Update boss bar with countdown
                 float progress = 1.0f - (float) ticks / shiftedPhase;
-                updateBossBar(getNearbyPlayers(iMob, 50), state, progress,
+                updateBossBar(getNearbyPlayers(iMob, detectionRange), state, progress,
                     "&5虚空相位: " + (shiftedPhase - ticks) / 20 + "秒");
 
                 // End of shifted phase
@@ -360,7 +368,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
 
                     // Return from void
                     boss.setInvisible(false);
-                    List<Player> players = getNearbyPlayers(iMob, 50);
+                    List<Player> players = getNearbyPlayers(iMob, detectionRange);
                     sendMessage(players, msgShiftIn);
                     playSound(world, boss.getLocation(), shiftInSound, 2.0f, 1.0f);
                     Utils.spawnParticle(shiftInParticle, world, boss.getLocation());
@@ -436,7 +444,7 @@ public class AbilityPhaseShift extends ActiveAbility implements AbilityHurt, Abi
         if (state != null) {
             if (state.isShifted) {
                 // Reduce damage while shifted (in addition to resistance effect)
-                event.setDamage(event.getDamage() * 0.1);
+                event.setDamage(event.getDamage() * shiftedDamageMultiplier);
             } else {
                 // Accumulate damage during vulnerable phase
                 state.accumulatedDamage += event.getFinalDamage();

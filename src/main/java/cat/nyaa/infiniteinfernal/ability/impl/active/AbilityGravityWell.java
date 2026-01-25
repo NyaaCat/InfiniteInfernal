@@ -79,6 +79,16 @@ public class AbilityGravityWell extends ActiveAbility {
     @Serializable
     public boolean guaranteeNullZone = true;
 
+    // === Force Configuration ===
+    @Serializable
+    public double forceMultiplier = 0.1;  // Force application multiplier
+
+    @Serializable
+    public double maxVelocity = 2.0;  // Maximum player velocity cap
+
+    @Serializable
+    public double detectionRange = 128.0;  // Player detection range
+
     // === Message Configuration ===
     @Serializable
     public String messageDisplayType = "ACTIONBAR";
@@ -156,7 +166,7 @@ public class AbilityGravityWell extends ActiveAbility {
         World world = boss.getWorld();
         Location bossLoc = boss.getLocation();
 
-        List<Player> nearbyPlayers = getNearbyPlayers(iMob, maxDistanceFromBoss + 10);
+        List<Player> nearbyPlayers = getNearbyPlayers(iMob, detectionRange);
         boolean isSoloMode = nearbyPlayers.size() <= 1;
 
         int numWells = isSoloMode ? soloWellCount : wellCount;
@@ -269,10 +279,10 @@ public class AbilityGravityWell extends ActiveAbility {
                     // Apply force
                     if (totalForce.lengthSquared() > 0.001) {
                         Vector velocity = player.getVelocity();
-                        velocity.add(totalForce.multiply(0.1));
+                        velocity.add(totalForce.multiply(forceMultiplier));
                         // Cap velocity
-                        if (velocity.length() > 2.0) {
-                            velocity.normalize().multiply(2.0);
+                        if (velocity.length() > maxVelocity) {
+                            velocity.normalize().multiply(maxVelocity);
                         }
                         player.setVelocity(velocity);
 

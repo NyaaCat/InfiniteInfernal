@@ -64,6 +64,9 @@ public class AbilityWebShot extends ActiveAbility {
     @Serializable
     public int burstInterval = 5;  // 连发间隔
 
+    @Serializable
+    public double range = 30.0;  // 目标检测范围
+
     // === 粒子效果 ===
     @Serializable
     public ParticleConfig projectileParticle = new ParticleConfig();
@@ -103,7 +106,7 @@ public class AbilityWebShot extends ActiveAbility {
 
         if (target == null) {
             // 没有目标时尝试获取附近玩家
-            List<Player> nearbyPlayers = getNearbyPlayers(iMob, 30);
+            List<Player> nearbyPlayers = getNearbyPlayers(iMob, range);
             if (!nearbyPlayers.isEmpty()) {
                 target = Utils.randomPick(nearbyPlayers);
             }
