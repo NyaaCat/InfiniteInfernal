@@ -131,7 +131,8 @@ public class CustomMob implements IMob {
         if (healthOverride > 0){
             health = healthOverride;
         }else {
-            health = InfPlugin.plugin.config().levelConfigs.get(level).attr.health;
+            LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(level);
+            health = levelConfig != null ? levelConfig.attr.health : 50d;
         }
         enableDynamicHealth = config.enableDynamicHealth;
         dynamicHealthExpression = config.dynamicHealthExpression;
@@ -176,7 +177,8 @@ public class CustomMob implements IMob {
 
     @Override
     public double getDamage() {
-        return InfPlugin.plugin.config().levelConfigs.get(level).attr.damage;
+        LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(level);
+        return levelConfig != null ? levelConfig.attr.damage : 2d;
     }
 
     @Override
@@ -213,7 +215,7 @@ public class CustomMob implements IMob {
             World entityWorld = entity.getWorld();
             WorldConfig worldConfig = InfPlugin.plugin.config().worlds.get(entityWorld.getName());
             LevelConfig levelConfig = InfPlugin.plugin.config().levelConfigs.get(getLevel());
-            double aggro = levelConfig.attr.aggro;
+            double aggro = levelConfig != null ? levelConfig.attr.aggro : 48d;
             if (entityType.equals(EntityType.GUARDIAN) || entityType.equals(EntityType.ELDER_GUARDIAN)) {
                 followDistance = aggro * 0.60;
             }else {
