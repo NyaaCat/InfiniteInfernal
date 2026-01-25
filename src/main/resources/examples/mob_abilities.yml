@@ -1,0 +1,520 @@
+# ============================================================
+# InfiniteInfernal 小怪技能配置示例
+# Mob Abilities Configuration Examples
+#
+# 适合普通小怪使用的简单有趣技能
+# Simple and fun abilities suitable for regular mobs
+# ============================================================
+
+# ------------------------------------------------------------
+# 闪现闪避 - 被动闪避技能
+# Blink - Passive Dodge Ability
+#
+# 受到伤害时有概率瞬移到附近位置，躲避后续攻击。
+# When damaged, has a chance to blink to a nearby location.
+# ------------------------------------------------------------
+Blink:
+  # === 触发配置 / Trigger Configuration ===
+  blinkChance: 0.3                   # 触发概率 30% / Trigger chance 30%
+  cooldownTicks: 60                  # 冷却时间 3秒 / Cooldown 3 seconds
+
+  # === 传送配置 / Teleport Configuration ===
+  blinkDistance: 5.0                 # 传送距离 / Blink distance
+  blinkBehindAttacker: true          # 传送到攻击者身后 / Blink behind attacker
+
+  # === 传送后效果 / Post-Blink Effect ===
+  postBlinkEffect: "SPEED"           # 传送后获得速度 / Speed after blink
+  postBlinkDuration: 40              # 效果持续 2秒 / Effect lasts 2 seconds
+  postBlinkAmplifier: 1              # 速度 II / Speed II
+
+  # === 粒子配置 / Particle Configuration ===
+  vanishParticle:
+    type: SMOKE
+    amount: 30
+    deltaX: 0.3
+    deltaY: 0.5
+    deltaZ: 0.3
+    speed: 0.05
+
+  appearParticle:
+    type: PORTAL
+    amount: 50
+    deltaX: 0.5
+    deltaY: 1.0
+    deltaZ: 0.5
+    speed: 0.1
+
+  # === 音效配置 / Sound Configuration ===
+  blinkSound: ENTITY_ENDERMAN_TELEPORT
+
+# ------------------------------------------------------------
+# 暗影突袭 - 主动潜行技能
+# ShadowStep - Active Stealth Ability
+#
+# 进入隐身状态并加速移动，首次攻击造成额外伤害。
+# Enters invisibility with speed boost, first attack deals extra damage.
+# ------------------------------------------------------------
+ShadowStep:
+  # === 潜行配置 / Stealth Configuration ===
+  stealthDuration: 100               # 潜行持续 5秒 / Stealth lasts 5 seconds
+  speedAmplifier: 2                  # 速度 III / Speed III
+  bonusDamageMultiplier: 2.0         # 伤害翻倍 / Double damage
+  revealOnAttack: true               # 攻击后现身 / Reveal on attack
+
+  # === 粒子配置 / Particle Configuration ===
+  stealthParticle:
+    type: SMOKE
+    amount: 10
+    deltaX: 0.2
+    deltaY: 0.5
+    deltaZ: 0.2
+    speed: 0.02
+
+  revealParticle:
+    type: CAMPFIRE_COSY_SMOKE
+    amount: 30
+    deltaX: 0.5
+    deltaY: 1.0
+    deltaZ: 0.5
+    speed: 0.1
+
+  # === 音效配置 / Sound Configuration ===
+  stealthSound: ENTITY_ILLUSIONER_MIRROR_MOVE
+  revealSound: ENTITY_ILLUSIONER_PREPARE_BLINDNESS
+
+# ------------------------------------------------------------
+# 元素光环 - 被动持续光环
+# ElementalAura - Passive Persistent Aura
+#
+# 持续对附近玩家施加负面效果。
+# Continuously applies negative effects to nearby players.
+# ------------------------------------------------------------
+ElementalAura:
+  # === 光环配置 / Aura Configuration ===
+  auraRadius: 5.0                    # 光环半径 5格 / Aura radius 5 blocks
+  auraInterval: 20                   # 每秒触发一次 / Trigger every second
+
+  # === 效果配置 / Effect Configuration ===
+  # 效果1：凋零
+  auraEffect1: "WITHER"
+  auraEffect1Duration: 40
+  auraEffect1Amplifier: 0
+
+  # 效果2：缓慢（可选，留空禁用）
+  auraEffect2: "SLOWNESS"
+  auraEffect2Duration: 40
+  auraEffect2Amplifier: 1
+
+  # 效果3：（可选，留空禁用）
+  auraEffect3: ""
+  auraEffect3Duration: 40
+  auraEffect3Amplifier: 0
+
+  # 直接伤害（可选）
+  auraDamage: 0                      # 每秒伤害 / Damage per second
+
+  # === 粒子配置 / Particle Configuration ===
+  auraParticle:
+    type: FLAME
+    amount: 5
+    deltaX: 0.1
+    deltaY: 0.1
+    deltaZ: 0.1
+    speed: 0.02
+
+  # === 音效配置 / Sound Configuration ===
+  auraSound: ""                      # 留空禁用 / Empty to disable
+
+# 火焰光环变体 / Fire Aura Variant
+ElementalAura_Fire:
+  auraRadius: 4.0
+  auraInterval: 20
+  auraEffect1: "FIRE_RESISTANCE"     # 给自己？不对，这是给玩家的
+  auraEffect1Duration: 0
+  auraEffect1Amplifier: 0
+  auraEffect2: ""
+  auraEffect2Duration: 0
+  auraEffect2Amplifier: 0
+  auraEffect3: ""
+  auraEffect3Duration: 0
+  auraEffect3Amplifier: 0
+  auraDamage: 2.0                    # 火焰伤害 / Fire damage
+  auraParticle:
+    type: FLAME
+    amount: 10
+    deltaX: 0.2
+    deltaY: 0.2
+    deltaZ: 0.2
+    speed: 0.05
+
+# 冰霜光环变体 / Frost Aura Variant
+ElementalAura_Frost:
+  auraRadius: 6.0
+  auraInterval: 20
+  auraEffect1: "SLOWNESS"
+  auraEffect1Duration: 40
+  auraEffect1Amplifier: 2
+  auraEffect2: "MINING_FATIGUE"
+  auraEffect2Duration: 40
+  auraEffect2Amplifier: 1
+  auraEffect3: ""
+  auraEffect3Duration: 0
+  auraEffect3Amplifier: 0
+  auraDamage: 0
+  auraParticle:
+    type: SNOWFLAKE
+    amount: 8
+    deltaX: 0.3
+    deltaY: 0.3
+    deltaZ: 0.3
+    speed: 0.01
+
+# ------------------------------------------------------------
+# 镜像分身 - 主动欺骗技能
+# MirrorImage - Active Deception Ability
+#
+# 创建假分身迷惑玩家，分身被击中立即消失。
+# Creates fake clones that vanish when hit.
+# ------------------------------------------------------------
+MirrorImage:
+  # === 分身配置 / Clone Configuration ===
+  imageCount: 3                      # 分身数量 / Number of clones
+  imageDuration: 100                 # 存在 5秒 / Exist for 5 seconds
+  imageHealth: 1.0                   # 分身血量（极低）/ Clone health (very low)
+  spawnRadius: 3.0                   # 生成范围 / Spawn radius
+
+  # === 本体配置 / Owner Configuration ===
+  ownerInvisible: true               # 本体隐身 / Owner becomes invisible
+  ownerInvisibleDuration: 40         # 隐身 2秒 / Invisible for 2 seconds
+
+  # === 粒子配置 / Particle Configuration ===
+  spawnParticle:
+    type: WITCH
+    amount: 30
+    deltaX: 0.3
+    deltaY: 0.8
+    deltaZ: 0.3
+    speed: 0.1
+
+  deathParticle:
+    type: CLOUD
+    amount: 20
+    deltaX: 0.3
+    deltaY: 0.5
+    deltaZ: 0.3
+    speed: 0.05
+
+  # === 音效配置 / Sound Configuration ===
+  spawnSound: ENTITY_ILLUSIONER_CAST_SPELL
+  deathSound: ENTITY_ILLUSIONER_MIRROR_MOVE
+
+# ------------------------------------------------------------
+# 蛛网射击 - 主动控制技能
+# WebShot - Active Control Ability
+#
+# 发射蛛网投射物黏住玩家。
+# Shoots web projectiles that trap players.
+# ------------------------------------------------------------
+WebShot:
+  # === 投射物配置 / Projectile Configuration ===
+  projectileSpeed: 1.5               # 投射物速度 / Projectile speed
+  burstCount: 1                      # 单发 / Single shot
+  burstInterval: 5                   # 连发间隔（如果连发）/ Burst interval
+
+  # === 蛛网配置 / Web Configuration ===
+  webDuration: 60                    # 蛛网持续 3秒 / Web lasts 3 seconds
+  webRadius: 1                       # 单格蛛网 / Single block web
+
+  # === 减速效果 / Slowness Effect ===
+  slowEffect: true                   # 额外减速 / Apply slowness
+  slowAmplifier: 2                   # 缓慢 III / Slowness III
+  slowDuration: 40                   # 持续 2秒 / Lasts 2 seconds
+
+  # === 粒子配置 / Particle Configuration ===
+  projectileParticle:
+    type: ITEM_SNOWBALL
+    amount: 3
+    deltaX: 0.1
+    deltaY: 0.1
+    deltaZ: 0.1
+    speed: 0
+
+  hitParticle:
+    type: BLOCK
+    amount: 30
+    deltaX: 0.5
+    deltaY: 0.5
+    deltaZ: 0.5
+    speed: 0.1
+    extraData: "COBWEB"
+
+  # === 音效配置 / Sound Configuration ===
+  shootSound: ENTITY_SPIDER_AMBIENT
+  hitSound: BLOCK_COBWEB_PLACE
+
+# 连射蛛网变体 / Burst Web Variant
+WebShot_Burst:
+  projectileSpeed: 1.2
+  burstCount: 3
+  burstInterval: 5
+  webDuration: 40
+  webRadius: 1
+  slowEffect: true
+  slowAmplifier: 1
+  slowDuration: 30
+
+# ------------------------------------------------------------
+# 狂暴化 - 被动低血触发技能
+# Enrage - Passive Low Health Trigger
+#
+# 血量低于阈值时进入狂暴状态，获得增益。
+# Enters enraged state with buffs when health is low.
+# ------------------------------------------------------------
+Enrage:
+  # === 触发配置 / Trigger Configuration ===
+  healthThreshold: 0.3               # 30% 血量触发 / Trigger at 30% health
+  triggerOnce: true                  # 只触发一次 / Trigger only once
+
+  # === 狂暴效果 / Enrage Effects ===
+  # 效果1：力量
+  enrageEffect1: "STRENGTH"
+  enrageEffect1Duration: -1          # 永久（直到死亡）/ Permanent (until death)
+  enrageEffect1Amplifier: 1          # 力量 II / Strength II
+
+  # 效果2：速度
+  enrageEffect2: "SPEED"
+  enrageEffect2Duration: -1
+  enrageEffect2Amplifier: 1          # 速度 II / Speed II
+
+  # 效果3：抗性
+  enrageEffect3: "RESISTANCE"
+  enrageEffect3Duration: -1
+  enrageEffect3Amplifier: 0          # 抗性 I / Resistance I
+
+  # === 视觉效果 / Visual Effect ===
+  glowingEffect: true                # 发光效果 / Glowing effect
+
+  # === 粒子配置 / Particle Configuration ===
+  enrageParticle:
+    type: ANGRY_VILLAGER
+    amount: 10
+    deltaX: 0.5
+    deltaY: 0.8
+    deltaZ: 0.5
+    speed: 0
+
+  # === 音效配置 / Sound Configuration ===
+  enrageSound: ENTITY_WARDEN_ANGRY
+
+# 轻度狂暴变体 / Light Enrage Variant
+Enrage_Light:
+  healthThreshold: 0.5               # 50% 血量触发 / Trigger at 50% health
+  triggerOnce: true
+  enrageEffect1: "SPEED"
+  enrageEffect1Duration: -1
+  enrageEffect1Amplifier: 1
+  enrageEffect2: ""
+  enrageEffect2Duration: 0
+  enrageEffect2Amplifier: 0
+  enrageEffect3: ""
+  enrageEffect3Duration: 0
+  enrageEffect3Amplifier: 0
+  glowingEffect: false
+  enrageSound: ENTITY_RAVAGER_ROAR
+
+# ------------------------------------------------------------
+# 跃击重踏 - 主动跳跃攻击
+# LeapSlam - Active Leap Attack
+#
+# 跳跃扑向目标，落地时造成范围伤害和击退。
+# Leaps toward target, deals AoE damage and knockback on landing.
+# ------------------------------------------------------------
+LeapSlam:
+  # === 跳跃配置 / Leap Configuration ===
+  leapRange: 15.0                    # 最大跳跃距离 / Max leap distance
+  leapHeight: 1.5                    # 跳跃高度倍率 / Leap height multiplier
+  fallDamageImmune: true             # 免疫摔落伤害 / Immune to fall damage
+
+  # === 落地伤害配置 / Slam Configuration ===
+  slamRadius: 4.0                    # 落地伤害半径 / Slam radius
+  slamDamageMultiplier: 1.5          # 伤害倍率 / Damage multiplier
+  slamKnockback: 1.5                 # 击退力度 / Knockback strength
+
+  # === 落地效果 / Slam Effects ===
+  slamSlowDuration: 20               # 减速持续 1秒 / Slow lasts 1 second
+  slamSlowAmplifier: 1               # 缓慢 II / Slowness II
+
+  # === 粒子配置 / Particle Configuration ===
+  leapParticle:
+    type: CLOUD
+    amount: 20
+    deltaX: 0.3
+    deltaY: 0.1
+    deltaZ: 0.3
+    speed: 0.05
+
+  slamParticle:
+    type: EXPLOSION
+    amount: 5
+    deltaX: 0.5
+    deltaY: 0.2
+    deltaZ: 0.5
+    speed: 0
+
+  # === 音效配置 / Sound Configuration ===
+  leapSound: ENTITY_RAVAGER_ATTACK
+  slamSound: ENTITY_GENERIC_EXPLODE
+
+# 轻量跳跃变体 / Light Leap Variant
+LeapSlam_Light:
+  leapRange: 10.0
+  leapHeight: 1.2
+  fallDamageImmune: true
+  slamRadius: 3.0
+  slamDamageMultiplier: 1.0
+  slamKnockback: 1.0
+  slamSlowDuration: 0
+  slamSlowAmplifier: 0
+
+# ------------------------------------------------------------
+# 毒雾尾迹 - 被动区域控制
+# PoisonTrail - Passive Area Control
+#
+# 移动时留下毒雾，死亡时释放大范围毒云。
+# Leaves poison trail when moving, releases cloud on death.
+# ------------------------------------------------------------
+PoisonTrail:
+  # === 移动尾迹配置 / Trail Configuration ===
+  trailEnabled: true                 # 启用移动尾迹 / Enable movement trail
+  trailInterval: 20                  # 每秒检查 / Check every second
+  trailRadius: 1.5                   # 毒雾半径 / Trail radius
+  trailDuration: 60                  # 毒雾持续 3秒 / Trail lasts 3 seconds
+
+  # === 尾迹效果 / Trail Effect ===
+  trailPoisonEffect: "POISON"        # 中毒效果 / Poison effect
+  trailPoisonDuration: 40            # 中毒持续 2秒 / Poison lasts 2 seconds
+  trailPoisonAmplifier: 0            # 中毒 I / Poison I
+
+  # === 死亡毒云配置 / Death Cloud Configuration ===
+  deathCloudEnabled: true            # 启用死亡毒云 / Enable death cloud
+  deathCloudRadius: 5.0              # 毒云半径 / Cloud radius
+  deathCloudDuration: 100            # 毒云持续 5秒 / Cloud lasts 5 seconds
+  deathCloudDamage: 2.0              # 每秒伤害 / Damage per second
+
+  # === 死亡毒云效果 / Death Cloud Effect ===
+  deathCloudEffect: "POISON"
+  deathCloudEffectDuration: 60
+  deathCloudEffectAmplifier: 1       # 中毒 II / Poison II
+
+  # === 粒子配置 / Particle Configuration ===
+  trailParticle:
+    type: DRAGON_BREATH
+    amount: 10
+    deltaX: 0.3
+    deltaY: 0.2
+    deltaZ: 0.3
+    speed: 0.02
+
+  deathParticle:
+    type: CAMPFIRE_COSY_SMOKE
+    amount: 30
+    deltaX: 1.0
+    deltaY: 0.5
+    deltaZ: 1.0
+    speed: 0.05
+
+  # === 音效配置 / Sound Configuration ===
+  trailSound: ""                     # 尾迹静音 / Trail silent
+  deathSound: ENTITY_PUFFER_FISH_BLOW_UP
+
+# 只有尾迹变体（无死亡毒云）/ Trail Only Variant
+PoisonTrail_NoDeathCloud:
+  trailEnabled: true
+  trailInterval: 15
+  trailRadius: 2.0
+  trailDuration: 80
+  trailPoisonEffect: "WITHER"
+  trailPoisonDuration: 40
+  trailPoisonAmplifier: 0
+  deathCloudEnabled: false
+  deathCloudRadius: 0
+  deathCloudDuration: 0
+  deathCloudDamage: 0
+
+# 只有死亡爆炸变体（无尾迹）/ Death Explosion Only Variant
+PoisonTrail_DeathOnly:
+  trailEnabled: false
+  trailInterval: 20
+  trailRadius: 0
+  trailDuration: 0
+  trailPoisonEffect: ""
+  trailPoisonDuration: 0
+  trailPoisonAmplifier: 0
+  deathCloudEnabled: true
+  deathCloudRadius: 6.0
+  deathCloudDuration: 120
+  deathCloudDamage: 3.0
+  deathCloudEffect: "WITHER"
+  deathCloudEffectDuration: 80
+  deathCloudEffectAmplifier: 1
+
+# ============================================================
+# 技能使用示例 / Ability Usage Example
+# ============================================================
+#
+# 在mob配置中引用技能 / Reference abilities in mob config:
+#
+# abilities:
+#   - type: "cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityBlink"
+#     weight: 10
+#     config:
+#       blinkChance: 0.4
+#       blinkDistance: 6.0
+#
+#   - type: "cat.nyaa.infiniteinfernal.ability.impl.active.AbilityLeapSlam"
+#     weight: 15
+#     config:
+#       leapRange: 12.0
+#       slamDamageMultiplier: 2.0
+#
+#   - type: "cat.nyaa.infiniteinfernal.ability.impl.passive.AbilityEnrage"
+#     weight: 20
+#     config:
+#       healthThreshold: 0.25
+#       glowingEffect: true
+#
+# ============================================================
+# 技能总结 / Ability Summary
+# ============================================================
+#
+# | 技能/Ability      | 类型/Type | 触发方式/Trigger | 核心机制/Core Mechanic      |
+# |-------------------|-----------|------------------|------------------------------|
+# | Blink             | 被动      | 受伤时           | 概率闪避传送                  |
+# | ShadowStep        | 主动      | 定时激活         | 潜行后突袭加伤                |
+# | ElementalAura     | 被动      | 生成后持续       | 范围持续负面效果              |
+# | MirrorImage       | 主动      | 定时激活         | 假分身迷惑                    |
+# | WebShot           | 主动      | 定时激活         | 投射物控制                    |
+# | Enrage            | 被动      | 低血触发         | 低血增益                      |
+# | LeapSlam          | 主动      | 定时激活         | 跳跃范围攻击                  |
+# | PoisonTrail       | 被动      | 移动/死亡        | 毒雾区域控制                  |
+#
+# ============================================================
+# 推荐组合 / Recommended Combinations
+# ============================================================
+#
+# 敏捷型小怪 / Agile Mob:
+#   - AbilityBlink + AbilityShadowStep
+#
+# 坦克型小怪 / Tank Mob:
+#   - AbilityEnrage + AbilityElementalAura
+#
+# 控制型小怪 / Control Mob:
+#   - AbilityWebShot + AbilityPoisonTrail
+#
+# 突击型小怪 / Assault Mob:
+#   - AbilityLeapSlam + AbilityEnrage
+#
+# 幻术型小怪 / Illusion Mob:
+#   - AbilityMirrorImage + AbilityShadowStep + AbilityBlink
+#
+# ============================================================
