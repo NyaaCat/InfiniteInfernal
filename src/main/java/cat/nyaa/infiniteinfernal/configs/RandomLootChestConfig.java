@@ -26,4 +26,7 @@ public class RandomLootChestConfig implements ISerializable {
 
     @Serializable(name = "scan.maxContainersPerChunk")
     public int maxContainersPerChunk = 32;
+
+    @Serializable(name = "skip.containerTag")
+    public String skipContainerTag = "";
 }

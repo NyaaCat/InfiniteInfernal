@@ -231,6 +231,9 @@ public class RandomLootChestManager implements Listener {
         if (data.has(DEATH_CHEST_KEY, PersistentDataType.BYTE)) {
             return false;
         }
+        if (hasSkipTag(data, config)) {
+            return false;
+        }
         if (shouldSkipLootChest(container.getLocation())) {
             return false;
         }
@@ -334,6 +337,31 @@ public class RandomLootChestManager implements Listener {
             return false;
         }
         return regions.stream().anyMatch(region -> region.skipLootChest);
+    }
+
+    /**
+     * Checks if a container has the configured skip tag in its PersistentDataContainer.
+     * The tag format should be "namespace:key" (e.g., "myplugin:no_loot").
+     */
+    private boolean hasSkipTag(PersistentDataContainer data, RandomLootChestConfig config) {
+        String skipTag = config.skipContainerTag;
+        if (skipTag == null || skipTag.isEmpty()) {
+            return false;
+        }
+        try {
+            NamespacedKey key;
+            int colonIndex = skipTag.indexOf(':');
+            if (colonIndex > 0) {
+                String namespace = skipTag.substring(0, colonIndex);
+                String keyName = skipTag.substring(colonIndex + 1);
+                key = new NamespacedKey(namespace, keyName);
+            } else {
+                key = new NamespacedKey(plugin, skipTag);
+            }
+            return data.has(key);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private Map<ILootItem, Integer> buildLootPool(List<WeightedPair<MobConfig, Integer>> spawnable) {
