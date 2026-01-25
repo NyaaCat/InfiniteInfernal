@@ -1,0 +1,516 @@
+# ============================================================
+# InfiniteInfernal 创新技能配置示例
+# Innovative Abilities Configuration Examples
+#
+# 支持单人/多人模式，包含完整的消息配置
+# Supports solo/multiplayer modes with full message configuration
+# ============================================================
+
+# ------------------------------------------------------------
+# 时间裂隙 - 时间扭曲区域技能
+# TemporalRift - Time Distortion Zone
+#
+# Creates a time distortion field that slows players while
+# boosting boss attack speed. Players can collapse the rift
+# by anchoring (multiplayer) or dealing damage (solo).
+# ------------------------------------------------------------
+TemporalRift:
+  # === 区域参数 / Zone Parameters ===
+  radius: 8.0                      # 时间裂隙半径（格）/ Rift radius (blocks)
+  duration: 200                    # 持续时间（tick，200=10秒）/ Duration (ticks)
+  warningTicks: 40                 # 激活前警告时间（tick）/ Warning time before activation
+
+  # === 效果参数 / Effect Parameters ===
+  slowAmplifier: 3                 # 玩家缓慢等级（3=缓慢IV）/ Slowness level (3=Slowness IV)
+  bossSpeedMultiplier: 1.5         # Boss攻速倍率 / Boss attack speed multiplier
+
+  # === 多人锚定机制 / Multiplayer Anchor Mechanism ===
+  anchorPlayersRequired: 2         # 需要的锚定玩家数量 / Required anchor players
+  anchorDistance: 6.0              # 锚定玩家间最小距离（格）/ Min distance between anchors
+  anchorCollapseBonus: 0.3         # 成功瓦解后的伤害加成 / Damage bonus after collapse
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloEscapeDamage: 50.0           # 单人模式下瓦解裂隙所需伤害 / Damage to collapse in solo
+  soloRadiusMultiplier: 0.7        # 单人模式半径倍率 / Radius multiplier for solo
+
+  # === 多玩家缩放 / Multiplayer Scaling ===
+  scaleWithPlayers: true
+  radiusPerPlayer: 1.5
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "BOSSBAR"    # BOSSBAR, SUBTITLE, ACTIONBAR, NONE
+  bossbarColor: "PURPLE"           # RED, BLUE, GREEN, YELLOW, PURPLE, PINK, WHITE
+  bossbarStyle: "SEGMENTED_10"     # SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
+
+  # 可配置文本（支持 & 颜色代码）/ Configurable text (supports & color codes)
+  msgWarning: "&d⚠ 时间裂隙即将开启！"
+  msgActive: "&5时间裂隙已激活！"
+  msgAnchorHint: "&e提示: 与队友站在区域两端可瓦解裂隙"
+  msgSoloHint: "&e提示: 造成 {damage} 伤害可瓦解裂隙"
+  msgProgress: "&6瓦解进度: {progress}%"
+  msgCollapsed: "&a时间裂隙已瓦解！"
+  msgExpired: "&7时间裂隙已消散"
+
+  # === 粒子配置 / Particle Configuration ===
+  warningParticle:
+    type: PORTAL
+    amount: 50
+    deltaY: 2.0
+    speed: 0.5
+    forced: true
+
+  activeParticle:
+    type: DUST_COLOR_TRANSITION
+    amount: 30
+    deltaX: 0.5
+    deltaY: 0.5
+    deltaZ: 0.5
+    speed: 2.0
+    extraData: "128,0,255,0,128,255,2.0"  # r1,g1,b1,r2,g2,b2,size for transition
+    forced: true
+
+  collapseParticle:
+    type: REVERSE_PORTAL
+    amount: 200
+    speed: 2.0
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  warningSound: BLOCK_BEACON_AMBIENT
+  warningPitch: 0.5
+  warningVolume: 1.5
+  activeSound: BLOCK_PORTAL_AMBIENT
+  activePitch: 0.3
+  activeVolume: 2.0
+  collapseSound: ENTITY_ILLUSIONER_MIRROR_MOVE
+
+# ------------------------------------------------------------
+# 回声打击 - 延迟反伤技能
+# EchoStrike - Delayed Damage Reflection
+#
+# Marks a player and accumulates damage dealt to boss.
+# After delay, reflects accumulated damage back to the player.
+# ------------------------------------------------------------
+EchoStrike:
+  # === 目标选择 / Target Selection ===
+  range: 30.0                       # 选择范围 / Selection range
+
+  # === 时间参数 / Time Parameters ===
+  markDuration: 100                 # 标记持续时间（5秒）/ Mark duration
+  echoDelay: 60                     # 回声延迟（3秒）/ Echo delay
+  warningTicks: 20                  # 释放前警告（1秒）/ Warning before release
+
+  # === 伤害计算 / Damage Calculation ===
+  echoMultiplier: 0.5               # 多人反弹伤害倍率 / Multiplayer echo multiplier
+  maxEchoDamage: 50.0               # 最大反弹伤害 / Max echo damage
+  echoDamageDistribution: 0.7       # 70%给标记者，30%分摊 / 70% to target, 30% distributed
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloEchoMultiplier: 0.3           # 单人反弹倍率 / Solo echo multiplier
+  soloMaxEchoDamage: 30.0           # 单人最大反弹伤害 / Solo max echo damage
+
+  # === 视觉反馈 / Visual Feedback ===
+  showDamageAccumulator: true
+  markEffectName: "GLOWING"
+  markEffectAmplifier: 0
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "BOSSBAR"
+  bossbarColor: "RED"
+  bossbarStyle: "SEGMENTED_20"
+
+  msgMarked: "&c你被回声标记！"
+  msgAccumulating: "&6累积伤害: {damage}"
+  msgWarning: "&c⚠ 回声即将释放！"
+  msgRelease: "&4回声释放！受到 {damage} 伤害！"
+  msgTip: "&7提示: 停止攻击可减少回声伤害"
+
+  # === 粒子配置 / Particle Configuration ===
+  markParticle:
+    type: SOUL_FIRE_FLAME
+    amount: 15
+    deltaX: 0.5
+    deltaY: 1.0
+    deltaZ: 0.5
+    speed: 0.02
+    forced: true
+
+  chargeParticle:
+    type: DAMAGE_INDICATOR
+    amount: 5
+    speed: 0.1
+    forced: true
+
+  releaseParticle:
+    type: FLASH
+    amount: 1
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  markSound: ENTITY_ELDER_GUARDIAN_CURSE
+  markPitch: 1.5
+  markVolume: 1.0
+  releaseSound: ENTITY_WITHER_SHOOT
+  releasePitch: 0.5
+  releaseVolume: 2.0
+
+# ------------------------------------------------------------
+# 重力井 - 引力/斥力场技能
+# GravityWell - Push/Pull Gravity Fields
+#
+# Creates black holes (pull) and white holes (push).
+# Safe "null zones" form where opposite polarities overlap.
+# ------------------------------------------------------------
+GravityWell:
+  # === 重力井配置 / Gravity Well Configuration ===
+  wellCount: 4                      # 多人时重力井数量 / Well count (multiplayer)
+  wellRadius: 5.0                   # 重力井半径 / Well radius
+  duration: 160                     # 持续时间 / Duration
+  spawnDelay: 10                    # 井之间生成延迟 / Delay between well spawns
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloWellCount: 2                  # 单人时重力井数量 / Well count (solo)
+  soloWellRadius: 4.0               # 单人时较小半径 / Smaller radius for solo
+
+  # === 力场强度 / Force Field Strength ===
+  pullStrength: 0.8                 # 黑洞吸引力 / Black hole pull strength
+  pushStrength: 1.2                 # 白洞推力 / White hole push strength
+
+  # === 核心伤害 / Core Damage ===
+  coreDamage: 4.0                   # 接触核心伤害 / Damage when touching core
+  coreRadius: 1.5                   # 核心半径 / Core radius
+
+  # === 生成位置 / Spawn Position ===
+  minDistanceFromBoss: 5.0
+  maxDistanceFromBoss: 20.0
+
+  # === 零重力区（安全区）/ Null Zone (Safe Zone) ===
+  nullZoneRadius: 2.0
+  guaranteeNullZone: true           # 始终保证有安全区 / Always guarantee a safe zone
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "ACTIONBAR"   # ActionBar显示方向 / ActionBar shows direction
+  bossbarColor: "YELLOW"
+  bossbarStyle: "SOLID"
+
+  msgActivate: "&e重力异常出现！"
+  msgSafeZone: "&a安全区方向: {direction} {distance}格"
+  msgWarning: "&c你正在被吸入/推离！"
+  msgCoreDamage: "&4核心伤害！立即离开！"
+
+  # === 粒子配置 / Particle Configuration ===
+  blackHoleParticle:
+    type: SQUID_INK
+    amount: 20
+    speed: 0.05
+    forced: true
+
+  whiteHoleParticle:
+    type: END_ROD
+    amount: 20
+    speed: 0.1
+    forced: true
+
+  nullZoneParticle:
+    type: DUST
+    amount: 30
+    deltaX: 0.3
+    deltaY: 0.3
+    deltaZ: 0.3
+    speed: 1.5
+    extraData: "255,215,0,1.5"      # Gold color / 金色
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  spawnSound: ENTITY_ENDERMAN_TELEPORT
+  spawnPitch: 0.5
+  spawnVolume: 1.5
+  nullZoneSound: BLOCK_BEACON_ACTIVATE
+
+# ------------------------------------------------------------
+# 相位转移 - 无敌/分身阶段技能
+# PhaseShift - Invincibility Phases with Clones
+#
+# Boss cycles between vulnerable and invincible phases.
+# Players can prevent shifts by dealing enough DPS.
+# Shadow clones spawn during shifted phase.
+# ------------------------------------------------------------
+PhaseShift:
+  # === 阶段时间 / Phase Timing ===
+  vulnerablePhase: 200              # 易伤阶段持续时间 / Vulnerable phase duration
+  shiftedPhase: 100                 # 转移阶段持续时间 / Shifted phase duration
+  preShiftWarning: 40               # 转移前警告时间 / Warning before shift
+  postShiftGrace: 20                # 返回后宽限时间 / Grace period after return
+
+  # === DPS竞速阈值 / DPS Race Threshold ===
+  damageThreshold: 100.0            # 多人阈值 / Multiplayer threshold
+  thresholdScalingPerPlayer: 30.0   # 每玩家增加阈值 / Threshold increase per player
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloThresholdMultiplier: 0.5      # 单人阈值为多人的50% / Solo threshold 50% of multi
+  soloCloneCount: 1                 # 单人时只召唤1个分身 / Only 1 clone in solo
+
+  # === 暗影分身配置 / Shadow Clone Configuration ===
+  shadowCloneCount: 2               # 分身数量 / Clone count
+  shadowCloneDamageMultiplier: 0.5  # 分身伤害倍率 / Clone damage multiplier
+  shadowCloneHealthMultiplier: 0.2  # 分身血量倍率 / Clone health multiplier
+  clonesPersistAfterShift: false    # 返回后分身是否保留 / Clones persist after shift
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "BOSSBAR"
+  bossbarColor: "PURPLE"
+  bossbarStyle: "SEGMENTED_10"
+
+  msgStability: "&e相位稳定性: {progress}%"
+  msgWarning: "&c⚠ 相位不稳！即将转移..."
+  msgPrevented: "&a相位稳定！转移已阻止！"
+  msgShiftOut: "&5Boss 进入虚空相位..."
+  msgShiftIn: "&dBoss 从虚空归来！"
+  msgCloneSpawn: "&8暗影分身已召唤"
+
+  # === 粒子配置 / Particle Configuration ===
+  warningParticle:
+    type: ENCHANT
+    amount: 50
+    deltaX: 1.0
+    deltaY: 2.0
+    deltaZ: 1.0
+    speed: 0.5
+    forced: true
+
+  shiftOutParticle:
+    type: DRAGON_BREATH
+    amount: 100
+    speed: 0.2
+    forced: true
+
+  shiftInParticle:
+    type: REVERSE_PORTAL
+    amount: 80
+    speed: 0.3
+    forced: true
+
+  cloneParticle:
+    type: SMOKE
+    amount: 10
+    speed: 0.01
+    forced: true
+
+  thresholdReachedParticle:
+    type: TOTEM_OF_UNDYING
+    amount: 50
+    speed: 1.0
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  warningSound: ENTITY_ENDERMAN_STARE
+  warningPitch: 1.2
+  warningVolume: 1.5
+  shiftOutSound: ENTITY_ENDERMAN_TELEPORT
+  shiftInSound: ENTITY_ILLUSIONER_PREPARE_MIRROR
+  thresholdSound: ENTITY_PLAYER_LEVELUP
+
+# ------------------------------------------------------------
+# 连锁闪电 - 玩家间跳跃的闪电
+# ChainLightning - Chain-Jumping Lightning
+#
+# Lightning that chains between players. Hit players become
+# "charged" - multiple charged players nearby form a deadly circuit.
+# ------------------------------------------------------------
+ChainLightning:
+  # === 初始打击 / Initial Strike ===
+  initialDamage: 15.0               # 初始伤害 / Initial damage
+  targetRange: 25.0                 # 目标范围 / Target range
+
+  # === 连锁行为（多人）/ Chain Behavior (Multiplayer) ===
+  maxChains: 5                      # 最大连锁数 / Max chain count
+  chainRange: 6.0                   # 连锁范围 / Chain range
+  chainDamageReduction: 0.7         # 每次连锁伤害衰减 / Damage reduction per chain
+  chainDelay: 3                     # 连锁延迟tick / Chain delay ticks
+  canChainToSameTarget: false       # 能否连锁同一目标 / Can chain to same target
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloInitialDamageMultiplier: 0.8  # 单人伤害倍率 / Solo damage multiplier
+  soloChainEnabled: false           # 单人禁用连锁 / Disable chaining in solo
+
+  # === 充能状态 / Charged State ===
+  chargedDuration: 100              # 充能持续时间 / Charged duration
+  chargedEffectName: "GLOWING"      # 充能视觉效果 / Charged visual effect
+
+  # === 电路机制（仅多人）/ Circuit Mechanism (Multiplayer only) ===
+  circuitRange: 4.0                 # 电路形成范围 / Circuit formation range
+  circuitMinPlayers: 2              # 最少形成电路人数 / Min players for circuit
+  circuitDamagePerPlayer: 10.0      # 每人基础电路伤害 / Base circuit damage per player
+  circuitDamageMultiplierPerPlayer: 1.5  # 每人伤害倍率 / Damage multiplier per player
+  circuitCheckInterval: 10          # 电路检查间隔tick / Circuit check interval
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "SUBTITLE"    # Subtitle显示警告 / Subtitle for warnings
+  bossbarColor: "BLUE"
+  bossbarStyle: "SOLID"
+
+  msgStrike: "&b⚡ 闪电打击！"
+  msgCharged: "&e你已充能！"
+  msgChargedMulti: "&c远离其他充能玩家！"
+  msgChargedSolo: "&7充能将在 {time} 秒后消散"
+  msgCircuitWarning: "&c⚠ 电路形成！立即分散！"
+  msgCircuitDamage: "&4电路放电！受到 {damage} 伤害！"
+
+  # === 粒子配置 / Particle Configuration ===
+  lightningParticle:
+    type: ELECTRIC_SPARK
+    amount: 10
+    deltaX: 0.1
+    deltaY: 0.1
+    deltaZ: 0.1
+    forced: true
+
+  chargedParticle:
+    type: CRIT_MAGIC
+    amount: 8
+    deltaX: 0.4
+    deltaY: 0.8
+    deltaZ: 0.4
+    speed: 0.02
+    forced: true
+
+  circuitWarningParticle:
+    type: DUST
+    amount: 5
+    extraData: "255,255,0,1.0"      # Yellow color / 黄色
+    forced: true
+
+  circuitDischargeParticle:
+    type: FLASH
+    amount: 3
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  strikeSound: ENTITY_LIGHTNING_BOLT_THUNDER
+  strikePitch: 1.0
+  strikeVolume: 1.0
+  chainSound: BLOCK_NOTE_BLOCK_PLING
+  chainPitch: 1.5
+  chainVolume: 0.8
+  circuitSound: ENTITY_GENERIC_EXPLODE
+  circuitPitch: 0.5
+  circuitVolume: 2.0
+
+# ------------------------------------------------------------
+# 灵魂收割 - 死亡惩罚/回收机制
+# SoulHarvest - Death Penalty and Soul Recovery
+#
+# Player deaths near boss are harvested as souls, buffing the boss.
+# Periodic "soul vulnerable windows" allow players to recover souls.
+# ------------------------------------------------------------
+SoulHarvest:
+  # === 收割配置 / Harvest Configuration ===
+  harvestRange: 50.0                # 收割范围 / Harvest range
+  maxSouls: 10                      # 最大灵魂数 / Max souls
+
+  # === Boss能力缩放（每个灵魂）/ Boss Scaling (Per Soul) ===
+  damagePerSoul: 2.0                # 每灵魂增加伤害 / Damage per soul
+  healthPerSoul: 20.0               # 每灵魂增加血量 / Health per soul
+  speedPerSoul: 0.02                # 每灵魂增加速度 / Speed per soul
+
+  # === 灵魂回收窗口 / Soul Recovery Window ===
+  soulWindowInterval: 400           # 窗口间隔tick / Window interval
+  soulWindowDuration: 100           # 窗口持续时间 / Window duration
+  soulRecoveryDamage: 30.0          # 回收基础伤害需求 / Base recovery damage
+  soulRecoveryDamagePerSoul: 10.0   # 每灵魂额外伤害需求 / Extra damage per soul
+
+  # === 单人模式配置 / Solo Mode Configuration ===
+  soloRecoveryDamageMultiplier: 0.6 # 单人回收伤害倍率 / Solo recovery damage multiplier
+  soloWindowDuration: 120           # 单人窗口延长 / Extended window for solo
+
+  # === 回收奖励 / Recovery Reward ===
+  recoveryBuffDuration: 200         # 奖励持续时间 / Buff duration
+  recoveryBuffEffect: "STRENGTH"    # 奖励效果 / Buff effect
+  recoveryBuffAmplifier: 1          # 奖励等级 / Buff level
+
+  # === 消息配置 / Message Configuration ===
+  messageDisplayType: "BOSSBAR"
+  bossbarColor: "WHITE"
+  bossbarStyle: "SEGMENTED_10"
+
+  msgSoulCount: "&c灵魂: {current}/{max}"
+  msgHarvested: "&4你的灵魂被收割！Boss 变得更强了..."
+  msgWindowOpen: "&a灵魂易伤窗口开启！"
+  msgWindowClose: "&7灵魂易伤窗口关闭"
+  msgRecoveryProgress: "&6回收进度: {progress}%"
+  msgRecovered: "&a灵魂已回收！获得 {buff} 增益！"
+  msgBossStrength: "&c警告: Boss 已收割 {count} 个灵魂"
+
+  # === 粒子配置 / Particle Configuration ===
+  harvestParticle:
+    type: SOUL
+    amount: 30
+    speed: 0.1
+    forced: true
+
+  soulOrbParticle:
+    type: SOUL_FIRE_FLAME
+    amount: 3
+    deltaX: 0.1
+    deltaY: 0.1
+    deltaZ: 0.1
+    forced: true
+
+  windowParticle:
+    type: DUST
+    amount: 20
+    deltaX: 1.0
+    deltaY: 1.5
+    deltaZ: 1.0
+    speed: 1.5
+    extraData: "0,255,255,1.5"      # Cyan color / 青色
+    forced: true
+
+  recoveryParticle:
+    type: TOTEM_OF_UNDYING
+    amount: 30
+    speed: 0.5
+    forced: true
+
+  # === 音效配置 / Sound Configuration ===
+  harvestSound: ENTITY_WITHER_SPAWN
+  harvestPitch: 0.5
+  harvestVolume: 2.0
+  windowOpenSound: BLOCK_BEACON_ACTIVATE
+  windowCloseSound: BLOCK_BEACON_DEACTIVATE
+  recoverySound: ENTITY_EXPERIENCE_ORB_PICKUP
+
+# ============================================================
+# 技能使用示例 / Ability Usage Example
+# ============================================================
+#
+# 在mob配置中引用技能 / Reference abilities in mob config:
+#
+# abilities:
+#   - type: "cat.nyaa.infiniteinfernal.ability.impl.active.AbilityTemporalRift"
+#     weight: 10
+#     config:
+#       radius: 10.0
+#       duration: 240
+#       msgWarning: "&d⚠ Time Rift incoming!"
+#
+#   - type: "cat.nyaa.infiniteinfernal.ability.impl.active.AbilityChainLightning"
+#     weight: 15
+#     config:
+#       initialDamage: 20.0
+#       maxChains: 4
+#
+# ============================================================
+# 技能总结 / Ability Summary
+# ============================================================
+#
+# | 技能/Ability      | 单人适配/Solo Mode        | 消息显示/Display    | 核心机制/Core Mechanic    |
+# |-------------------|---------------------------|---------------------|---------------------------|
+# | TemporalRift      | 伤害瓦解/Damage collapse  | BossBar 进度/Progress| 时间减速区/Time slow zone |
+# | EchoStrike        | 降低倍率/Lower multiplier | BossBar 累积/Accumul | 延迟反弹/Delayed reflect  |
+# | GravityWell       | 减少数量/Fewer wells      | ActionBar 方向/Dir   | 推拉场+安全区/Push-pull   |
+# | PhaseShift        | 降低阈值/Lower threshold  | BossBar 稳定性/Stab  | DPS竞速/DPS race          |
+# | ChainLightning    | 禁用连锁/No chaining      | Subtitle 警告/Warn   | 连锁跳跃/Chain jumping    |
+# | SoulHarvest       | 降低难度/Easier recovery  | BossBar 灵魂数/Souls | 死亡惩罚/Death penalty    |
+#
+# ============================================================
