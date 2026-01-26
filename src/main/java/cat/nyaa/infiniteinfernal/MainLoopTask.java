@@ -407,6 +407,9 @@ public class MainLoopTask {
                 LivingEntity entity = iMob.getEntity();
                 if (entity == null || entity.isDead()) continue;
 
+                // Skip stuck check if mob has the skip tag
+                if (entity.getScoreboardTags().contains("inf_skip_stuck")) continue;
+
                 // Update position tracking and check if stuck
                 iMob.updateLastPosition();
                 if (iMob.isStuck(stuckConfig.movementThreshold)) {

@@ -200,7 +200,24 @@ public class Events implements Listener {
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));
 
-            boolean hurtByPlayer = event.getDamager() instanceof Player;
+            // Check if damage source is a player (direct hit or via projectile/other sources)
+            boolean hurtByPlayer = false;
+            Entity damager = event.getDamager();
+            if (damager instanceof Player) {
+                hurtByPlayer = true;
+            } else if (damager instanceof Projectile) {
+                ProjectileSource shooter = ((Projectile) damager).getShooter();
+                hurtByPlayer = shooter instanceof Player;
+            } else if (damager instanceof AreaEffectCloud) {
+                ProjectileSource source = ((AreaEffectCloud) damager).getSource();
+                hurtByPlayer = source instanceof Player;
+            } else if (damager instanceof TNTPrimed) {
+                Entity source = ((TNTPrimed) damager).getSource();
+                hurtByPlayer = source instanceof Player;
+            } else if (damager instanceof EvokerFangs) {
+                LivingEntity owner = ((EvokerFangs) damager).getOwner();
+                hurtByPlayer = owner instanceof Player;
+            }
 
             if (triggeredAbilitySet != null) {
                 if (triggeredAbilitySet.containsDummy()) return;

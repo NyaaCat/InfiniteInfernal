@@ -11,8 +11,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -252,14 +252,44 @@ public class AbilityEchoStrike extends ActiveAbility implements AbilityHurt {
         EchoState state = activeEchoes.get(mobId);
 
         if (state != null) {
-            // Only accumulate damage from the marked player
-            if (event.getDamager() instanceof Player) {
-                Player damager = (Player) event.getDamager();
-                if (damager.getUniqueId().equals(state.target.getUniqueId())) {
-                    state.accumulatedDamage += event.getFinalDamage();
-                }
+            // Get the real player damager from various damage sources
+            Player damager = getPlayerSource(event.getDamager());
+
+            // Accumulate damage from the marked player
+            if (damager != null && damager.getUniqueId().equals(state.target.getUniqueId())) {
+                state.accumulatedDamage += event.getFinalDamage();
             }
         }
+    }
+
+    /**
+     * Extract the Player source from various damage sources
+     */
+    private Player getPlayerSource(Entity damager) {
+        if (damager instanceof Player) {
+            return (Player) damager;
+        } else if (damager instanceof Projectile) {
+            ProjectileSource shooter = ((Projectile) damager).getShooter();
+            if (shooter instanceof Player) {
+                return (Player) shooter;
+            }
+        } else if (damager instanceof AreaEffectCloud) {
+            ProjectileSource source = ((AreaEffectCloud) damager).getSource();
+            if (source instanceof Player) {
+                return (Player) source;
+            }
+        } else if (damager instanceof TNTPrimed) {
+            Entity source = ((TNTPrimed) damager).getSource();
+            if (source instanceof Player) {
+                return (Player) source;
+            }
+        } else if (damager instanceof EvokerFangs) {
+            LivingEntity owner = ((EvokerFangs) damager).getOwner();
+            if (owner instanceof Player) {
+                return (Player) owner;
+            }
+        }
+        return null;
     }
 
     private void releaseEcho(IMob iMob, EchoState state, List<Player> nearbyPlayers) {
