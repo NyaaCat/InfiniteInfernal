@@ -16,6 +16,7 @@ import cat.nyaa.infiniteinfernal.utils.Context;
 import cat.nyaa.infiniteinfernal.utils.ContextKeys;
 import cat.nyaa.infiniteinfernal.utils.Utils;
 import org.bukkit.*;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -34,6 +35,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -146,6 +148,7 @@ public class Events implements Listener {
                 double resist = origDamage * (damageResist / 100d);
                 event.setDamage(Math.max(0, origDamage - resist));
             }
+            applyBrokenArmor(iMob, event);
             iMob.setLastDamageCause(event);
             List<IAbilitySet> abilities = iMob.getAbilities();
 
@@ -196,6 +199,7 @@ public class Events implements Listener {
                 double resist = origDamage * (damageResist / 100d);
                 event.setDamage(Math.max(0, origDamage - resist));
             }
+            applyBrokenArmor(iMob, event);
             IAbilitySet triggeredAbilitySet = Utils.weightedRandomPick(abilities.stream()
                     .filter(IAbilitySet::containsPassive)
                     .collect(Collectors.toList()));
@@ -450,5 +454,64 @@ public class Events implements Listener {
 
     private boolean enabledInWorld(World world) {
         return InfPlugin.plugin.config().isEnabledInWorld(world);
+    }
+
+    private void applyBrokenArmor(IMob iMob, EntityDamageEvent event) {
+        if (iMob == null || event == null) {
+            return;
+        }
+        String effectName = "OOZING";
+        if (InfPlugin.plugin.config().addEffects != null) {
+            String configured = InfPlugin.plugin.config().addEffects.get("broken_armor");
+            if (configured != null && !configured.trim().isEmpty()) {
+                effectName = configured.trim();
+            }
+        }
+        String resolvedName = extractEffectName(effectName);
+        if (resolvedName == null || resolvedName.isEmpty()) {
+            return;
+        }
+        PotionEffectType type = PotionEffectType.getByName(resolvedName.toUpperCase(Locale.ROOT));
+        if (type == null) {
+            NamespacedKey key = NamespacedKey.fromString(resolvedName.toLowerCase(Locale.ROOT));
+            if (key != null) {
+                type = PotionEffectType.getByKey(key);
+            }
+        }
+        if (type == null) {
+            return;
+        }
+        LivingEntity entity = iMob.getEntity();
+        if (entity == null || entity.isDead()) {
+            return;
+        }
+        PotionEffect effect = entity.getPotionEffect(type);
+        if (effect == null) {
+            return;
+        }
+        int level = effect.getAmplifier() + 1;
+        if (level <= 0) {
+            return;
+        }
+        double multiplier = 1.0 + (0.1 * level);
+        event.setDamage(event.getDamage() * multiplier);
+    }
+
+    private String extractEffectName(String configValue) {
+        if (configValue == null) {
+            return null;
+        }
+        String value = configValue.trim();
+        if (value.isEmpty()) {
+            return null;
+        }
+        String[] parts = value.split(":");
+        if (parts.length == 1) {
+            return parts[0];
+        }
+        if ("effect".equalsIgnoreCase(parts[0]) && parts.length >= 2) {
+            return parts[1];
+        }
+        return parts[0];
     }
 }

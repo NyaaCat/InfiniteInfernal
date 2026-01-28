@@ -52,6 +52,9 @@ public class InfSpawnControler implements ISpawnControler {
         if (MobManager.instance().getMobsInWorld(world).size() >= config.getMaxMobInWorld(world)) {
             return false;
         }
+        if (isBossNearby(location)) {
+            return false;
+        }
         int maxSpawnDistance = getMaxSpawnDistance(world);
         world.getNearbyEntities(location, maxSpawnDistance*1.5, maxSpawnDistance*1.5, maxSpawnDistance*1.5).stream()
                 .filter(entity -> entity instanceof Player)
@@ -615,6 +618,9 @@ public class InfSpawnControler implements ISpawnControler {
         if (!force && isInEmptyMobsRegion(location)) {
             return false;
         }
+        if (!force && isBossNearby(location)) {
+            return false;
+        }
         if (!force) {
             if (allowedRegions != null && !allowedRegions.isEmpty()) {
                 boolean inAllowedRegion = allowedRegions.stream()
@@ -713,6 +719,40 @@ public class InfSpawnControler implements ISpawnControler {
         int blockZ = spawnLocation.getBlockZ();
         spawnLocation.setX(blockX + 0.5);
         spawnLocation.setZ(blockZ + 0.5);
+    }
+
+    private boolean isBossNearby(Location location) {
+        if (location == null) {
+            return false;
+        }
+        Config config = InfPlugin.plugin.config();
+        String tag = config.bossSpawnBlockTag;
+        int range = config.bossSpawnBlockRange;
+        if (tag == null || tag.isEmpty() || range <= 0) {
+            return false;
+        }
+        World world = location.getWorld();
+        if (world == null) {
+            return false;
+        }
+        double rangeSq = (double) range * range;
+        List<IMob> mobs = MobManager.instance().getMobsInWorld(world);
+        if (mobs.isEmpty()) {
+            return false;
+        }
+        for (IMob iMob : mobs) {
+            LivingEntity entity = iMob.getEntity();
+            if (entity == null || entity.isDead()) {
+                continue;
+            }
+            if (!entity.getScoreboardTags().contains(tag)) {
+                continue;
+            }
+            if (entity.getLocation().distanceSquared(location) <= rangeSq) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

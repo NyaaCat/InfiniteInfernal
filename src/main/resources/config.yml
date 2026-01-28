@@ -18,4 +18,11 @@ randomLootChest:
     chunksPerRun: 2
     maxContainersPerChunk: 32
 tags: []
+addEffects:
+  target_lost: effect:BLINDNESS:10
+  disorder: effect:CONFUSION:10
+  dementia: effect:SLOW_DIGGING:10
+  broken_armor: OOZING
+bossSpawnBlockTag: inf-boss
+bossSpawnBlockRange: 128
 worlds: {}

@@ -86,6 +86,12 @@ public class Config extends PluginConfigure {
     public Map<String, String> addEffects;
 
     @Serializable
+    public String bossSpawnBlockTag = "inf-boss";
+
+    @Serializable
+    public int bossSpawnBlockRange = 128;
+
+    @Serializable
     public boolean enabled = true;
 
     @Serializable(name = "randomLootChest")
@@ -143,6 +149,13 @@ public class Config extends PluginConfigure {
         mobConfigs.clear();
         regionConfigs.clear();
         addEffectInstance = null;
+        if (addEffects == null) {
+            addEffects = new LinkedHashMap<>();
+        }
+        addEffects.putIfAbsent("target_lost", "effect:BLINDNESS:10");
+        addEffects.putIfAbsent("disorder", "effect:CONFUSION:10");
+        addEffects.putIfAbsent("dementia", "effect:SLOW_DIGGING:10");
+        addEffects.putIfAbsent("broken_armor", "OOZING");
 
         if (worlds.size() == 0) {
             Bukkit.getLogger().log(Level.INFO, "first time using Infinite Infernal, initializing...");
@@ -194,6 +207,7 @@ public class Config extends PluginConfigure {
         addEffects.put("target_lost", "effect:BLINDNESS:10");
         addEffects.put("disorder", "effect:CONFUSION:10");
         addEffects.put("dementia", "effect:SLOW_DIGGING:10");
+        addEffects.put("broken_armor", "OOZING");
         AbilitySetConfig actives = new AbilitySetConfig("a");
         AbilitySetConfig passives = new AbilitySetConfig("b");
         AbilitySetConfig dummies = new AbilitySetConfig("c");
@@ -351,6 +365,9 @@ public class Config extends PluginConfigure {
     private void initAddEffectInstance() {
         addEffectInstance = new LinkedHashMap<>();
         addEffects.forEach(((s, s2) -> {
+            if ("broken_armor".equalsIgnoreCase(s)) {
+                return;
+            }
             ICorrector iCorrector = CorrectionParser.parseStr(s);
             if (iCorrector != null) {
                 addEffectInstance.put(s, iCorrector);
