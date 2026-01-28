@@ -532,14 +532,67 @@ public class InfSpawnControler implements ISpawnControler {
                 continue;
             }
             int topY = world.getHighestBlockYAt(x, z);
+            int maxY = regions.stream().mapToInt(r -> r.region.yMax).max().orElse(world.getMaxHeight());
             int minY = regions.stream().mapToInt(r -> r.region.yMin).min().orElse(world.getMinHeight());
-            for (int y = topY; y >= minY; y--) {
+            int searchStartY = Math.min(topY, maxY);
+            for (int y = searchStartY; y >= minY; y--) {
                 org.bukkit.block.Block block = world.getBlockAt(x, y, z);
                 if (block.getType() == Material.WATER) {
                     org.bukkit.block.Block above = block.getRelative(org.bukkit.block.BlockFace.UP);
                     if (above.getType() == Material.WATER || above.getType().isAir()) {
                         Location spawn = block.getLocation().add(0.5, 0, 0.5);
-                        if (!isTooClose(null, spawn)) {
+                        if (!isTooClose(null, spawn) && isInAnyRegion(spawn, regions)) {
+                            return spawn;
+                        }
+                    }
+                    continue;
+                }
+                if (block.getType().isSolid()) {
+                    break;
+                }
+            }
+        }
+
+        // Fallback: try spawning directly within region bounds
+        for (RegionConfig regionConfig : regions) {
+            Location candidate = randomWaterLocationInRegion(world, regionConfig, center, minSpawnDistance);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generates a random water spawn location within a region's bounds.
+     */
+    private Location randomWaterLocationInRegion(World world, RegionConfig regionConfig, Location playerLoc, int minDistance) {
+        if (regionConfig == null || regionConfig.region == null || world == null) {
+            return null;
+        }
+        RegionConfig.Region region = regionConfig.region;
+        for (int attempt = 0; attempt < 15; attempt++) {
+            int x = region.xMin + (int) (Utils.random() * (region.xMax - region.xMin));
+            int z = region.zMin + (int) (Utils.random() * (region.zMax - region.zMin));
+
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+
+            // Search for water within region Y bounds
+            for (int y = region.yMax; y >= region.yMin; y--) {
+                org.bukkit.block.Block block = world.getBlockAt(x, y, z);
+                if (block.getType() == Material.WATER) {
+                    org.bukkit.block.Block above = block.getRelative(org.bukkit.block.BlockFace.UP);
+                    if (above.getType() == Material.WATER || above.getType().isAir()) {
+                        Location spawn = block.getLocation().add(0.5, 0, 0.5);
+
+                        // Check minimum distance from player
+                        if (playerLoc != null && spawn.distance(playerLoc) < minDistance) {
+                            continue;
+                        }
+
+                        if (region.contains(spawn) && !isTooClose(null, spawn)) {
                             return spawn;
                         }
                     }
