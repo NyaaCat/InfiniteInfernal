@@ -499,7 +499,49 @@ public class InfSpawnControler implements ISpawnControler {
             int y = (int) Math.round(Utils.random(minY, maxY));
             Location spawn = new Location(world, x + 0.5, y, z + 0.5);
             if (spawn.getBlock().getType().isAir() && spawn.getBlock().getRelative(org.bukkit.block.BlockFace.UP).getType().isAir()) {
-                if (!isTooClose(null, spawn)) {
+                if (!isTooClose(null, spawn) && isInAnyRegion(spawn, regions)) {
+                    return spawn;
+                }
+            }
+        }
+
+        // Fallback: try spawning directly within region bounds
+        for (RegionConfig regionConfig : regions) {
+            Location candidate = randomSkyLocationInRegion(world, regionConfig, center, minSpawnDistance);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generates a random sky spawn location within a region's bounds.
+     */
+    private Location randomSkyLocationInRegion(World world, RegionConfig regionConfig, Location playerLoc, int minDistance) {
+        if (regionConfig == null || regionConfig.region == null || world == null) {
+            return null;
+        }
+        RegionConfig.Region region = regionConfig.region;
+        for (int attempt = 0; attempt < 15; attempt++) {
+            int x = region.xMin + (int) (Utils.random() * (region.xMax - region.xMin));
+            int z = region.zMin + (int) (Utils.random() * (region.zMax - region.zMin));
+            int y = region.yMin + (int) (Utils.random() * (region.yMax - region.yMin));
+
+            if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                continue;
+            }
+
+            Location spawn = new Location(world, x + 0.5, y, z + 0.5);
+
+            // Check minimum distance from player
+            if (playerLoc != null && spawn.distance(playerLoc) < minDistance) {
+                continue;
+            }
+
+            // Sky mobs just need air space
+            if (spawn.getBlock().getType().isAir() && spawn.getBlock().getRelative(org.bukkit.block.BlockFace.UP).getType().isAir()) {
+                if (region.contains(spawn) && !isTooClose(null, spawn)) {
                     return spawn;
                 }
             }
